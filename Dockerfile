@@ -16,6 +16,7 @@ WORKDIR /src
 COPY ["McWutWebApp.csproj", "."]
 COPY ["src/FamilyVault.Files.Contracts/FamilyVault.Files.Contracts.csproj", "src/FamilyVault.Files.Contracts/"]
 COPY ["src/FamilyVault.Files/FamilyVault.Files.csproj", "src/FamilyVault.Files/"]
+COPY ["src/FamilyVault.Files.Azure/FamilyVault.Files.Azure.csproj", "src/FamilyVault.Files.Azure/"]
 RUN dotnet restore "./McWutWebApp.csproj"
 COPY . .
 WORKDIR "/src/."

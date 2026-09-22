@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace FamilyVault.Files.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(SqliteApplicationDbContext))]
     [Migration("20260920014817_AddIdentity")]
     partial class AddIdentity
     {

@@ -1,6 +1,6 @@
 using FamilyVault.Files.Contracts;
-using FamilyVault.Files.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace McWutWebApp.Hosting;
 
@@ -18,14 +18,32 @@ public static class IdentitySeed
         var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var roster = scope.ServiceProvider.GetRequiredService<IFamilyRoster>();
+        var identity = scope.ServiceProvider.GetRequiredService<IOptions<IdentitySiteOptions>>().Value;
+        var environment = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
 
         if (!await roles.RoleExistsAsync(AdminRole))
         {
             await roles.CreateAsync(new IdentityRole(AdminRole));
         }
 
-        await EnsureUserAsync(users, roster, AdminEmail, AdminPassword, AdminRole, cancellationToken);
-        await EnsureUserAsync(users, roster, DemoEmail, DemoPassword, role: null, cancellationToken);
+        if (identity.SeedDemoUsers || environment.IsDevelopment())
+        {
+            await EnsureUserAsync(users, roster, AdminEmail, AdminPassword, AdminRole, cancellationToken);
+            await EnsureUserAsync(users, roster, DemoEmail, DemoPassword, role: null, cancellationToken);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(identity.ProductionAdminEmail)
+            && !string.IsNullOrWhiteSpace(identity.ProductionAdminPassword))
+        {
+            await EnsureUserAsync(
+                users,
+                roster,
+                identity.ProductionAdminEmail.Trim(),
+                identity.ProductionAdminPassword,
+                AdminRole,
+                cancellationToken);
+        }
     }
 
     private static async Task EnsureUserAsync(

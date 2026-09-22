@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using FamilyVault.Files;
+using FamilyVault.Files.Azure;
 using FamilyVault.Files.Data;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.DataProtection;
@@ -23,21 +24,51 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddFamilyVaultFiles(builder.Configuration);
 
-var vaultRoot = builder.Configuration["Files:Local:RootPath"] ?? "App_Data/vault";
-var keysPath = Path.IsPathRooted(vaultRoot)
-    ? Path.Combine(Directory.GetParent(vaultRoot.TrimEnd('/', '\\'))?.FullName ?? "/app/data", "keys")
-    : Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys");
-Directory.CreateDirectory(keysPath);
-builder.Services.AddDataProtection()
-    .SetApplicationName("McWutWebApp")
-    .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+var filesProvider = builder.Configuration["Files:Provider"] ?? "Local";
+if (filesProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddFamilyVaultAzure(builder.Configuration);
+}
+
+var identityOptions = builder.Configuration.GetSection(IdentitySiteOptions.SectionName).Get<IdentitySiteOptions>()
+                      ?? new IdentitySiteOptions();
+builder.Services.Configure<IdentitySiteOptions>(builder.Configuration.GetSection(IdentitySiteOptions.SectionName));
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.PostConfigure<IdentitySiteOptions>(o =>
+    {
+        o.AllowRegistration = true;
+        o.SeedDemoUsers = true;
+    });
+}
+
+if (filesProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
+{
+    var azureCs = builder.Configuration["Files:Azure:ConnectionString"]
+                  ?? throw new InvalidOperationException("Files:Azure:ConnectionString is required.");
+    var keysContainer = builder.Configuration["Files:Azure:KeysContainer"] ?? "keys";
+    builder.Services.AddDataProtection()
+        .SetApplicationName("McWutWebApp")
+        .PersistKeysToAzureBlobStorage(azureCs, keysContainer, "mcwut-keys.xml");
+}
+else
+{
+    var vaultRoot = builder.Configuration["Files:Local:RootPath"] ?? "App_Data/vault";
+    var keysPath = Path.IsPathRooted(vaultRoot)
+        ? Path.Combine(Directory.GetParent(vaultRoot.TrimEnd('/', '\\'))?.FullName ?? "/app/data", "keys")
+        : Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys");
+    Directory.CreateDirectory(keysPath);
+    builder.Services.AddDataProtection()
+        .SetApplicationName("McWutWebApp")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 
 builder.Services
     .AddDefaultIdentity<IdentityUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.User.RequireUniqueEmail = true;
-        options.Password.RequiredLength = 1;
+        options.Password.RequiredLength = builder.Environment.IsDevelopment() ? 1 : 8;
         options.Password.RequireDigit = false;
         options.Password.RequireLowercase = false;
         options.Password.RequireUppercase = false;
@@ -53,7 +84,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsProduction()
+        ? CookieSecurePolicy.Always
+        : CookieSecurePolicy.SameAsRequest;
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
@@ -71,7 +104,11 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Error");
     options.Conventions.AllowAnonymousToPage("/Share/Index");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login");
-    options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Register");
+    if (builder.Environment.IsDevelopment() || identityOptions.AllowRegistration)
+    {
+        options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Register");
+    }
+
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Logout");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/ForgotPassword");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/ResetPassword");

@@ -39,7 +39,7 @@ All write-ups live in [`docs/`](docs/).
 
 ## Hosting
 
-**Path A:** Azure Container Apps + Azure SQL (free tier, already created) + Blob. Follow [docs/PATH-A.md](docs/PATH-A.md). Local stays SQLite + disk until that code lands.
+**Path A:** Azure Container Apps + Azure SQL + Blob. SQL/Blob **providers are in the code**; local default is still SQLite + disk. Follow [docs/PATH-A.md](docs/PATH-A.md). Settings cheat sheet: [docs/azure-containerapp.env.example](docs/azure-containerapp.env.example).
 
 ## Layout
 

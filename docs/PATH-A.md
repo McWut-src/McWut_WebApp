@@ -5,7 +5,7 @@
 **Path:** Azure Container Apps + Azure SQL + Blob (the “professional” option in [DEPLOY.md](DEPLOY.md))  
 **Updated:** 21 September 2026  
 
-Print this page. Tick boxes as we go. **Your Azure prep for Phase 2 is done.** Next: **Me — Phase 2 (SQL + Blob in the code).** Do **not** create the Container App until that image exists.
+Print this page. Tick boxes as we go. **Phase 2 code is in the repo.** Next: **You** commit/push, then **Phase 4** (build image + Container App). Do **not** create the Container App until this code is in the image you push.
 
 **Legend:** **You** = portal / DNS / secrets. **Me** = code. **Together** = click through the live site.
 
@@ -44,12 +44,12 @@ Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md
 - [x] Docker image hosting: **GitHub Container Registry (GHCR)** — git is `McWut-src/McWut_WebApp`. Image will be `ghcr.io/mcwut-src/mcwut_webapp:latest`. Copilot subscription is unrelated; GHCR is free for this.
 - [x] Production **website** admin password stored in your personal vault (not `vince`, not git)
 
-### Me — next (code, not started)
+### Me — Phase 2 (code)
 
-- [ ] Phase 2.1 — SQL Server provider, keep SQLite for the PC
-- [ ] Phase 2.2 — `FamilyVault.Files.Azure` (Blob)
-- [ ] Phase 2.3 — Production flags (no toy users, Register off, keys in Blob, HTTPS cookies)
-- [ ] Tests green; local Docker still works on SQLite
+- [x] Phase 2.1 — SQL Server provider, keep SQLite for the PC (`Database:Provider`)
+- [x] Phase 2.2 — `FamilyVault.Files.Azure` (Blob); `Files:Provider = Local | Azure`
+- [x] Phase 2.3 — Production: no toy users, Register off, keys in Blob container `keys`, Secure cookies
+- [x] Tests green (27). Local default remains SQLite + disk
 
 ### After Phase 2 (do not start yet)
 
@@ -77,7 +77,7 @@ Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md
 | Git | First commit on `main` |
 | Azure SQL | **Exists**, free tier, **Canada East**, RG `McWut_dbResourceGroup` |
 | Storage | **Account exists** (`mcwutstorage`), **Canada Central**, RG `McWutStorage`. Containers `vault` + `keys`. Key rotated. |
-| Blob / SQL **in the app** | **Not coded** — still SQLite + disk. Recycle on Azure would lose data |
+| Blob / SQL **in the app** | **Coded.** Local default: SQLite + disk. Production: `Database__Provider=SqlServer` + `Files__Provider=Azure` |
 | Container App | **Do not create yet** |
 | Custom domain | Not started |
 | Family live | No |
@@ -477,10 +477,8 @@ A is not automatically cheaper than C$140. It **can** be cheaper if the site is 
 
 Use the **Tracker** at the top of this file as the scoreboard.
 
-**You:** Azure prep for this phase is done.
+**You (now):** commit this Phase 2 code. Optional: run locally (`vince` / `vince`) to confirm SQLite still works.
 
-**Me (when you say so):** Phase 2 — SQL + Blob in the code.
+**Next:** Phase 4 — `docker build` / `docker push` to GHCR, then Container App. Set `Identity__ProductionAdminEmail` and `Identity__ProductionAdminPassword` (from your personal vault) so you can sign in; Production does **not** create `vince`/`vince`.
 
-> Do Phase 2 — SQL + Blob in the code.
-
-Do **not** create the Container App until those code boxes are ticked.
+See `docs/azure-containerapp.env.example` for setting names.

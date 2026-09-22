@@ -18,24 +18,49 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddOptions<FilesOptions>()
-            .Bind(configuration.GetSection(FilesOptions.SectionName))
+        services.AddOptions<DatabaseOptions>()
+            .Bind(configuration.GetSection(DatabaseOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        services.AddOptions<FilesOptions>()
+            .Bind(configuration.GetSection(FilesOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(o =>
+                    !o.Provider.Equals("Azure", StringComparison.OrdinalIgnoreCase)
+                    || !string.IsNullOrWhiteSpace(o.Azure.ConnectionString),
+                "Files:Azure:ConnectionString is required when Files:Provider is Azure.")
+            .ValidateOnStart();
+
+        var dbProvider = configuration["Database:Provider"] ?? "Sqlite";
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+                               ?? "Data Source=App_Data/mcwut.db";
+
+        if (dbProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
         {
-            var environment = sp.GetRequiredService<IHostEnvironment>();
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                   ?? "Data Source=App_Data/mcwut.db";
-            options.UseSqlite(SqlitePath.ResolveConnectionString(connectionString, environment));
-        });
+            services.AddDbContext<ApplicationDbContext, SqlServerApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
+        }
+        else
+        {
+            services.AddDbContext<ApplicationDbContext, SqliteApplicationDbContext>((sp, options) =>
+            {
+                var environment = sp.GetRequiredService<IHostEnvironment>();
+                options.UseSqlite(SqlitePath.ResolveConnectionString(connectionString, environment));
+            });
+        }
 
         services.AddSingleton(TimeProvider.System);
         services.AddOptions<PasswordHasherOptions>();
         services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
-        services.AddSingleton<IObjectStore, LocalDiskObjectStore>();
-        services.AddSingleton<IObjectStoreCapabilities>(sp => (LocalDiskObjectStore)sp.GetRequiredService<IObjectStore>());
+
+        var filesProvider = configuration["Files:Provider"] ?? "Local";
+        if (!filesProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IObjectStore, LocalDiskObjectStore>();
+            services.AddSingleton<IObjectStoreCapabilities>(sp =>
+                (IObjectStoreCapabilities)sp.GetRequiredService<IObjectStore>());
+        }
 
         services.AddScoped<IFamilyRoster, FamilyRoster>();
         services.AddScoped<IQuotaService, QuotaService>();

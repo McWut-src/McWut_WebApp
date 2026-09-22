@@ -17,7 +17,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HTTP_PORTS": "8080",
         "ASPNETCORE_URLS": "http://+:8080",
+        "Database__Provider": "Sqlite",
         "ConnectionStrings__DefaultConnection": "Data Source=/app/data/mcwut.db;Cache=Shared",
+        "Files__Provider": "Local",
         "Files__Local__RootPath": "/app/data/vault"
       },
       "publishAllPorts": true,

@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FamilyVault.Files.Data;
 
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<IdentityUser>(options)
+public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
+    public ApplicationDbContext(DbContextOptions options) : base(options)
+    {
+    }
+
     public DbSet<FamilyMemberEntity> FamilyMembers => Set<FamilyMemberEntity>();
     public DbSet<StoredFileEntity> StoredFiles => Set<StoredFileEntity>();
     public DbSet<DropEntity> Drops => Set<DropEntity>();

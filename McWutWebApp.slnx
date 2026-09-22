@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/FamilyVault.Files.Contracts/FamilyVault.Files.Contracts.csproj" />
     <Project Path="src/FamilyVault.Files/FamilyVault.Files.csproj" />
+    <Project Path="src/FamilyVault.Files.Azure/FamilyVault.Files.Azure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FamilyVault.Files.Tests/FamilyVault.Files.Tests.csproj" />

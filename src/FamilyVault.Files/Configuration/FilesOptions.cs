@@ -11,6 +11,8 @@ public sealed class FilesOptions
 
     public LocalFilesOptions Local { get; set; } = new();
 
+    public AzureFilesOptions Azure { get; set; } = new();
+
     [Range(1, 36500)]
     public int DefaultRetentionDays { get; set; } = 7;
 
@@ -67,4 +69,11 @@ public sealed class LocalFilesOptions
 {
     [Required]
     public string RootPath { get; set; } = "App_Data/vault";
+}
+
+public sealed class AzureFilesOptions
+{
+    public string ConnectionString { get; set; } = "";
+    public string Container { get; set; } = "vault";
+    public string KeysContainer { get; set; } = "keys";
 }
