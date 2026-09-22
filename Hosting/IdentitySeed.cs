@@ -12,9 +12,9 @@ public static class IdentitySeed
     public const string DemoPassword = "family";
     public const string AdminRole = "Admin";
 
-    public static async Task SeedAsync(IHost host, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(IServiceScopeFactory scopes, CancellationToken cancellationToken = default)
     {
-        using var scope = host.Services.CreateScope();
+        using var scope = scopes.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var roster = scope.ServiceProvider.GetRequiredService<IFamilyRoster>();

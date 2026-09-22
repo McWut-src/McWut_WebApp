@@ -126,6 +126,7 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddScoped<UpsertFamilyMemberFilter>();
 builder.Services.AddSingleton<RetentionMapper>();
+builder.Services.AddHostedService<DatabaseStartupWorker>();
 
 var app = builder.Build();
 
@@ -158,6 +159,4 @@ app.MapRazorPages()
 app.MapControllers();
 app.MapGet("/health", () => Results.Text("ok")).AllowAnonymous();
 
-await app.InitializeFamilyVaultAsync();
-await IdentitySeed.SeedAsync(app);
 app.Run();
