@@ -11,6 +11,8 @@ publish/
 
 ## Data and secrets
 App_Data/
+data/
+**/keys/*.xml
 *.db
 *.db-shm
 *.db-wal
