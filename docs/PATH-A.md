@@ -3,25 +3,86 @@
 **Site:** McWut  
 **Domain you own:** mcwut.com  
 **Path:** Azure Container Apps + Azure SQL + Blob (the “professional” option in [DEPLOY.md](DEPLOY.md))  
-**Written:** 21 September 2026  
+**Updated:** 21 September 2026  
 
-You priced Path D (Linux VPS, data in Canada) at about **C$140 / year** and **chose Path A** instead.
+Print this page. Tick boxes as we go. **Your Azure prep for Phase 2 is done.** Next: **Me — Phase 2 (SQL + Blob in the code).** Do **not** create the Container App until that image exists.
 
-**Already done (You):** Azure SQL **server** and **database** on the **free tier**. Admin login name: `mcwut-admin` (password only in your password manager — not in this repo).
+**Legend:** **You** = portal / DNS / secrets. **Me** = code. **Together** = click through the live site.
 
-Path A is: the **website can sleep** when nobody visits; **users live in SQL**; **files live in Blob**. Typical family bill is **about C$0–10 / month** if the free SQL offer holds, or **about C$20–35 / month** if SQL is paid and you leave a replica running. These are ballparks, not a quote.
+Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md)
 
-This file is the **runbook**: who does what, in order, until `https://mcwut.com` (or a subdomain) is live.
+---
 
-**Legend**
+## Tracker (tick these)
 
-- **You** — Azure portal, DNS, passwords, Docker Hub, budget  
-- **Me** — code in this repo, Docker image shape, settings names  
-- **Together** — first login on the real URL, then we fix whatever broke  
+### Done
 
-Do the phases **in order**. Do not create the Container App until Phase 2 code is in the image.
+- [x] Chose Path A (not the ~C$140/year Canada VPS)
+- [x] First git commit on `main`
+- [x] App runs locally (SQLite + disk, login, drop, share link)
+- [x] Azure SQL **server** + **database** on **free tier**
+  - Host: `mcwut.database.windows.net`
+  - Database: `sql-mcwut`
+  - SQL admin name: `mcwut-admin` (password in your manager, not git)
+  - **Location: Canada East**
+  - Resource group: **`McWut_dbResourceGroup`** (group itself is Canada Central)
+  - Laptop CS uses **Active Directory Default** — fine on your PC, **not** for Container Apps
+- [x] Storage account **`mcwutstorage`** created (account key in your manager, not git)
+  - Resource group: **`McWutStorage`**
+  - **Location: Canada Central**
 
-Related: [DEPLOY.md](DEPLOY.md) (all options), [SCOPE.md](SCOPE.md) (product), [STATUS.md](STATUS.md) (what already works locally).
+### You — still open (can do before Phase 2)
+
+- [x] Regions written down (SQL = Canada East, storage = Canada Central). Both are still in Canada.
+- [x] Resource groups written down (`McWut_dbResourceGroup`, `McWutStorage`)
+- [x] Budget alert **C$20 / month**
+- [x] SQL firewall: **your home public IP** is allowed
+- [x] SQL firewall: **Allow Azure services and resources to access this server**
+- [x] Blob containers **`vault`** and **`keys`** created (private)
+- [x] Storage account key **rotated**; new value only in your password manager (not git)
+- [x] Public URL: **`https://mcwut.com`** (www can redirect later)
+- [x] Docker image hosting: **GitHub Container Registry (GHCR)** — git is `McWut-src/McWut_WebApp`. Image will be `ghcr.io/mcwut-src/mcwut_webapp:latest`. Copilot subscription is unrelated; GHCR is free for this.
+- [x] Production **website** admin password stored in your personal vault (not `vince`, not git)
+
+### Me — next (code, not started)
+
+- [ ] Phase 2.1 — SQL Server provider, keep SQLite for the PC
+- [ ] Phase 2.2 — `FamilyVault.Files.Azure` (Blob)
+- [ ] Phase 2.3 — Production flags (no toy users, Register off, keys in Blob, HTTPS cookies)
+- [ ] Tests green; local Docker still works on SQLite
+
+### After Phase 2 (do not start yet)
+
+- [ ] You: `docker build` + `docker push`
+- [ ] You: Container App (Consumption, port 8080, min replicas 0) — **wait for new image**
+- [ ] Together: smoke on `*.azurecontainerapps.io` (health, login, upload, share, survive scale-to-zero)
+- [ ] You: DNS + certificate for mcwut.com
+- [ ] Together: smoke on the real domain
+- [ ] You: invite family
+
+### Later (not production blockers) — [SCOPE.md](SCOPE.md)
+
+- [ ] Rename UI to McWut / My files / Shared files
+- [ ] Pastes
+- [ ] Admin panel (users, health)
+- [ ] Thumbnails
+
+---
+
+## Current progress (snapshot)
+
+| Piece | Status |
+|---|---|
+| Product on this PC | **Works** — SQLite + disk. Docker `http://localhost:8080` |
+| Git | First commit on `main` |
+| Azure SQL | **Exists**, free tier, **Canada East**, RG `McWut_dbResourceGroup` |
+| Storage | **Account exists** (`mcwutstorage`), **Canada Central**, RG `McWutStorage`. Containers `vault` + `keys`. Key rotated. |
+| Blob / SQL **in the app** | **Not coded** — still SQLite + disk. Recycle on Azure would lose data |
+| Container App | **Do not create yet** |
+| Custom domain | Not started |
+| Family live | No |
+
+Path A idea: website **sleeps** when idle; users in SQL; files in Blob. Ballpark **C$0–10 / month** if SQL stays free and the app sleeps; **C$20–35 / month** if SQL is paid and a replica stays on.
 
 ---
 
@@ -47,16 +108,41 @@ Until (1) and (2) ship, **do not** point mcwut.com at an empty Container App and
 
 Write the answers down (password manager). We need them in later steps.
 
-1. **Azure region:** use **Canada Central** (Toronto) so data stays in Canada, same idea as the VPS you priced.  
-2. **Public URL (pick one):**  
-   - `https://mcwut.com` + `https://www.mcwut.com`, or  
-   - `https://www.mcwut.com` only, or  
-   - `https://app.mcwut.com` if you want the root for a brochure later.  
-3. **Where the Docker image lives:** **Docker Hub** or **GitHub Container Registry**. Not Azure Container Registry (~C$7 / month extra).  
+1. **Azure region:** data stays in Canada. **SQL = Canada East.** **Storage = Canada Central.** Put the future Container App in **Canada Central** (next to files). Fine for a family site.  
+2. **Public URL:** **`https://mcwut.com`**. Optional later: redirect `www.mcwut.com` to the same site.  
+3. **Where the Docker image lives:** **GitHub Container Registry** — `ghcr.io/mcwut-src/mcwut_webapp`. Not Azure Container Registry.  
 4. **Budget alarm:** in Azure, set an alert at e.g. **C$20 / month** so a mis-click cannot surprise you.  
-5. **Admin password** for production (not `vince`). Store it offline.
+5. **Admin password** for production (not `vince`). Store it offline. See below.
 
 You do not need to buy anything in this phase except an Azure account if you do not have one.
+
+#### Production site admin password (plain language)
+
+This is **not** the Azure SQL password (`mcwut-admin`). It is the password you will type on **https://mcwut.com** → Sign in, as Vince, once the site is live.
+
+Today, on your PC only, the app creates:
+
+- `vince@mcwut.com` / `vince`
+- `family@mcwut.com` / `family`
+
+Those are fine for **localhost**. They must **not** be the live site.
+
+**Do this now (5 minutes):**
+
+1. Open your password manager (Bitwarden, 1Password, browser manager, a paper in a drawer — whatever you already use).  
+2. Create an entry named **McWut website (production)**.  
+3. Username: `vince@mcwut.com` (or another email you actually read).  
+4. Password: something **long and unique**, not `vince`, not the SQL password, not reused from another site. Let the manager generate it if it can.  
+5. Tick the PATH-A box. You are done for now.
+
+**Do not** try to set this password in Azure SQL, storage, or the portal. There is no McWut user list in the cloud yet.
+
+**When the site first goes live (Phase 4),** we will either:
+
+- stop auto-creating `vince`/`vince` in Production, and you **Register** once (if we leave Register on for that first hour), or  
+- you tell me the email and I wire a **one-time** production seed that uses a password you put only in a Container App **secret** (never in git).
+
+Until then, keep using `vince` / `vince` on your PC. Two different worlds: local toy login vs live login you already wrote down.
 
 ---
 
@@ -101,37 +187,123 @@ Tell me: **“Do Phase 2 — SQL + Blob in the code.”**
 
 ## 3. Azure account and four resources (You)
 
-Use the **Azure Portal** (clicky) or Azure Cloud Shell. Same subscription for all. **Region: Canada Central.**
+Use the **Azure Portal** (clicky) or Azure Cloud Shell.
+
+You already have **two** resource groups (not one `rg-mcwut`):
+
+| Resource group | Group location | What is in it |
+|---|---|---|
+| `McWut_dbResourceGroup` | Canada Central | SQL (the **server** is **Canada East**) |
+| `McWutStorage` | Canada Central | Storage account `mcwutstorage` (**Canada Central**) |
+
+That split is OK. Put the **Container App** later in `McWutStorage` or a third group in **Canada Central**.
 
 ### 3.1 Account and safety
 
-1. Sign in at [https://portal.azure.com](https://portal.azure.com) (create a free account if needed).  
-2. Create a **resource group**: `rg-mcwut`.  
-3. **Cost Management** → budget **C$20/month**, email you.
+1. Sign in at [https://portal.azure.com](https://portal.azure.com).  
+2. Resource groups already exist (table above).  
+3. **Cost Management** → budget **C$20/month** — **done**.
 
 ### 3.2 Azure SQL Database — **done**
 
-Server + database exist on the **free tier**. SQL admin user name: `mcwut-admin`.
+| | |
+|---|---|
+| Host | `mcwut.database.windows.net` (port 1433) |
+| Database | `sql-mcwut` |
+| SQL admin | `mcwut-admin` |
+| Free tier | Yes |
+| Server location | **Canada East** |
+| Resource group | `McWut_dbResourceGroup` |
 
-Still do:
+The string Azure gave you with `Authentication="Active Directory Default"` is for **your laptop** after `az login` or Visual Studio. Keep it in a password manager, **not git**.
 
-1. Confirm the server is **Canada Central** (or the Canada region you picked).  
-2. Networking: allow **Azure services**; add your home IP if you want to peek from SSMS.  
-3. Copy the **ADO.NET connection string** into a password manager (not git). You will paste it into Container App secrets in Phase 4.
+For **Container Apps** we will not paste that AD Default string. Use one of:
 
-### 3.3 Storage account (Blob)
+- **SQL login:** `User ID=mcwut-admin;Password=…;Encrypt=True;TrustServerCertificate=False;` (secret in the Container App), or  
+- **Managed identity** (cleaner, Phase 4): app identity granted access on the SQL server.
 
-1. Create **Storage account**, StorageV2, Canada Central, cheapest redundancy (**LRS** is enough for family).  
-2. **Containers** → create two **private** containers:  
-   - `vault` — family files  
-   - `keys` — Data Protection keys (login cookies)  
-3. **Access keys** → copy **connection string**. Password manager.
+Still do: SQL **firewall** (next heading). Location is already **Canada East**.
+
+#### What is the SQL firewall? (plain language)
+
+Azure SQL is a locked door. By default **nobody** can talk to it — not your PC, not the future website.
+
+You open the door for two kinds of visitor:
+
+1. **Your home** — so you (and later I, from your PC) can check the database.  
+2. **Azure itself** — so the Container App (when it exists) can use the database without you typing your home IP for a Microsoft datacenter.
+
+**Clicks (portal):**
+
+1. [portal.azure.com](https://portal.azure.com) → search **`mcwut`** (the SQL **server**, not only the database).  
+2. Left menu: **Networking** (sometimes **Security** → **Networking**).  
+3. Turn **ON**: **Allow Azure services and resources to access this server**. Save.  
+4. **Add your client IPv4 address** (the portal often shows a button that fills your current IP). Save.
+
+If you use a phone hotspot or a different wifi later, your IP changes and you add that IP too, or you connect with **Azure AD** from Visual Studio instead.
+
+You are **not** opening the database to the whole internet. You are allowing Azure + your house.
+
+### 3.3 Storage account (Blob) — **account exists**
+
+| | |
+|---|---|
+| Account | `mcwutstorage` |
+| Resource group | `McWutStorage` |
+| Location | **Canada Central** |
+
+Connection string / account key stay in your password manager — **not git, not this file**.
+
+Still do: two **containers** + rotate the key (next heading).
+
+#### What are Blob containers? (plain language)
+
+The **storage account** is a locked warehouse (`mcwutstorage`).
+
+A **container** is a **named room** inside it. The website will put objects in those rooms. They are not Windows folders on your PC; they only exist in Azure.
+
+We want **two rooms**, both **Private** (no anonymous download if someone guesses a URL):
+
+| Container name | What we will put there |
+|---|---|
+| `vault` | Family files (photos, PDFs) |
+| `keys` | Login-cookie signing keys so a new container replica still trusts your session |
+
+**Clicks (portal):**
+
+1. Portal → resource group **`McWutStorage`** → storage account **`mcwutstorage`**.  
+2. Left menu: **Containers** (under **Data storage**).  
+3. **+ Container**. Name: `vault`. Public access level: **Private (no anonymous access)**. Create.  
+4. **+ Container**. Name: `keys`. Same: **Private**. Create.
+
+If `vault` and `keys` already appear in the list, you are done.
+
+Then: **Security + networking** → **Access keys** → **Rotate key** (because the old key was pasted in chat). Save the **new** connection string only in your password manager.
 
 ### 3.4 Place to put the Docker image (You)
 
-1. Create a Docker Hub user (or use GitHub).  
-2. Repo name e.g. `YOURNAME/mcwut`.  
-3. You will `docker login` later; no Azure Container Registry.
+The website will run as a **Docker image** (a packed copy of the app). Azure Container Apps **pulls** that image from a **registry** (a shelf of images).
+
+**Do not** create **Azure Container Registry** — it is about **C$7 / month** extra.
+
+Pick **one** free shelf:
+
+| | **Docker Hub** | **GitHub Container Registry (GHCR)** |
+|---|---|---|
+| Site | [hub.docker.com](https://hub.docker.com) | Same GitHub account as your git repo |
+| Cost | Free for public images; private has a small free limit | Free private images on GitHub |
+| Fit | Simplest if you are new to this | Nicest if the code is already on GitHub |
+| You will type later | `docker login` then `docker push YOURNAME/mcwut:latest` | `docker login ghcr.io` then `docker push ghcr.io/YOURNAME/mcwut:latest` |
+
+**Chosen: GitHub Container Registry.** GitHub org/repo: `McWut-src/McWut_WebApp`. Copilot is a separate product; GHCR is included with the GitHub account.
+
+Image name we will use later:
+
+`ghcr.io/mcwut-src/mcwut_webapp:latest`
+
+The package may need to be **public**, or the Container App needs a GitHub PAT to pull a **private** package. We will decide that in Phase 4 (public is simpler for a family site if the image has no secrets, which it must not).
+
+You do **not** push an image until Phase 4 (after the SQL/Blob code exists). No extra GitHub signup.
 
 ### 3.5 Do **not** create yet
 
@@ -139,7 +311,7 @@ Still do:
 - Azure Container Registry  
 - Application Insights / Log Analytics unless you want them (they can add cost)
 
-When 3.1–3.4 exist, tell me: **“Azure SQL + storage are ready.”** You can paste **resource names only** (not secrets) e.g. `sql-mcwut`, storage account `stmcwut`.
+SQL + storage + firewall + containers + key rotate + GHCR choice are ready. Next: **Phase 2 — SQL + Blob in the code.**
 
 ---
 
@@ -155,10 +327,12 @@ When 3.1–3.4 exist, tell me: **“Azure SQL + storage are ready.”** You can 
 On your PC, in `C:\vince\McWutWebApp` (after Phase 2 is in the tree):
 
 ```
-docker build -t YOURNAME/mcwut:latest .
-docker login
-docker push YOURNAME/mcwut:latest
+docker build -t ghcr.io/mcwut-src/mcwut_webapp:latest .
+docker login ghcr.io
+docker push ghcr.io/mcwut-src/mcwut_webapp:latest
 ```
+
+(`docker login ghcr.io` uses a GitHub personal access token with `write:packages`, not your Copilot password.)
 
 ### 4.3 You — Container App
 
@@ -166,10 +340,10 @@ Portal → **Container Apps** → Create:
 
 | Field | Value |
 |---|---|
-| Resource group | `rg-mcwut` |
-| Region | Canada Central |
+| Resource group | `McWutStorage` (Canada Central, next to files) |
+| Region | **Canada Central** |
 | Environment | new, **Consumption** |
-| Image | `YOURNAME/mcwut:latest` (Docker Hub) |
+| Image | `ghcr.io/mcwut-src/mcwut_webapp:latest` |
 | CPU / memory | **0.25** / **0.5 Gi** |
 | Min replicas | **0** |
 | Max replicas | **1** |
@@ -213,7 +387,7 @@ If this fails, **stop**. Do not touch DNS yet. Send me the error page or log sni
 
 Only after Phase 4 smoke is green.
 
-1. Container App → **Custom domains** → add `mcwut.com` and/or `www.mcwut.com` (whatever you picked in Phase 1).  
+1. Container App → **Custom domains** → add **`mcwut.com`** (and later `www` if you want).  
 2. Azure shows **DNS records** (usually CNAME + TXT for the certificate).  
 3. At your **domain registrar** (where you bought mcwut.com), add those records.  
 4. Wait until Azure shows the certificate as bound (can be minutes to a few hours).  
@@ -228,7 +402,7 @@ Optional: redirect apex ↔ www so there is only one canonical host (Azure or re
 Treat production as live only when **all** of these are true:
 
 - [ ] Phase 2 code is what the Container App is running (not the old SQLite-only image)  
-- [ ] SQL is Canada Central; storage is Canada Central  
+- [ ] SQL is Canada East; storage + Container App are Canada Central  
 - [ ] `/health` is 200 on the custom domain  
 - [ ] You can sign in; toy passwords are gone  
 - [ ] Register is off (or invite-only, if we built that)  
@@ -264,9 +438,9 @@ Then you can send the URL to family.
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | `true` |
 | `Database__Provider` | `SqlServer` |
-| `ConnectionStrings__DefaultConnection` | Azure SQL ADO.NET string |
+| `ConnectionStrings__DefaultConnection` | `Server=tcp:mcwut.database.windows.net,1433;Initial Catalog=sql-mcwut;Encrypt=True;…` plus SQL password **or** managed identity — never AD Default in the container |
 | `Files__Provider` | `Azure` |
-| `Files__Azure__ConnectionString` | Storage account connection string |
+| `Files__Azure__ConnectionString` | Storage connection for account **`mcwutstorage`** (secret, not in git) |
 | `Files__Azure__Container` | `vault` |
 | `Files__Azure__KeysContainer` | `keys` |
 | `Identity__AllowRegistration` | `false` |
@@ -301,10 +475,12 @@ A is not automatically cheaper than C$140. It **can** be cheaper if the site is 
 
 ## 11. Start here
 
-**Next message if you want me to begin the code:**
+Use the **Tracker** at the top of this file as the scoreboard.
+
+**You:** Azure prep for this phase is done.
+
+**Me (when you say so):** Phase 2 — SQL + Blob in the code.
 
 > Do Phase 2 — SQL + Blob in the code.
 
-**Meanwhile you can do Phase 1 + 3.1–3.4** (account, resource group, SQL, storage, Docker Hub) with no code wait.
-
-If you would rather I wait until SQL and storage exist, say so and start with the portal instead.
+Do **not** create the Container App until those code boxes are ticked.

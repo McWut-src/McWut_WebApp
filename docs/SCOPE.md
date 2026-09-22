@@ -70,7 +70,7 @@ Keep local/dev on SQLite + disk. Production settings via environment variables s
 
 **Docker:** you have little production Docker experience. Path A still uses Docker (build + push an image). Keep it to **one web image**, HTTP 8080, Azure in front for HTTPS. No Swarm, no Kubernetes.
 
-Suggested public URL: `https://mcwut.com` or `https://www.mcwut.com` (or `app.mcwut.com`). Decide in [PATH-A.md](PATH-A.md) Phase 1.
+Public URL: **`https://mcwut.com`**. SQL is **Canada East**; storage is **Canada Central**. Details: [PATH-A.md](PATH-A.md).
 
 ---
 
