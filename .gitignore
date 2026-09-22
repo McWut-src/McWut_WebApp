@@ -1,0 +1,29 @@
+## .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+
+## Data and secrets
+App_Data/
+*.db
+*.db-shm
+*.db-wal
+appsettings.*.local.json
+*.pfx
+secrets.json
+
+## Artifacts
+*.zip
+*.log
+*.nupkg
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store

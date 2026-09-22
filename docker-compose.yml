@@ -1,0 +1,18 @@
+services:
+  web:
+    image: mcwutwebapp:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/mcwut.db;Cache=Shared
+      Files__Local__RootPath: /app/data/vault
+    volumes:
+      - mcwutwebapp-data:/app/data
+
+volumes:
+  mcwutwebapp-data:

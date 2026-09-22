@@ -1,0 +1,25 @@
+@page
+@model McWutWebApp.Pages.Vault.SharedModel
+@{
+    ViewData["Title"] = "Shared with me";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Shared with me</h1>
+        <p class="text-muted mb-0">Files family members tagged you on, without needing a link.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Vault/Index">My vault</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="shared-files">
+            <p class="text-muted">Loading…</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/vault.js" asp-append-version="true"></script>
+}

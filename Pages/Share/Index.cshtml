@@ -1,0 +1,46 @@
+@page "/s/{token}"
+@model McWutWebApp.Pages.Share.IndexModel
+@{
+    ViewData["Title"] = "Shared files";
+}
+
+<h1 class="h3 mb-3">@(Model.Drop?.Title ?? Model.Files.FirstOrDefault()?.OriginalFileName ?? "Shared files")</h1>
+
+@if (Model.RequiresPassword)
+{
+    <div class="card shadow-sm" style="max-width: 28rem;">
+        <div class="card-body">
+            <p>This share is password protected.</p>
+            @if (Model.Error is not null)
+            {
+                <div class="alert alert-danger">@Model.Error</div>
+            }
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label" for="password">Password</label>
+                    <input id="password" name="Password" type="password" class="form-control" autocomplete="current-password" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Unlock</button>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-muted">@Model.Files.Count file(s)</p>
+    @if (Model.Drop is not null)
+    {
+        <p>
+            <a class="btn btn-outline-primary" href="/api/drops/@Model.Drop.Id/archive?token=@Model.Token">Download all</a>
+        </p>
+    }
+    <ul class="list-group shadow-sm">
+        @foreach (var file in Model.Files)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@file.OriginalFileName <span class="text-muted small">(@file.ContentType)</span></span>
+                <a class="btn btn-sm btn-primary" href="/api/files/@file.Id/content?token=@Model.Token">Download</a>
+            </li>
+        }
+    </ul>
+}

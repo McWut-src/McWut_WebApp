@@ -1,0 +1,13 @@
+.git/
+.vs/
+**/.vs/
+**/bin/
+**/obj/
+App_Data/
+tests/
+*.user
+*.zip
+docs/
+*.md
+!README.md
+

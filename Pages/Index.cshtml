@@ -1,0 +1,32 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="col-lg-8 mx-auto">
+    <h1 class="h3 mb-3">Family vault</h1>
+    <p>Drop files, copy a link, optionally set a password. Family members you tag will see the file when they sign in.</p>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <p>
+            <a class="btn btn-primary" asp-page="/Vault/Index">Go to the vault</a>
+        </p>
+    }
+    else
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h5">Dev sign-in</h2>
+                <p class="mb-2">This is a local project. Passwords are simple on purpose.</p>
+                <ul class="mb-3">
+                    <li><strong>vince@mcwut.com</strong> / <strong>vince</strong> (admin)</li>
+                    <li><strong>family@mcwut.com</strong> / <strong>family</strong> (second person, for tagging)</li>
+                </ul>
+                <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
+                <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Register">Register someone else</a>
+            </div>
+        </div>
+    }
+</div>
