@@ -22,7 +22,7 @@ Keep the Dev → **QA Docker** → **manual prod** rule ([§ environments](#envi
 
 Then, in order:
 
-1. **QA** this slice on local Docker, then **you** promote prod when ready.  
+1. **You** follow [tutorials/](tutorials/README.md): plan → Dev → test in Dev → QA Docker → **you** promote prod.  
 2. **Admin** (you only): create/disable users so you never need open Register.  
 3. **Pastes** (private or shared with members).  
 4. Thumbnails, revoke-link buttons, etc.

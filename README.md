@@ -12,11 +12,7 @@ Visual Studio: `McWutWebApp.slnx`, profile **https**.
 dotnet run --launch-profile https --project McWutWebApp.csproj
 ```
 
-QA Docker: `http://localhost:8080`
-
-```
-docker compose up --build
-```
+How to work, from planning to **you** promoting prod: [docs/tutorials/README.md](docs/tutorials/README.md).
 
 ## Docs
 
