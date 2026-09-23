@@ -8,8 +8,8 @@ public static class IdentitySeed
 {
     public const string AdminEmail = "vince@mcwut.com";
     public const string AdminPassword = "vince";
-    public const string DemoEmail = "family@mcwut.com";
-    public const string DemoPassword = "family";
+    public const string DemoEmail = "member@mcwut.com";
+    public const string DemoPassword = "member";
     public const string AdminRole = "Admin";
 
     public static async Task SeedAsync(IServiceScopeFactory scopes, CancellationToken cancellationToken = default)

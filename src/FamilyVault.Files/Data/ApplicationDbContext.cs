@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<FileGrantEntity> FileGrants => Set<FileGrantEntity>();
     public DbSet<UploadSessionEntity> UploadSessions => Set<UploadSessionEntity>();
     public DbSet<FileAuditEntity> FileAudits => Set<FileAuditEntity>();
+    public DbSet<InviteEntity> Invites => Set<InviteEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -116,6 +117,15 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.Property(x => x.Detail).HasMaxLength(1024);
             b.Property(x => x.TargetKind).HasConversion<int>();
             b.HasIndex(x => x.At);
+        });
+
+        modelBuilder.Entity<InviteEntity>(b =>
+        {
+            b.ToTable("Invites");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Token).HasMaxLength(64).IsRequired();
+            b.Property(x => x.Email).HasMaxLength(256);
+            b.HasIndex(x => x.Token).IsUnique();
         });
     }
 }

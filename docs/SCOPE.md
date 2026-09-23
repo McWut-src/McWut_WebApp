@@ -1,64 +1,43 @@
-# McWut — what’s next
+# McWut — current cycle
 
-**Updated:** 22 September 2026  
-**Live:** https://mcwut.com and https://www.mcwut.com  
-**No public invite** until you say so.
+**Updated:** 23 September 2026  
+**Live:** https://mcwut.com · https://www.mcwut.com (previous release until **you** promote)  
+**No open Register. No public invite until you send a link.**
 
-Hosting Path A is **done**. Old runbooks live in [`archive/`](archive/).
-
----
-
-## Now (this slice)
-
-1. **No self-serve Register.** `/Identity/Account/Register` must 404 unless `Identity:AllowRegistration` is on. People join only when you add them (admin later).  
-2. **Names:** nav and pages say **My files** and **Shared files**, not Vault / Family vault.  
-3. **Drop the word “Family”** in the UI and public copy. The product is **McWut**. (Code namespaces `FamilyVault.*` stay for now.)
+Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/README.md).
 
 ---
 
-## Next (after this ships)
+## This cycle (in order)
 
-Keep the Dev → **QA Docker** → **manual prod** rule ([§ environments](#environments-dev--qa--prod)). Do not auto-push Azure.
+### 1. Leftover / archive
+- Hosting write-ups already in `docs/archive/`.
+- Still messy in the **app**: `/Vault` URLs, `FamilyController` name, toy user `family@`, empty Privacy page, Identity **Register** page still in the UI library (must stay 404).
+- **Not this cycle:** renaming `McWutWebApp.csproj` or `FamilyVault.*` namespaces (breaks Docker/Azure/git for no user benefit).
 
-Then, in order:
+### 2. Renaming (what people see)
+- Product name **McWut**.
+- **My files** / **Shared files**.
+- URLs `/files` and `/files/shared` (old `/Vault` redirects).
+- No “Family” in the UI. Second toy login becomes `member@mcwut.com` / `member` (Dev/QA only).
 
-1. **You** follow [tutorials/](tutorials/README.md): plan → Dev → test in Dev → QA Docker → **you** promote prod.  
-2. **Admin** (you only): create/disable users so you never need open Register.  
-3. **Pastes** (private or shared with members).  
-4. Thumbnails, revoke-link buttons, etc.
+### 3. Join **only with an invitation**
+- `/Identity/Account/Register` stays **404**.
+- You (Admin) create an invite → copy a link like `https://mcwut.com/join/{token}`.
+- They set email + password. Token is one-use and expires (default 7 days).
+- Optional: lock the invite to one email.
+
+**You added / we agree later:** pastes, thumbnails, richer admin (disable users, health). Not this cycle.
 
 ---
 
-## Environments (Dev / QA / Prod)
+## Environments (do not mix)
 
-| | **Dev** | **QA** | **Prod** |
+| | Dev | QA | Prod |
 |---|---|---|---|
-| | Visual Studio | Local Docker `http://localhost:8080` | Azure + GitHub |
-| Data | SQLite `App_Data/` | Other SQLite volume | Azure SQL + Blob |
-| Users | Toys `vince` / `vince` | Throwaway | Real accounts only |
+| | Visual Studio | Docker http://localhost:8080 | Azure |
+| Data | Local SQLite | Other SQLite volume | Azure SQL + Blob |
 | Register | Off | Off | Off |
+| Invite | You test `/join/...` locally | Same | Real people, when you choose |
 
-Push to `main` builds GHCR **`:qa`** only. Prod image = manual workflow or git tag `v*`, then `az containerapp update` to that SHA. Never point Dev/QA at prod SQL or Blob.
-
----
-
-## Product (still true)
-
-- **My files** — your library + drop a file, get a link.  
-- **Shared files** — read-only, tagged to you.  
-- Public `/s/{token}` — optional password.  
-- Pastes, admin, thumbnails — later.  
-- No Drive folder tree.
-
-Max ~30 people, no rush to invite.
-
----
-
-## Archive
-
-| File | Why it’s archived |
-|---|---|
-| [archive/PATH-A.md](archive/PATH-A.md) | Azure go-live checklist (complete) |
-| [archive/DEPLOY.md](archive/DEPLOY.md) | Hosting options A–E |
-| [archive/STATUS.md](archive/STATUS.md) | Early implementation status |
-| [archive/AGENT.md](archive/AGENT.md) | Original vault contracts brief |
+`git push` ≠ prod. You promote after QA ([tutorials/05-promote-prod.md](tutorials/05-promote-prod.md)).

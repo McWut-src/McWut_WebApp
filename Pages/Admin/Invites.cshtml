@@ -1,0 +1,52 @@
+@page
+@model McWutWebApp.Pages.Admin.InvitesModel
+@{
+    ViewData["Title"] = "Invites";
+}
+
+<h1 class="h3 mb-3">Invites</h1>
+<p class="text-muted">People can join only with a link you create. Open Register stays off.</p>
+
+<form method="post" class="row g-2 align-items-end mb-4">
+    <div class="col-md-5">
+        <label class="form-label" for="Email">Email (optional — lock the invite to this address)</label>
+        <input id="Email" class="form-control" asp-for="Email" type="email" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label" for="DaysValid">Days valid</label>
+        <input id="DaysValid" class="form-control" asp-for="DaysValid" type="number" min="1" max="90" />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Create invite</button>
+    </div>
+</form>
+
+@if (Model.CreatedUrl is not null)
+{
+    <div class="alert alert-success">
+        <div class="mb-1">Copy this link and send it yourself:</div>
+        <input class="form-control" readonly value="@Model.CreatedUrl" onclick="this.select()" />
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Created</th>
+            <th>Email lock</th>
+            <th>Expires</th>
+            <th>Used</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var i in Model.Items)
+    {
+        <tr>
+            <td>@i.CreatedAt.LocalDateTime.ToString("g")</td>
+            <td>@(i.Email ?? "—")</td>
+            <td>@i.ExpiresAt.LocalDateTime.ToString("g")</td>
+            <td>@(i.UsedAt is null ? "No" : i.UsedAt.Value.LocalDateTime.ToString("g"))</td>
+        </tr>
+    }
+    </tbody>
+</table>

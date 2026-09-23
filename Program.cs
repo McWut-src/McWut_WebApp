@@ -91,6 +91,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = options.DefaultPolicy;
+    options.AddPolicy("Admin", policy => policy.RequireRole(IdentitySeed.AdminRole));
 });
 
 builder.Services.AddRazorPages(options =>
@@ -99,6 +100,8 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Privacy");
     options.Conventions.AllowAnonymousToPage("/Error");
     options.Conventions.AllowAnonymousToPage("/Share/Index");
+    options.Conventions.AllowAnonymousToPage("/Join/Index");
+    options.Conventions.AuthorizeFolder("/Admin", "Admin");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login");
     if (identityOptions.AllowRegistration)
     {
@@ -125,6 +128,7 @@ builder.Services.AddControllers(options =>
     });
 
 builder.Services.AddScoped<UpsertFamilyMemberFilter>();
+builder.Services.AddScoped<InviteService>();
 builder.Services.AddSingleton<RetentionMapper>();
 builder.Services.AddHostedService<DatabaseStartupWorker>();
 
@@ -169,5 +173,7 @@ app.MapRazorPages()
     .WithStaticAssets();
 app.MapControllers();
 app.MapGet("/health", () => Results.Text("ok")).AllowAnonymous();
+app.MapGet("/Vault", () => Results.Redirect("/files"));
+app.MapGet("/Vault/Shared", () => Results.Redirect("/files/shared"));
 
 app.Run();

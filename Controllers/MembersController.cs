@@ -9,10 +9,10 @@ namespace McWutWebApp.Controllers;
 [Authorize]
 [ServiceFilter(typeof(UpsertFamilyMemberFilter))]
 [Route("api/members")]
-public sealed class FamilyController(IFamilyRoster roster) : ControllerBase
+public sealed class MembersController(IFamilyRoster roster) : ControllerBase
 {
-    [HttpGet("members")]
-    public async Task<ActionResult<IReadOnlyList<FamilyMember>>> Members(CancellationToken cancellationToken)
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<FamilyMember>>> Get(CancellationToken cancellationToken)
     {
         var self = User.RequireVaultUserId();
         var members = await roster.ListAsync(cancellationToken);

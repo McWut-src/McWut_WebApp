@@ -12,7 +12,9 @@ With the site running (F5):
    You want **404 / not found**, not a form.  
 4. **My files:** drop a **non-empty** file, get a link, copy it.  
 5. Private window: open that `/s/...` link **without** signing in, download.  
-6. Optional: **Shared files** page loads (may be empty).
+6. Optional: **Shared files** page loads (may be empty).  
+7. Signed in as admin: **Invites** in the nav. Create a link, open `/join/...` in a private window (or second browser).  
+8. URLs **`/files`** and **`/files/shared`** (old `/Vault` should redirect).
 
 If something fails, fix it in Visual Studio and repeat this list. Do **not** start Docker until this list is boring.
 

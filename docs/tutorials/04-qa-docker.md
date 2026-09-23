@@ -72,7 +72,7 @@ Open **http://localhost:8080**
 | http://localhost:8080/Identity/Account/Register | **404** |
 | Drop a real (non-empty) file | Link works in a private window |
 
-QA login is the **toy** `vince` / `vince`. Prod password is different.
+QA login is the **toy** `vince@mcwut.com` / `vince` (second toy: `member@mcwut.com` / `member`). Prod password is different.
 
 ## 5. Stop
 
