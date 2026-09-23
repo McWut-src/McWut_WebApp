@@ -17,7 +17,7 @@ public static class ClaimsPrincipalExtensions
     {
         var id = user.RequireVaultUserId();
         var email = user.FindFirstValue(ClaimTypes.Email) ?? user.Identity?.Name;
-        var name = user.Identity?.Name ?? email ?? "Family member";
+        var name = user.Identity?.Name ?? email ?? "Member";
         return new FamilyVault.Files.Contracts.FamilyMember(id, email, name);
     }
 }

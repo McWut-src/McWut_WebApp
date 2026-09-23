@@ -8,7 +8,7 @@ namespace McWutWebApp.Controllers;
 [ApiController]
 [Authorize]
 [ServiceFilter(typeof(UpsertFamilyMemberFilter))]
-[Route("api/family")]
+[Route("api/members")]
 public sealed class FamilyController(IFamilyRoster roster) : ControllerBase
 {
     [HttpGet("members")]

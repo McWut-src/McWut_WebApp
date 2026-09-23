@@ -24,7 +24,7 @@ public sealed class UploadSessionService(
         var name = FileNameSanitizer.Sanitize(request.OriginalFileName);
         if (request.SizeBytes <= 0)
         {
-            throw new FileTooLargeException(request.SizeBytes, options.Value.MaxFileSizeBytes);
+            throw new InvalidFileNameException("That file is empty. Choose a file that has some content.");
         }
 
         if (request.SizeBytes > options.Value.MaxFileSizeBytes)

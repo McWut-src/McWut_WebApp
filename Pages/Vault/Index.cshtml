@@ -1,15 +1,15 @@
 @page
 @model McWutWebApp.Pages.Vault.IndexModel
 @{
-    ViewData["Title"] = "Family vault";
+    ViewData["Title"] = "My files";
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
     <div>
-        <h1 class="h3 mb-1">Family vault</h1>
+        <h1 class="h3 mb-1">My files</h1>
         <p class="text-muted mb-0">Drop files to share a link. Default expiry is 7 days.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Vault/Shared">Shared with me</a>
+    <a class="btn btn-outline-secondary" asp-page="/Vault/Shared">Shared files</a>
 </div>
 
 <div class="row g-4">
@@ -26,7 +26,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="drop-title">Title</label>
-                    <input id="drop-title" class="form-control" placeholder="Family photos" />
+                    <input id="drop-title" class="form-control" placeholder="Photos" />
                 </div>
                 <div class="row g-2 mb-3">
                     <div class="col-6">

@@ -1,25 +1,18 @@
 # McWut
 
-Family site for **mcwut.com**: sign in, keep your files, share a link, see what family tagged you.
+Site for **https://mcwut.com**: sign in, keep your files, share a link, see what others tagged you.
 
-This repo is the ASP.NET Core 10 app (`McWutWebApp`). Local login (dev):
+Local login (Dev only): `vince@mcwut.com` / `vince`. Register is **off** until you add people yourself.
 
-- `vince@mcwut.com` / `vince` (admin)
-- `family@mcwut.com` / `family`
+## Run
 
-Change those before the site is on the internet.
-
-## Run locally
-
-Visual Studio: open `McWutWebApp.slnx`, profile **https** (`https://localhost:7047`).
-
-Or:
+Visual Studio: `McWutWebApp.slnx`, profile **https**.
 
 ```
 dotnet run --launch-profile https --project McWutWebApp.csproj
 ```
 
-Docker on this PC: `http://localhost:8080`
+QA Docker: `http://localhost:8080`
 
 ```
 docker compose up --build
@@ -27,23 +20,13 @@ docker compose up --build
 
 ## Docs
 
-All write-ups live in [`docs/`](docs/).
+- [docs/SCOPE.md](docs/SCOPE.md) — what’s next  
+- [docs/archive/](docs/archive/) — finished hosting notes (Path A, deploy options)
 
-| File | What it is |
-|---|---|
-| [docs/SCOPE.md](docs/SCOPE.md) | Product map (dashboard, admin, pastes, hosting choice) |
-| [docs/STATUS.md](docs/STATUS.md) | What already works |
-| [docs/PATH-A.md](docs/PATH-A.md) | Azure production runbook (You vs Me) |
-| [docs/DEPLOY.md](docs/DEPLOY.md) | All hosting options and rough prices |
-| [docs/AGENT.md](docs/AGENT.md) | File-vault engineering brief |
-
-## Hosting
-
-**Path A:** Azure Container Apps + Azure SQL + Blob. SQL/Blob **providers are in the code**; local default is still SQLite + disk. Follow [docs/PATH-A.md](docs/PATH-A.md). Settings cheat sheet: [docs/azure-containerapp.env.example](docs/azure-containerapp.env.example).
+**Prod** is not updated by pushing `main`. See SCOPE § environments.
 
 ## Layout
 
-- `McWutWebApp.csproj` — website (Razor Pages + API)
-- `src/FamilyVault.Files.Contracts` — vault contracts
-- `src/FamilyVault.Files` — EF, local disk store, domain services
-- `tests/FamilyVault.Files.Tests` — unit tests
+- `McWutWebApp.csproj` — website  
+- `src/FamilyVault.Files*` — file storage (internal name)  
+- `tests/FamilyVault.Files.Tests`  

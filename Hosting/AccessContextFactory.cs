@@ -4,7 +4,7 @@ namespace McWutWebApp.Hosting;
 
 public static class AccessContextFactory
 {
-    public const string SharePasswordCookie = ".FamilyVault.Share";
+    public const string SharePasswordCookie = ".McWut.Share";
     public const string SharePasswordHeader = "X-Share-Password";
 
     public static AccessContext From(HttpRequest request, Guid? userId)

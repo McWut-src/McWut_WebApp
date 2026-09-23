@@ -5,7 +5,9 @@
 **Path:** Azure Container Apps + Azure SQL + Blob (the “professional” option in [DEPLOY.md](DEPLOY.md))  
 **Updated:** 21 September 2026  
 
-Print this page. Tick boxes as we go. **Phase 2 code is in the repo.** Next: **You** commit/push, then **Phase 4** (build image + Container App). Do **not** create the Container App until this code is in the image you push.
+Print this page. Tick boxes as we go.
+
+**Resume here:** Production is live on **https://mcwut.com** and **https://www.mcwut.com**. Invite family when you are ready. Dev/QA/prod rules: [SCOPE.md](SCOPE.md) §3.1.
 
 **Legend:** **You** = portal / DNS / secrets. **Me** = code. **Together** = click through the live site.
 
@@ -38,7 +40,7 @@ Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md
 - [x] Budget alert **C$20 / month**
 - [x] SQL firewall: **your home public IP** is allowed
 - [x] SQL firewall: **Allow Azure services and resources to access this server**
-- [x] Blob containers **`vault`** and **`keys`** created (private)
+- [x] Blob containers **`vault`** and **`key`** (singular) created private. App env `Files__Azure__KeysContainer=key` to match.
 - [x] Storage account key **rotated**; new value only in your password manager (not git)
 - [x] Public URL: **`https://mcwut.com`** (www can redirect later)
 - [x] Docker image hosting: **GitHub Container Registry (GHCR)** — git is `McWut-src/McWut_WebApp`. Image will be `ghcr.io/mcwut-src/mcwut_webapp:latest`. Copilot subscription is unrelated; GHCR is free for this.
@@ -51,13 +53,16 @@ Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md
 - [x] Phase 2.3 — Production: no toy users, Register off, keys in Blob container `keys`, Secure cookies
 - [x] Tests green (27). Local default remains SQLite + disk
 
-### After Phase 2 (do not start yet)
+### After Phase 2
 
-- [ ] You: `docker build` + `docker push`
-- [ ] You: Container App (Consumption, port 8080, min replicas 0) — **wait for new image**
-- [ ] Together: smoke on `*.azurecontainerapps.io` (health, login, upload, share, survive scale-to-zero)
-- [ ] You: DNS + certificate for mcwut.com
-- [ ] Together: smoke on the real domain
+- [x] GHCR image published by GitHub Actions. **Push to `main` tags `:qa` only — not prod.** Prod = manual workflow or git tag `v*`, then `az containerapp update` to that SHA. See [SCOPE.md](SCOPE.md) §3.1.
+- [x] Container Apps environment **`cae-mcwut`** in `McWutStorage` / Canada Central
+- [x] GHCR package **public** (anonymous pull works)
+- [x] Container App **`ca-mcwut`** running — https://ca-mcwut.greencoast-e1f4e3b8.canadacentral.azurecontainerapps.io/
+- [x] Secrets on the Container App (SQL, storage, website admin password)
+- [x] Smoke: health, login, **upload an image worked**, public share link
+- [x] DNS + HTTPS for **https://www.mcwut.com**
+- [x] DNS + HTTPS for apex **https://mcwut.com**
 - [ ] You: invite family
 
 ### Later (not production blockers) — [SCOPE.md](SCOPE.md)
@@ -78,11 +83,79 @@ Related: [DEPLOY.md](DEPLOY.md) · [SCOPE.md](SCOPE.md) · [STATUS.md](STATUS.md
 | Azure SQL | **Exists**, free tier, **Canada East**, RG `McWut_dbResourceGroup` |
 | Storage | **Account exists** (`mcwutstorage`), **Canada Central**, RG `McWutStorage`. Containers `vault` + `keys`. Key rotated. |
 | Blob / SQL **in the app** | **Coded.** Local default: SQLite + disk. Production: `Database__Provider=SqlServer` + `Files__Provider=Azure` |
-| Container App | **Do not create yet** |
-| Custom domain | Not started |
-| Family live | No |
+| Container App | **Exists** — https://ca-mcwut.greencoast-e1f4e3b8.canadacentral.azurecontainerapps.io/ |
+| Secrets | Set. Login + image upload worked |
+| Custom domain | **https://mcwut.com** and **https://www.mcwut.com** (HTTPS) |
+| Family live | Ready to invite when you want |
 
 Path A idea: website **sleeps** when idle; users in SQL; files in Blob. Ballpark **C$0–10 / month** if SQL stays free and the app sleeps; **C$20–35 / month** if SQL is paid and a replica stays on.
+
+---
+
+## How to add secrets (You — portal, ~10 minutes)
+
+Do this in [Azure Portal](https://portal.azure.com). **Do not** paste the real values into chat, git, or a screenshot.
+
+You already have the three values in your password manager:
+
+1. Azure SQL password for `mcwut-admin`  
+2. Storage **rotated** account key for `mcwutstorage`  
+3. Production **website** admin password  
+
+### A. Create the three secrets
+
+1. Portal → resource group **`McWutStorage`** → Container App **`ca-mcwut`**.  
+2. Left menu: **Secrets** (under *Settings*).  
+3. **Add** three times:
+
+| Secret name (this exact spelling) | What you paste |
+|---|---|
+| `sql-connection` | SQL connection string (see formula below) |
+| `storage-connection` | Storage connection string (see formula below) |
+| `website-admin-password` | The website password from your personal vault |
+
+4. Save.
+
+**SQL string** (use SQL user + password, **not** `Active Directory Default`):
+
+```
+Server=tcp:mcwut.database.windows.net,1433;Initial Catalog=sql-mcwut;User ID=mcwut-admin;Password=PASTE_SQL_PASSWORD;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+```
+
+**Storage string:**
+
+```
+DefaultEndpointsProtocol=https;AccountName=mcwutstorage;AccountKey=PASTE_ROTATED_KEY;EndpointSuffix=core.windows.net
+```
+
+If the portal already shows a “connection string” copy button on the storage account, use that **after** the key rotation.
+
+### B. Point the app at those secrets
+
+Secrets sitting in the list do nothing until environment variables **reference** them.
+
+1. Same Container App → **Containers** (or *Application* → *Containers*).  
+2. Edit the container `ca-mcwut`.  
+3. **Environment variables** → **Add**. For each row, choose **Reference a secret** (not “plain text”):
+
+| Environment variable name (exact) | Secret to reference |
+|---|---|
+| `ConnectionStrings__DefaultConnection` | `sql-connection` |
+| `Files__Azure__ConnectionString` | `storage-connection` |
+| `Identity__ProductionAdminPassword` | `website-admin-password` |
+
+Those names use **two underscores** (`__`). That is required.
+
+4. You should already have non-secret settings such as `Database__Provider=SqlServer`, `Files__Provider=Azure`, `Identity__ProductionAdminEmail=vince@mcwut.com`. Leave those as they are.  
+5. Save. Azure will roll out a **new revision**. Wait until it shows **Running**.
+
+### C. Check
+
+Open: https://ca-mcwut.greencoast-e1f4e3b8.canadacentral.azurecontainerapps.io/health  
+
+You want the word **`ok`**. Then try Sign in as `vince@mcwut.com` with the **website** password (not `vince`, not the SQL password).
+
+If `/health` fails, wait one minute (cold start) and retry. If it still fails, Container App → **Log stream** (no secrets in what you copy) and we look together.
 
 ---
 
@@ -267,7 +340,7 @@ We want **two rooms**, both **Private** (no anonymous download if someone guesse
 | Container name | What we will put there |
 |---|---|
 | `vault` | Family files (photos, PDFs) |
-| `keys` | Login-cookie signing keys so a new container replica still trusts your session |
+| `key` (this account uses singular `key`, not `keys`) | Login-cookie signing keys so a new container replica still trusts your session |
 
 **Clicks (portal):**
 
@@ -383,17 +456,51 @@ If this fails, **stop**. Do not touch DNS yet. Send me the error page or log sni
 
 ---
 
-## 5. Custom domain (You)
+## 5. Custom domain — Namecheap (You)
 
-Only after Phase 4 smoke is green.
+Registrar: [namecheap.com](https://www.namecheap.com/) → Domain List → **mcwut.com** → **Advanced DNS**.
 
-1. Container App → **Custom domains** → add **`mcwut.com`** (and later `www` if you want).  
-2. Azure shows **DNS records** (usually CNAME + TXT for the certificate).  
-3. At your **domain registrar** (where you bought mcwut.com), add those records.  
-4. Wait until Azure shows the certificate as bound (can be minutes to a few hours).  
-5. Open `https://mcwut.com` (or www). Login, upload, share link on a phone again.
+Azure app FQDN: `ca-mcwut.greencoast-e1f4e3b8.canadacentral.azurecontainerapps.io`  
+Environment IP (for the root domain): **`4.172.131.145`**
 
-Optional: redirect apex ↔ www so there is only one canonical host (Azure or registrar).
+Do **Azure first** so you can copy the **asuid** TXT value. Do not invent that code.
+
+### Azure
+
+1. Portal → **McWutStorage** → **ca-mcwut** → **Custom domains**.  
+2. **Add custom domain**.  
+3. TLS/SSL: **Managed certificate**.  
+4. Domain: `www.mcwut.com`. Hostname record type: **CNAME**.  
+5. Azure shows two DNS lines. Copy them. Leave this blade open.  
+6. Repeat later for apex `mcwut.com` with type **A record**.
+
+### Namecheap (www — easiest)
+
+On Advanced DNS, **Add new record**. Namecheap already appends `.mcwut.com` — host is only `www` or `asuid.www`, not the full name.
+
+| Type | Host | Value | TTL |
+|---|---|---|---|
+| **CNAME Record** | `www` | `ca-mcwut.greencoast-e1f4e3b8.canadacentral.azurecontainerapps.io.` | Automatic |
+| **TXT Record** | `asuid.www` | *(paste Azure’s domain verification code)* | Automatic |
+
+Save. Wait 5–30 minutes. Back in Azure → **Validate** → **Add**. Certificate can take several more minutes until status is **Secured**.
+
+### Namecheap (root mcwut.com, no www)
+
+| Type | Host | Value | TTL |
+|---|---|---|---|
+| **A Record** | `@` | `4.172.131.145` | Automatic |
+| **TXT Record** | `asuid` | *(Azure verification code for the apex domain)* | Automatic |
+
+Then Azure → Add custom domain `mcwut.com` → **A record** → Validate → Add → managed certificate.
+
+If **www** already works and you only want one URL: Namecheap **URL Redirect Record**, Host `@`, Destination `https://www.mcwut.com`, Unmasked. Then you can skip the apex A record.
+
+### After it is Secured
+
+Open `https://www.mcwut.com` (and `https://mcwut.com` if you added the A record). Sign in, upload, share link.
+
+If Validate fails: you typed `asuid.www.mcwut.com` as the Host (double domain). Host must be exactly `asuid.www`.
 
 ---
 

@@ -5,13 +5,13 @@
 }
 
 <div class="col-lg-8 mx-auto">
-    <h1 class="h3 mb-3">Family vault</h1>
-    <p>Drop files, copy a link, optionally set a password. Family members you tag will see the file when they sign in.</p>
+    <h1 class="h3 mb-3">McWut</h1>
+    <p>Drop files, copy a link, optionally set a password. People you tag will see the file when they sign in.</p>
 
     @if (User.Identity?.IsAuthenticated == true)
     {
         <p>
-            <a class="btn btn-primary" asp-page="/Vault/Index">Go to the vault</a>
+            <a class="btn btn-primary" asp-page="/Vault/Index">Go to My files</a>
         </p>
     }
     else
@@ -28,10 +28,6 @@
                     </ul>
                 }
                 <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
-                @if (Model.ShowDevCredentials)
-                {
-                    <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Register">Register someone else</a>
-                }
             </div>
         </div>
     }

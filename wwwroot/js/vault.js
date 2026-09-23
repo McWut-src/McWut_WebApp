@@ -84,7 +84,7 @@
 
     async function loadMembers() {
         try {
-            members = await api("/api/family/members", { headers: headers() }) || [];
+            members = await api("/api/members", { headers: headers() }) || [];
         } catch {
             members = [];
         }
@@ -92,9 +92,9 @@
 
     function memberOptions() {
         if (members.length === 0) {
-            return `<option value="">No other family members have signed in yet</option>`;
+            return `<option value="">No other members have signed in yet</option>`;
         }
-        return `<option value="">Tag a family member</option>` +
+        return `<option value="">Tag a member</option>` +
             members.map(m => `<option value="${m.userId}">${m.displayName}</option>`).join("");
     }
 
@@ -172,6 +172,9 @@
                 })
             });
             for (const file of queued) {
+                if (!file.size) {
+                    throw new Error(file.name + " is empty. Choose a file that has some content.");
+                }
                 const session = await api(`/api/drops/${drop.id}/files`, {
                     method: "POST",
                     headers: headers({ "Content-Type": "application/json" }),
@@ -259,7 +262,7 @@
                 body: JSON.stringify({ userId: select.value, permission: "Download" })
             });
             select.value = "";
-            alert("Tagged. They will see it under Shared with me.");
+            alert("Tagged. They will see it under Shared files.");
         } catch (err) {
             alert(err.message);
         }

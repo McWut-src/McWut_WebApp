@@ -17,7 +17,7 @@ public sealed class FamilyRoster(ApplicationDbContext db, TimeProvider time) : I
             {
                 UserId = member.UserId,
                 Email = member.Email,
-                DisplayName = string.IsNullOrWhiteSpace(member.DisplayName) ? "Family member" : member.DisplayName,
+                DisplayName = string.IsNullOrWhiteSpace(member.DisplayName) ? "Member" : member.DisplayName,
                 FirstSeenAt = now,
                 LastSeenAt = now
             });

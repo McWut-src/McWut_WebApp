@@ -35,11 +35,7 @@ var identityOptions = builder.Configuration.GetSection(IdentitySiteOptions.Secti
 builder.Services.Configure<IdentitySiteOptions>(builder.Configuration.GetSection(IdentitySiteOptions.SectionName));
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.PostConfigure<IdentitySiteOptions>(o =>
-    {
-        o.AllowRegistration = true;
-        o.SeedDemoUsers = true;
-    });
+    builder.Services.PostConfigure<IdentitySiteOptions>(o => o.SeedDemoUsers = true);
 }
 
 if (filesProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
@@ -104,9 +100,13 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Error");
     options.Conventions.AllowAnonymousToPage("/Share/Index");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login");
-    if (builder.Environment.IsDevelopment() || identityOptions.AllowRegistration)
+    if (identityOptions.AllowRegistration)
     {
         options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Register");
+    }
+    else
+    {
+        options.Conventions.AuthorizeAreaPage("Identity", "/Account/Register");
     }
 
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Logout");
@@ -150,6 +150,17 @@ if (!httpOnly)
 }
 
 app.UseRouting();
+app.Use(async (context, next) =>
+{
+    var allow = context.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<IdentitySiteOptions>>().Value.AllowRegistration;
+    if (!allow && context.Request.Path.StartsWithSegments("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    await next();
+});
 app.UseAuthentication();
 app.UseAuthorization();
 

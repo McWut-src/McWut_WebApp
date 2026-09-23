@@ -1,9 +1,18 @@
 name: Publish to GHCR
 
+# Prod is never updated just because someone pushed to main.
+# main → :qa + :sha only. :latest / Azure only via tag v* or manual workflow with promote_prod.
+
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      promote_prod:
+        description: "Also tag :latest (production). Leave OFF unless QA on local Docker passed."
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,6 +24,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Decide tags
+        id: tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE=ghcr.io/mcwut-src/mcwut_webapp
+          TAGS="${IMAGE}:qa,${IMAGE}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAGS="${TAGS},${IMAGE}:latest,${IMAGE}:${GITHUB_REF_NAME}"
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.promote_prod }}" == "true" ]]; then
+            TAGS="${TAGS},${IMAGE}:latest"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "Publishing tags: ${TAGS}"
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -25,6 +50,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            ghcr.io/mcwut-src/mcwut_webapp:latest
-            ghcr.io/mcwut-src/mcwut_webapp:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
