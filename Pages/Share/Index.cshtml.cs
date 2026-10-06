@@ -1,3 +1,4 @@
+using System.Text;
 using FamilyVault.Files.Contracts;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,8 @@ public class IndexModel(
     IShareLinkService links,
     IFileAccessService access,
     IFileLibrary library,
-    IDropService drops) : PageModel
+    IDropService drops,
+    IFileContentService content) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public string Token { get; set; } = "";
@@ -24,6 +26,7 @@ public class IndexModel(
     public ShareLink? Link { get; private set; }
     public Drop? Drop { get; private set; }
     public IReadOnlyList<StoredFile> Files { get; private set; } = [];
+    public IReadOnlyDictionary<Guid, string> TextPreviews { get; private set; } = new Dictionary<Guid, string>();
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -91,6 +94,7 @@ public class IndexModel(
             }
 
             Files = [file];
+            await LoadPreviewsAsync(ctx, cancellationToken);
             return Page();
         }
 
@@ -113,6 +117,39 @@ public class IndexModel(
 
         Drop = await drops.GetAsync(Link.TargetId, cancellationToken);
         Files = await drops.ListFilesAsync(Link.TargetId, cancellationToken);
+        await LoadPreviewsAsync(ctx, cancellationToken);
         return Page();
+    }
+
+    private async Task LoadPreviewsAsync(AccessContext ctx, CancellationToken cancellationToken)
+    {
+        if (Link is not { AllowPreview: true })
+        {
+            return;
+        }
+
+        var previews = new Dictionary<Guid, string>();
+        foreach (var file in Files)
+        {
+            if (previews.Count >= 5
+                || !PreviewTypes.IsPlainText(file.ContentType)
+                || file.SizeBytes is <= 0 or > 200_000)
+            {
+                continue;
+            }
+
+            try
+            {
+                await using var opened = await content.OpenPreviewAsync(ctx, file.Id, range: null, cancellationToken);
+                using var reader = new StreamReader(opened.Stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                previews[file.Id] = await reader.ReadToEndAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // A preview must not hide the download.
+            }
+        }
+
+        TextPreviews = previews;
     }
 }

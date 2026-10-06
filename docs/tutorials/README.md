@@ -16,4 +16,4 @@ Follow **in order**. Skip a step only if you already did it for this change.
 **QA:** http://localhost:8080  
 **Dev:** https://localhost:7047 (Visual Studio)
 
-Living product list: [../SCOPE.md](../SCOPE.md). Old Azure go-live notes: [../archive/](../archive/).
+Living product list: [../SCOPE.md](../SCOPE.md). Operating notes: [../HANDOFF.md](../HANDOFF.md). Old Azure go-live notes: [../archive/](../archive/).

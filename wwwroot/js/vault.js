@@ -37,6 +37,49 @@
         return (bytes / (1024 * 1024)).toFixed(1) + " MB";
     }
 
+    function esc(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+        }[ch]));
+    }
+
+    function isImage(contentType) {
+        const type = String(contentType || "").split(";")[0].trim().toLowerCase();
+        return type === "image/jpeg" || type === "image/png" || type === "image/gif" || type === "image/webp";
+    }
+
+    function thumbHtml(file) {
+        if (!isImage(file.contentType)) {
+            return "";
+        }
+        return `<img class="file-thumb" alt="" src="/api/files/${esc(file.id)}/content?preview=true">`;
+    }
+
+    function pasteFile() {
+        const pasteEl = document.getElementById("paste-text");
+        if (!pasteEl) {
+            return null;
+        }
+        const text = pasteEl.value;
+        if (!text.trim()) {
+            return null;
+        }
+        let name = (document.getElementById("drop-title")?.value || "note").trim();
+        name = name.replace(/[\\/]/g, "-").replace(/[\u0000-\u001f]/g, "");
+        name = name.replace(/\.[^.]+$/, "");
+        if (!name || name === "." || name === "..") {
+            name = "note";
+        }
+        if (name.length > 240) {
+            name = name.slice(0, 240);
+        }
+        return new File([text], name + ".txt", { type: "text/plain" });
+    }
+
     const dropzone = document.getElementById("dropzone");
     const fileInput = document.getElementById("file-input");
     const fileList = document.getElementById("file-list");
@@ -48,9 +91,14 @@
 
     function renderQueue() {
         if (!fileList) return;
-        fileList.innerHTML = queued.map(f => `<li>${f.name} (${formatSize(f.size)})</li>`).join("");
+        const pasted = pasteFile();
+        const items = queued.map(f => `<li>${esc(f.name)} (${formatSize(f.size)})</li>`);
+        if (pasted) {
+            items.push(`<li>${esc(pasted.name)} (${formatSize(pasted.size)})</li>`);
+        }
+        fileList.innerHTML = items.join("");
         if (uploadBtn) {
-            uploadBtn.disabled = queued.length === 0;
+            uploadBtn.disabled = queued.length === 0 && !pasted;
         }
     }
 
@@ -82,6 +130,8 @@
         });
     }
 
+    document.getElementById("paste-text")?.addEventListener("input", renderQueue);
+
     async function loadMembers() {
         try {
             members = await api("/api/members", { headers: headers() }) || [];
@@ -95,7 +145,7 @@
             return `<option value="">No other members have signed in yet</option>`;
         }
         return `<option value="">Tag a member</option>` +
-            members.map(m => `<option value="${m.userId}">${m.displayName}</option>`).join("");
+            members.map(m => `<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join("");
     }
 
     async function renderOwned() {
@@ -110,13 +160,14 @@
                 <thead><tr><th>File</th><th>Expires</th><th>Downloads</th><th></th></tr></thead>
                 <tbody>
                     ${files.map(f => `
-                        <tr data-id="${f.id}">
+                        <tr data-id="${esc(f.id)}">
                             <td>
-                                <div>${f.originalFileName}</div>
+                                ${thumbHtml(f)}
+                                <div>${esc(f.originalFileName)}</div>
                                 <div class="small text-muted">${formatSize(f.sizeBytes)}${f.hasPassword ? " · password" : ""}</div>
                             </td>
-                            <td><span class="badge text-bg-secondary">${formatExpiry(f.expiresAt)}</span></td>
-                            <td>${f.downloadCount}${f.maxDownloads != null ? " / " + f.maxDownloads : ""}</td>
+                            <td><span class="badge text-bg-secondary">${esc(formatExpiry(f.expiresAt))}</span></td>
+                            <td>${esc(f.downloadCount)}${f.maxDownloads != null ? " / " + esc(f.maxDownloads) : ""}</td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm mb-1">
                                     <button class="btn btn-outline-primary" data-action="link">Link</button>
@@ -143,9 +194,13 @@
                 <tbody>
                     ${files.map(f => `
                         <tr>
-                            <td>${f.originalFileName}<div class="small text-muted">${formatSize(f.sizeBytes)}</div></td>
-                            <td>${formatExpiry(f.expiresAt)}</td>
-                            <td class="text-end"><a class="btn btn-sm btn-primary" href="/api/files/${f.id}/content">Download</a></td>
+                            <td>
+                                ${thumbHtml(f)}
+                                ${esc(f.originalFileName)}
+                                <div class="small text-muted">${formatSize(f.sizeBytes)}</div>
+                            </td>
+                            <td>${esc(formatExpiry(f.expiresAt))}</td>
+                            <td class="text-end"><a class="btn btn-sm btn-primary" href="/api/files/${esc(f.id)}/content">Download</a></td>
                         </tr>`).join("")}
                 </tbody>
             </table>`;
@@ -162,16 +217,28 @@
             const ttl = Number(document.getElementById("ttl").value);
             const retention = { days: ttl === 0 ? null : ttl };
             const password = document.getElementById("password").value || null;
+            let title = document.getElementById("drop-title").value || "";
+            if (title.length > 200) {
+                title = title.slice(0, 200);
+            }
+            const batch = queued.slice();
+            const pasted = pasteFile();
+            if (pasted) {
+                batch.push(pasted);
+            }
+            if (batch.length === 0) {
+                throw new Error("Choose a file or paste some text.");
+            }
             const drop = await api("/api/drops", {
                 method: "POST",
                 headers: headers({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
-                    title: document.getElementById("drop-title").value,
+                    title,
                     retention,
                     password
                 })
             });
-            for (const file of queued) {
+            for (const file of batch) {
                 if (!file.size) {
                     throw new Error(file.name + " is empty. Choose a file that has some content.");
                 }
@@ -208,7 +275,13 @@
             linkBox.hidden = false;
             status.textContent = "Ready. Copy the link to share.";
             queued = [];
-            fileInput.value = "";
+            if (fileInput) {
+                fileInput.value = "";
+            }
+            const pasteEl = document.getElementById("paste-text");
+            if (pasteEl) {
+                pasteEl.value = "";
+            }
             renderQueue();
             await renderOwned();
         } catch (err) {
@@ -276,14 +349,14 @@
             try {
                 await renderOwned();
             } catch (err) {
-                myFiles.innerHTML = `<p class="text-danger">${err.message}</p>`;
+                myFiles.innerHTML = `<p class="text-danger">${esc(err.message)}</p>`;
             }
         }
         if (sharedFiles) {
             try {
                 await renderShared();
             } catch (err) {
-                sharedFiles.innerHTML = `<p class="text-danger">${err.message}</p>`;
+                sharedFiles.innerHTML = `<p class="text-danger">${esc(err.message)}</p>`;
             }
         }
     }

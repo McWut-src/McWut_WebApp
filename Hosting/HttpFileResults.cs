@@ -7,11 +7,12 @@ namespace McWutWebApp.Hosting;
 
 public static class HttpFileResults
 {
-    public static IActionResult File(OpenedContent content)
+    public static IActionResult File(OpenedContent content, bool inline = false)
     {
         var utf8Name = Uri.EscapeDataString(content.FileName);
         var asciiFallback = ToAsciiFallback(content.FileName);
-        var disposition = $"attachment; filename=\"{asciiFallback}\"; filename*=UTF-8''{utf8Name}";
+        var kind = inline && PreviewTypes.IsInline(content.ContentType) ? "inline" : "attachment";
+        var disposition = $"{kind}; filename=\"{asciiFallback}\"; filename*=UTF-8''{utf8Name}";
         return new HeaderFileResult(content, disposition);
     }
 

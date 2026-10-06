@@ -47,6 +47,13 @@ public class LoginModel(SignInManager<IdentityUser> signInManager) : PageModel
             return LocalRedirect(returnUrl);
         }
 
+        if (result.IsLockedOut)
+        {
+            ModelState.AddModelError(string.Empty, "This account is turned off. Ask an admin to turn it back on.");
+            ReturnUrl = returnUrl;
+            return Page();
+        }
+
         ModelState.AddModelError(string.Empty, "Invalid email or password.");
         ReturnUrl = returnUrl;
         return Page();

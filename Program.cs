@@ -167,13 +167,14 @@ app.Use(async (context, next) =>
 });
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<RejectLockedOutUsersMiddleware>();
 
 app.MapStaticAssets().AllowAnonymous();
 app.MapRazorPages()
     .WithStaticAssets();
 app.MapControllers();
 app.MapGet("/health", () => Results.Text("ok")).AllowAnonymous();
-app.MapGet("/Vault", () => Results.Redirect("/files"));
-app.MapGet("/Vault/Shared", () => Results.Redirect("/files/shared"));
+app.MapGet("/Vault", () => Results.Redirect("/files")).AllowAnonymous();
+app.MapGet("/Vault/Shared", () => Results.Redirect("/files/shared")).AllowAnonymous();
 
 app.Run();

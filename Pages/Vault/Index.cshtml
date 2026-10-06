@@ -7,7 +7,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
     <div>
         <h1 class="h3 mb-1">My files</h1>
-        <p class="text-muted mb-0">Drop files to share a link. Default expiry is 7 days.</p>
+        <p class="text-muted mb-0">Drop files or paste text to share a link. Default expiry is 7 days. Photos show a small preview.</p>
     </div>
     <a class="btn btn-outline-secondary" asp-page="/Vault/Shared">Shared files</a>
 </div>
@@ -22,7 +22,11 @@
                     <p class="small text-muted mb-2">or click to choose</p>
                     <input id="file-input" type="file" multiple class="d-none" />
                     <button type="button" class="btn btn-sm btn-primary" id="pick-files">Choose files</button>
-                    <ul id="file-list" class="small mt-3 mb-0"></ul>
+                    <ul id="file-list" class="small mt-3 mb-0 text-start"></ul>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="paste-text">Or paste text</label>
+                    <textarea id="paste-text" class="form-control" rows="5" placeholder="A note, a list, a snippet"></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="drop-title">Title</label>

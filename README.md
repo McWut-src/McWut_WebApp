@@ -14,9 +14,12 @@ dotnet run --launch-profile https --project McWutWebApp.csproj
 
 How to work, from planning to **you** promoting prod: [docs/tutorials/README.md](docs/tutorials/README.md).
 
+If you are picking this up alone: [docs/HANDOFF.md](docs/HANDOFF.md).
+
 ## Docs
 
-- [docs/SCOPE.md](docs/SCOPE.md) — what’s next  
+- [docs/HANDOFF.md](docs/HANDOFF.md) — how to run, test, and promote  
+- [docs/SCOPE.md](docs/SCOPE.md) — what’s done and what is left  
 - [docs/archive/](docs/archive/) — finished hosting notes (Path A, deploy options)
 
 **Prod** is not updated by pushing `main`. See SCOPE § environments.

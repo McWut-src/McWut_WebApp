@@ -1,33 +1,27 @@
 # McWut — current cycle
 
-**Updated:** 23 September 2026  
-**Live:** https://mcwut.com · https://www.mcwut.com (previous release until **you** promote)  
+**Updated:** 6 October 2026  
+**Live:** https://mcwut.com · https://www.mcwut.com  
+**Handoff:** [HANDOFF.md](HANDOFF.md)  
 **No open Register. No public invite until you send a link.**
 
 Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/README.md).
 
 ---
 
-## This cycle (in order)
+## Shipped
 
-### 1. Leftover / archive
-- Hosting write-ups already in `docs/archive/`.
-- Still messy in the **app**: `/Vault` URLs, `FamilyController` name, toy user `family@`, empty Privacy page, Identity **Register** page still in the UI library (must stay 404).
-- **Not this cycle:** renaming `McWutWebApp.csproj` or `FamilyVault.*` namespaces (breaks Docker/Azure/git for no user benefit).
+- Product name **McWut**. **My files** / **Shared files**. URLs `/files` and `/files/shared` (`/Vault` redirects).
+- Join only with an invite. `/Identity/Account/Register` is **404**.
+- Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
+- Paste text on My files (stored as a normal text file).
+- Photo previews, and the text of a short note on the share page.
+- Admin **People** (turn an account off / on) and **Status**.
+- Privacy page describes what is stored.
 
-### 2. Renaming (what people see)
-- Product name **McWut**.
-- **My files** / **Shared files**.
-- URLs `/files` and `/files/shared` (old `/Vault` redirects).
-- No “Family” in the UI. Second toy login becomes `member@mcwut.com` / `member` (Dev/QA only).
+**Left on purpose:** `Pages/Vault/` folder name, `FamilyVault.*` project names, `McWutWebApp.csproj` name. The Identity Register files stay in the project so the 404 can keep winning.
 
-### 3. Join **only with an invitation**
-- `/Identity/Account/Register` stays **404**.
-- You (Admin) create an invite → copy a link like `https://mcwut.com/join/{token}`.
-- They set email + password. Token is one-use and expires (default 7 days).
-- Optional: lock the invite to one email.
-
-**You added / we agree later:** pastes, thumbnails, richer admin (disable users, health). Not this cycle.
+**Not built:** generated thumbnail files, video previews, email, richer audit UI.
 
 ---
 

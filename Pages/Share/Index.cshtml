@@ -37,9 +37,21 @@ else
     <ul class="list-group shadow-sm">
         @foreach (var file in Model.Files)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@file.OriginalFileName <span class="text-muted small">(@file.ContentType)</span></span>
-                <a class="btn btn-sm btn-primary" href="/api/files/@file.Id/content?token=@Model.Token">Download</a>
+            <li class="list-group-item">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div class="flex-grow-1">
+                        @if (McWutWebApp.Hosting.PreviewTypes.IsImage(file.ContentType) && Model.Link?.AllowPreview == true)
+                        {
+                            <img class="share-preview mb-2" alt="" src="/api/files/@file.Id/content?preview=true&token=@Model.Token" />
+                        }
+                        <div>@file.OriginalFileName <span class="text-muted small">(@file.ContentType)</span></div>
+                        @if (Model.TextPreviews.TryGetValue(file.Id, out var preview))
+                        {
+                            <pre class="paste-preview mt-2 mb-0">@preview</pre>
+                        }
+                    </div>
+                    <a class="btn btn-sm btn-primary" href="/api/files/@file.Id/content?token=@Model.Token">Download</a>
+                </div>
             </li>
         }
     </ul>

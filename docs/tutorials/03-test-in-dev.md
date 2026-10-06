@@ -14,7 +14,10 @@ With the site running (F5):
 5. Private window: open that `/s/...` link **without** signing in, download.  
 6. Optional: **Shared files** page loads (may be empty).  
 7. Signed in as admin: **Invites** in the nav. Create a link, open `/join/...` in a private window (or second browser).  
-8. URLs **`/files`** and **`/files/shared`** (old `/Vault` should redirect).
+8. URLs **`/files`** and **`/files/shared`** (old `/Vault` should redirect).  
+9. Paste a sentence on **My files**. Private window: the `/s/...` page shows that sentence.  
+10. A jpeg or png shows a small preview in the list and on the share page.  
+11. **People** and **Status** open. Status does not show a connection string. `/health` is `ok`.
 
 If something fails, fix it in Visual Studio and repeat this list. Do **not** start Docker until this list is boring.
 

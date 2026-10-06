@@ -1,8 +1,30 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Privacy";
 }
-<h1>@ViewData["Title"]</h1>
+<h1 class="h3">Privacy</h1>
 
-<p>McWut stores files you upload so you can share them with people you choose. Accounts are by invitation only. Do not upload data you are not allowed to keep.</p>
+<p>McWut is a private file drop for people who were invited. It is not a public website, and open registration stays off.</p>
+
+<h2 class="h5">What is stored</h2>
+<ul>
+    <li>Your email and a hash of your password.</li>
+    <li>Files you upload, including the name, type, size, and expiry.</li>
+    <li>Text you paste, saved as a text file.</li>
+    <li>Share links you create, and a hash of a link password if you set one.</li>
+    <li>Which members you tagged, plus a short record of uploads, downloads, and deletes.</li>
+</ul>
+
+<h2 class="h5">Who can see a file</h2>
+<ul>
+    <li>You, while you are signed in.</li>
+    <li>A signed-in member you tag. They see it under Shared files.</li>
+    <li>Anyone who has the share link, until it expires or you delete the file. If you set a password, they must enter it first.</li>
+</ul>
+<p>Photos can show as a small preview, and a short text note can show on the share page, when the link allows preview. Opening a preview does not count as a download.</p>
+
+<h2 class="h5">How long it stays</h2>
+<p>You choose 1 day, 7 days, 30 days, or forever. A background cleanup removes expired files from the list and from storage. Turning an account off does not delete that person's files. An admin can turn the account back on.</p>
+
+<p class="mb-0">Do not upload anything you are not allowed to keep. Delete a file while you are signed in to remove it. To close an account, ask the admin who invited you.</p>

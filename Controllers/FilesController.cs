@@ -106,7 +106,7 @@ public sealed class FilesController(
         var opened = preview
             ? await content.OpenPreviewAsync(ctx, id, range, cancellationToken)
             : await content.OpenDownloadAsync(ctx, id, range, cancellationToken);
-        return HttpFileResults.File(opened);
+        return HttpFileResults.File(opened, inline: preview);
     }
 
     private async Task EnsureAsync(Guid id, AccessIntent intent, CancellationToken cancellationToken)

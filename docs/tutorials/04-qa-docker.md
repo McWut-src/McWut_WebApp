@@ -71,6 +71,8 @@ Open **http://localhost:8080**
 | After `vince@mcwut.com` / `vince` | **My files**, **Shared files** |
 | http://localhost:8080/Identity/Account/Register | **404** |
 | Drop a real (non-empty) file | Link works in a private window |
+| Paste a sentence | Private window shows the text on `/s/...` |
+| **People** and **Status** | Pages open. Status has no connection string |
 
 QA login is the **toy** `vince@mcwut.com` / `vince` (second toy: `member@mcwut.com` / `member`). Prod password is different.
 

@@ -1,0 +1,60 @@
+@page "/admin/people"
+@model McWutWebApp.Pages.Admin.PeopleModel
+@{
+    ViewData["Title"] = "People";
+}
+
+<h1 class="h3 mb-3">People</h1>
+<p class="text-muted">Turn an account off when someone should not sign in. Their files stay. Open Register stays off. New people still join from <a asp-page="/Admin/Invites">Invites</a>.</p>
+
+@if (Model.Notice is not null)
+{
+    <div class="alert alert-success">@Model.Notice</div>
+}
+@if (Model.Error is not null)
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Sign-in</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var person in Model.People)
+        {
+            <tr>
+                <td>@person.Email</td>
+                <td>@person.Roles</td>
+                <td>@(person.Disabled ? "Off" : "On")</td>
+                <td class="text-end">
+                    @if (person.IsSelf)
+                    {
+                        <span class="text-muted small">This is you</span>
+                    }
+                    else if (person.Disabled)
+                    {
+                        <form method="post" asp-page-handler="Enable" class="d-inline">
+                            <input type="hidden" name="id" value="@person.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Turn on</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Disable" class="d-inline" onsubmit="return confirm('Turn off this account? Their files stay. They cannot sign in until you turn them back on.');">
+                            <input type="hidden" name="id" value="@person.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Turn off</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
