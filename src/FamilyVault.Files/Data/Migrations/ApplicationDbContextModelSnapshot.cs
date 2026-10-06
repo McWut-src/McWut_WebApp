@@ -195,6 +195,49 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("Invites", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.PasswordVaultItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NotesCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UrlCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UsernameCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId", "Name");
+
+                    b.ToTable("PasswordVaultItems", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.ShareLinkEntity", b =>
                 {
                     b.Property<Guid>("Id")

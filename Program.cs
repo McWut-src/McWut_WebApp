@@ -129,6 +129,7 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddScoped<UpsertFamilyMemberFilter>();
 builder.Services.AddScoped<InviteService>();
+builder.Services.AddScoped<PasswordVaultService>();
 builder.Services.AddSingleton<RetentionMapper>();
 builder.Services.AddHostedService<DatabaseStartupWorker>();
 

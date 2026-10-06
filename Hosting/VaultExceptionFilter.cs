@@ -1,4 +1,5 @@
 using FamilyVault.Files.Contracts;
+using FamilyVault.Files.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -21,6 +22,7 @@ public sealed class VaultExceptionFilter : IExceptionFilter
                 StatusCode = ex.SizeBytes <= 0 ? StatusCodes.Status400BadRequest : StatusCodes.Status413PayloadTooLarge
             },
             InvalidFileNameException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            PasswordVaultValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidContentTypeException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidRangeException => new StatusCodeResult(StatusCodes.Status416RangeNotSatisfiable),
             UnauthorizedAccessException => new UnauthorizedResult(),

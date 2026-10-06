@@ -1,5 +1,6 @@
 using FamilyVault.Files.Contracts;
 using FamilyVault.Files.Data.Entities;
+using FamilyVault.Files.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<UploadSessionEntity> UploadSessions => Set<UploadSessionEntity>();
     public DbSet<FileAuditEntity> FileAudits => Set<FileAuditEntity>();
     public DbSet<InviteEntity> Invites => Set<InviteEntity>();
+    public DbSet<PasswordVaultItemEntity> PasswordVaultItems => Set<PasswordVaultItemEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -126,6 +128,18 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.Property(x => x.Token).HasMaxLength(64).IsRequired();
             b.Property(x => x.Email).HasMaxLength(256);
             b.HasIndex(x => x.Token).IsUnique();
+        });
+
+        modelBuilder.Entity<PasswordVaultItemEntity>(b =>
+        {
+            b.ToTable("PasswordVaultItems");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Name).HasMaxLength(PasswordVaultRules.NameMax).IsRequired();
+            b.Property(x => x.UsernameCipher).IsRequired();
+            b.Property(x => x.PasswordCipher).IsRequired();
+            b.Property(x => x.UrlCipher).IsRequired();
+            b.Property(x => x.NotesCipher).IsRequired();
+            b.HasIndex(x => new { x.OwnerUserId, x.Name });
         });
     }
 }

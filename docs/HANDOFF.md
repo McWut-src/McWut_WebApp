@@ -21,6 +21,8 @@ A private family file drop.
 - Photos (jpeg, png, gif, webp) show a small preview. A short text note shows on the share page. Previews do not count as downloads. SVG and HTML stay downloads.
 - **People** (`/admin/people`): turn an account off or back on. Files stay. You cannot turn yourself off, and the last admin must stay on. A turned-off person is signed out on their next click.
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
+- **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list.
+- **Password** in the header (`/account/password`): change the password you use to sign in to McWut.
 - `/health` returns the text `ok`. Leave that alone. Azure uses it.
 
 Internal project names stay `McWutWebApp` and `FamilyVault.*`. Renaming them breaks Docker and Azure for no benefit to people using the site.
@@ -41,15 +43,14 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 ## What was added in the last change
 
-No database migration. Safe to put on the existing Azure SQL database.
+Database migration `AddPasswordVault` for SQLite and for SQL Server. Startup applies it. Table `PasswordVaultItems`.
 
-- Paste box on My files. The text is stored as a `.txt` file, so links, expiry, passwords, and tagging already work.
-- Image previews on My files, Shared files, and the public share page.
-- Text of a short note (up to 200 KB, up to 5 notes) on the share page.
-- Admin **People** and **Status**.
-- A turned-off account cannot keep using an old cookie.
-- File names in the file list are escaped so a weird name cannot inject HTML.
-- Privacy page says what is actually stored.
+- **Passwords** (`/passwords`): each signed-in person has their own list. Fields are name, username, password, URL, and information. Copy is on the username, password, and URL. Open shows up when the URL is `http://` or `https://`. Edit, Save, and Delete. Search matches name, username, URL, and information.
+- The name is stored as text so the list can show it. Username, password, URL, and notes are encrypted with this site's data-protection key (purpose `McWut.PasswordVault.v1`). Another member's request for your item is 404. Losing the key ring makes an item unreadable; saving a new copy replaces it.
+- **Change sign-in password** (`/account/password`). That is the McWut login, separate from a saved login. After a change you stay signed in.
+- Privacy page says the vault is stored.
+
+Already on the site before this build: paste, image and text previews, People, Status, lockout, filename escaping.
 
 Still not built, on purpose: generated thumbnail files, video previews, email, public Register, renaming `FamilyVault`.
 
@@ -90,13 +91,15 @@ docker compose down
 ## Click-through (Dev and QA)
 
 1. Header says **McWut**.
-2. After sign-in: **My files**, **Shared files**, and for admin **Invites**, **People**, **Status**.
+2. After sign-in: **My files**, **Shared files**, **Passwords**, and for admin **Invites**, **People**, **Status**. Header **Password** opens the sign-in password change.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
 4. Paste a sentence, upload, open the `/s/...` link in a private window. The sentence is visible. Download works.
 5. Drop a real photo. A small picture shows in the list. The share page shows it too.
 6. **People**: turn `member@` off. That login says the account is turned off. Turn it back on. Sign-in works again.
 7. **Status** loads and does not show a connection string.
 8. `/health` is `ok`.
+9. **Passwords**: create a login, copy the username and password, open the URL, edit, and save. Sign in as the other toy user and confirm that list does not show the first user's login.
+10. **Password** in the header changes the sign-in password. Change the toy password back to `vince` or `member` when you are done.
 
 Tests:
 
@@ -171,6 +174,9 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 |---|---|
 | `McWutWebApp.csproj`, `Program.cs`, `Pages/`, `Controllers/` | The website |
 | `Pages/Vault/` | My files and Shared files screens. URLs are `/files`, not `/Vault` |
+| `Pages/Passwords/` | Saved logins at `/passwords`. API is `Controllers/PasswordsController.cs` |
+| `Pages/Account/Password.cshtml` | Change the McWut sign-in password |
+| `wwwroot/js/passwords.js` | Search, list, edit, copy, open |
 | `Pages/Admin/` | Invites, People, Status |
 | `Pages/Join/` | `/join/{token}` |
 | `Pages/Share/` | `/s/{token}` |
@@ -199,11 +205,9 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 Checked while signed out, on `0000006`: both hosts `/health` return `ok`, Register is 404, the home page says McWut and mentions paste, `/Vault` redirects to `/files`. Logs show migrate **retrying** (not a crash).
 
-**Sign-in and upload were not checked.** Azure SQL free database `sql-mcwut` is paused for the rest of October 2026 (error 42119). It said the free amount renews at 12:00 AM UTC on **1 November 2026**. The site stays up. Login, invites, and files need the database.
+**Sign-in and upload were not checked on `0000006`.** At that time Azure SQL `sql-mcwut` was paused (error 42119). On 6 October 2026 Vince said the database is being paid for again, and both public hosts returned `/health` `ok` from `4.172.131.145`.
 
-To use it before November: Azure portal → the database → **Compute and Storage** → **Continue using database with additional charges**. That costs money for the rest of the month.
-
-The live app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). When SQL wakes up, you do not have to restart the container. Look for the log line `Database migrate and identity seed finished.` Then sign in with the **prod** password (Azure secret `website-admin-password`, not `vince`) and upload one real file.
+The app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). Look for the log line `Database migrate and identity seed finished.` Then sign in with the **prod** password (Azure secret `website-admin-password`, not `vince`) and upload one real file. The password-vault migration runs in that same step. It creates `PasswordVaultItems`. Do not restart the container just to migrate.
 
 Rollback, if the new site is wrong and you want the old one:
 
