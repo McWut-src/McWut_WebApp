@@ -60,6 +60,9 @@ public sealed class FilesOptions
         "image/gif",
         "image/webp",
         "text/plain",
+        "text/markdown",
+        "text/csv",
+        "application/json",
         "video/mp4",
         "audio/mpeg"
     ];

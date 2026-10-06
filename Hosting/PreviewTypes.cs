@@ -5,11 +5,8 @@ namespace McWutWebApp.Hosting;
 /// </summary>
 public static class PreviewTypes
 {
-    public static bool IsInline(string? contentType)
-    {
-        var type = Normalize(contentType);
-        return type is "image/jpeg" or "image/png" or "image/gif" or "image/webp" or "text/plain";
-    }
+    public static bool IsInline(string? contentType) =>
+        IsImage(contentType) || FamilyVault.Files.Security.ReadableFiles.IsInlineText(contentType);
 
     public static bool IsImage(string? contentType)
     {

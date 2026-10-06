@@ -1,5 +1,6 @@
 using System.Text;
 using FamilyVault.Files.Contracts;
+using FamilyVault.Files.Security;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ public class IndexModel(
     public ShareLink? Link { get; private set; }
     public Drop? Drop { get; private set; }
     public IReadOnlyList<StoredFile> Files { get; private set; } = [];
-    public IReadOnlyDictionary<Guid, string> TextPreviews { get; private set; } = new Dictionary<Guid, string>();
+    public IReadOnlyDictionary<Guid, ShareNote> Notes { get; private set; } = new Dictionary<Guid, ShareNote>();
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -128,13 +129,25 @@ public class IndexModel(
             return;
         }
 
-        var previews = new Dictionary<Guid, string>();
+        var notes = new Dictionary<Guid, ShareNote>();
+        var shown = 0;
         foreach (var file in Files)
         {
-            if (previews.Count >= 5
-                || !PreviewTypes.IsPlainText(file.ContentType)
-                || file.SizeBytes is <= 0 or > 200_000)
+            if (!ReadableFiles.IsReadable(file.ContentType, file.OriginalFileName))
             {
+                continue;
+            }
+
+            var markdown = ReadableFiles.IsMarkdown(file.ContentType, file.OriginalFileName);
+            if (file.SizeBytes is <= 0 or > ReadableFiles.MaxPreviewBytes)
+            {
+                notes[file.Id] = new ShareNote(null, markdown, "This note is too long to read here. Download it.");
+                continue;
+            }
+
+            if (shown >= 12)
+            {
+                notes[file.Id] = new ShareNote(null, markdown, "Download this note to read it.");
                 continue;
             }
 
@@ -142,7 +155,8 @@ public class IndexModel(
             {
                 await using var opened = await content.OpenPreviewAsync(ctx, file.Id, range: null, cancellationToken);
                 using var reader = new StreamReader(opened.Stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
-                previews[file.Id] = await reader.ReadToEndAsync(cancellationToken);
+                notes[file.Id] = new ShareNote(await reader.ReadToEndAsync(cancellationToken), markdown, null);
+                shown++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -150,6 +164,8 @@ public class IndexModel(
             }
         }
 
-        TextPreviews = previews;
+        Notes = notes;
     }
 }
+
+public sealed record ShareNote(string? Text, bool Markdown, string? Notice);

@@ -32,7 +32,7 @@ public sealed class UploadSessionService(
             throw new FileTooLargeException(request.SizeBytes, options.Value.MaxFileSizeBytes);
         }
 
-        var contentType = NormalizeContentType(request.ContentType);
+        var contentType = ReadableFiles.InferContentType(name, NormalizeContentType(request.ContentType));
         EnsureContentTypeAllowed(contentType, options.Value);
 
         if (request.DropId is Guid dropId)

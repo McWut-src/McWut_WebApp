@@ -121,24 +121,56 @@
             </div>`;
     }
 
+    function canRead(file) {
+        return window.mcwutRead ? window.mcwutRead.isReadable(file) : false;
+    }
+
     function fileGlyph(file) {
-        return `<div class="file-glyph" aria-hidden="true">${icon(isImage(file.contentType) ? "image" : "files")}</div>`;
+        const name = isImage(file.contentType) ? "image" : (canRead(file) ? "note" : "files");
+        return `<div class="file-glyph" aria-hidden="true">${icon(name)}</div>`;
     }
 
     function ownedRow(file) {
+        const title = canRead(file)
+            ? `<button type="button" class="file-title file-title-btn" data-action="read" title="Read ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
+            : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`;
+        const read = canRead(file) ? iconButton("read", "eye", "Read") : "";
         return `
             <div class="file-row" data-id="${esc(file.id)}">
                 ${fileGlyph(file)}
                 <div class="file-main">
-                    <div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
+                    ${title}
                     <div class="file-meta">${fileMeta(file, true)}</div>
                 </div>
                 <div class="file-actions">
+                    ${read}
                     ${iconButton("link", "link", "Copy link")}
                     ${iconButton("download", "download", "Download")}
                     ${iconButton("delete", "trash", "Delete", true)}
                 </div>
             </div>`;
+    }
+
+    function contentTypeFor(file) {
+        const name = String(file.name || "").toLowerCase();
+        const declared = String(file.type || "").split(";")[0].trim().toLowerCase();
+        const generic = !declared || declared === "application/octet-stream" || declared === "binary/octet-stream";
+        if ((name.endsWith(".md") || name.endsWith(".markdown")) && (generic || declared === "text/plain")) {
+            return "text/markdown";
+        }
+        if (!generic) {
+            return declared;
+        }
+        if (name.endsWith(".txt") || name.endsWith(".text") || name.endsWith(".log")) {
+            return "text/plain";
+        }
+        if (name.endsWith(".csv")) {
+            return "text/csv";
+        }
+        if (name.endsWith(".json")) {
+            return "application/json";
+        }
+        return "application/octet-stream";
     }
 
     function pasteFile() {
@@ -172,6 +204,8 @@
     let viewerPhotos = [];
     let viewerIndex = -1;
     let viewerReturn = null;
+    let noteReturn = null;
+    let noteFileId = null;
 
     function renderQueue() {
         if (!fileList) return;
@@ -356,6 +390,108 @@
         document.querySelector("#photo-viewer .photo-viewer-frame [data-photo-close]")?.focus();
     }
 
+    function ensureNoteReader() {
+        if (document.getElementById("note-reader")) {
+            return;
+        }
+        const root = document.createElement("div");
+        root.id = "note-reader";
+        root.className = "note-reader";
+        root.hidden = true;
+        root.setAttribute("role", "dialog");
+        root.setAttribute("aria-modal", "true");
+        root.setAttribute("aria-label", "Note");
+        root.innerHTML = `
+            <button type="button" class="note-reader-backdrop" data-note-close aria-label="Close"></button>
+            <div class="note-reader-frame">
+                <div class="note-reader-bar">
+                    <div class="note-reader-name" data-note-name></div>
+                    <div class="note-reader-buttons">
+                        <a class="icon-btn" data-note-download title="Download" aria-label="Download">${icon("download")}</a>
+                        <button type="button" class="icon-btn" data-note-close title="Close" aria-label="Close">${icon("close")}</button>
+                    </div>
+                </div>
+                <div class="note-reader-body" data-note-body></div>
+            </div>`;
+        document.body.appendChild(root);
+        root.addEventListener("click", (event) => {
+            if (event.target.closest("[data-note-close]")) {
+                closeNote();
+            }
+        });
+    }
+
+    function closeNote() {
+        const root = document.getElementById("note-reader");
+        if (!root || root.hidden) {
+            return;
+        }
+        root.hidden = true;
+        root.querySelector("[data-note-body]").replaceChildren();
+        document.body.classList.remove("note-reader-open");
+        noteFileId = null;
+        if (noteReturn) {
+            noteReturn.focus();
+            noteReturn = null;
+        }
+    }
+
+    async function openNote(file, button) {
+        if (!file || !canRead(file)) {
+            return;
+        }
+        closeViewer();
+        ensureNoteReader();
+        noteReturn = button;
+        noteFileId = file.id;
+        const root = document.getElementById("note-reader");
+        root.querySelector("[data-note-name]").textContent = file.originalFileName || "Note";
+        const download = root.querySelector("[data-note-download]");
+        download.href = `/api/files/${file.id}/content`;
+        const body = root.querySelector("[data-note-body]");
+        body.replaceChildren();
+        root.hidden = false;
+        document.body.classList.add("note-reader-open");
+        if ((file.sizeBytes || 0) > (window.mcwutRead.maxBytes || 200000)) {
+            const message = document.createElement("p");
+            message.className = "note-skip";
+            message.textContent = "This note is too long to read here. Download it instead.";
+            body.appendChild(message);
+            root.querySelector(".note-reader-buttons [data-note-close]")?.focus();
+            return;
+        }
+        const waiting = document.createElement("p");
+        waiting.className = "note-skip";
+        waiting.textContent = "Opening…";
+        body.appendChild(waiting);
+        try {
+            const response = await fetch(`/api/files/${file.id}/content?preview=true`, { headers: { "Accept": "text/plain, text/markdown, */*" } });
+            if (!response.ok) {
+                throw new Error("Could not open this note.");
+            }
+            const text = await response.text();
+            body.replaceChildren();
+            if (window.mcwutRead.isMarkdown(file)) {
+                const article = document.createElement("article");
+                article.className = "md-view";
+                article.innerHTML = window.mcwutRead.render(text);
+                body.appendChild(article);
+            } else {
+                const pre = document.createElement("pre");
+                pre.className = "note-body";
+                pre.textContent = text;
+                body.appendChild(pre);
+            }
+        } catch (err) {
+            body.replaceChildren();
+            const message = document.createElement("p");
+            message.className = "note-skip";
+            message.textContent = err.message;
+            body.appendChild(message);
+        }
+        root.querySelector(".note-reader-buttons [data-note-close]")?.focus();
+    }
+
     document.getElementById("upload-btn")?.addEventListener("click", async () => {
         const status = document.getElementById("upload-status");
         const linkBox = document.getElementById("link-box");
@@ -397,7 +533,7 @@
                     headers: headers({ "Content-Type": "application/json" }),
                     body: JSON.stringify({
                         fileName: file.name,
-                        contentType: file.type || "application/octet-stream",
+                        contentType: contentTypeFor(file),
                         sizeBytes: file.size,
                         retention,
                         password
@@ -454,6 +590,8 @@
         try {
             if (action === "view") {
                 openViewer(ownedFiles, id, button);
+            } else if (action === "read") {
+                openNote(ownedFiles.find(file => file.id === id), button);
             } else if (action === "download") {
                 window.location.href = `/api/files/${id}/content`;
             } else if (action === "delete") {
@@ -461,6 +599,9 @@
                 await api(`/api/files/${id}`, { method: "DELETE", headers: headers() });
                 if (viewerPhotos[viewerIndex] && viewerPhotos[viewerIndex].id === id) {
                     closeViewer();
+                }
+                if (noteFileId === id) {
+                    closeNote();
                 }
                 await renderOwned();
             } else if (action === "link") {
@@ -478,6 +619,13 @@
     });
 
     document.addEventListener("keydown", (event) => {
+        const note = document.getElementById("note-reader");
+        if (note && !note.hidden) {
+            if (event.key === "Escape") {
+                closeNote();
+            }
+            return;
+        }
         const root = document.getElementById("photo-viewer");
         if (!root || root.hidden) {
             return;

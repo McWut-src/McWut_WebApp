@@ -11,11 +11,11 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 
 ## Shipped
 
-- Product name **McWut**. **My files** at `/files`. Share a file with a link. `/Vault` and `/files/shared` redirect to My files.
+- Product name **McWut**. **My files** at `/files`. Share a file with a short public link (`/s/` plus eight letters). Older longer links still open. `/Vault` and `/files/shared` redirect to My files.
 - Join only with an invite. `/Identity/Account/Register` is **404**.
 - Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
 - Paste text on My files (stored as a normal text file).
-- Photo previews, and the text of a short note on the share page.
+- Photo previews. Short notes and Markdown files can be read on My files and on the share page.
 - Admin **People** (turn an account off / on) and **Status**.
 - Admin **Reset password** (`/admin/reset-password`) to set another person's McWut sign-in password.
 - Personal **Passwords** vault and header **Password** change.

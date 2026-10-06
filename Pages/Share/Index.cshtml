@@ -47,9 +47,22 @@ else
                             <img class="share-preview mb-2" alt="" src="/api/files/@file.Id/content?preview=true&token=@Model.Token" />
                         }
                         <div>@file.OriginalFileName <span class="text-muted small">(@file.ContentType)</span></div>
-                        @if (Model.TextPreviews.TryGetValue(file.Id, out var preview))
+                        @if (Model.Notes.TryGetValue(file.Id, out var note))
                         {
-                            <pre class="paste-preview mt-2 mb-0">@preview</pre>
+                            if (!string.IsNullOrEmpty(note.Notice))
+                            {
+                                <p class="note-skip">@note.Notice</p>
+                            }
+                            if (note.Text is not null && note.Markdown)
+                            {
+                                <div class="md-read" data-markdown>
+                                    <pre class="md-source">@note.Text</pre>
+                                </div>
+                            }
+                            else if (note.Text is not null)
+                            {
+                                <pre class="note-body">@note.Text</pre>
+                            }
                         }
                     </div>
                     <a class="btn btn-sm btn-primary" href="/api/files/@file.Id/content?token=@Model.Token">Download</a>
@@ -57,4 +70,8 @@ else
             </li>
         }
     </ul>
+}
+
+@section Scripts {
+    <script src="~/js/reader.js" asp-append-version="true"></script>
 }

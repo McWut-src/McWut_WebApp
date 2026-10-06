@@ -656,6 +656,206 @@ body.photo-viewer-open {
   font-size: 0.9rem;
 }
 
+.file-title-btn {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.file-title-btn:hover {
+  color: var(--blue-deep);
+}
+
+.note-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 12px 0 0;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.note-skip {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.md-read {
+  margin-top: 12px;
+}
+
+.md-read.is-rendered .md-source {
+  display: none;
+}
+
+.md-source {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.md-view {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.md-view > :first-child {
+  margin-top: 0;
+}
+
+.md-view h1,
+.md-view h2,
+.md-view h3,
+.md-view h4,
+.md-view h5,
+.md-view h6 {
+  font-weight: 650;
+  line-height: 1.25;
+  margin: 1.15em 0 0.4em;
+}
+
+.md-view h1 { font-size: 1.55rem; }
+.md-view h2 { font-size: 1.28rem; }
+.md-view h3 { font-size: 1.1rem; }
+
+.md-view p,
+.md-view ul,
+.md-view ol,
+.md-view blockquote,
+.md-view pre {
+  margin: 0.7em 0;
+}
+
+.md-view ul,
+.md-view ol {
+  padding-left: 1.3rem;
+}
+
+.md-view blockquote {
+  border-left: 3px solid var(--blue);
+  padding-left: 12px;
+  color: var(--ink);
+}
+
+.md-view a {
+  color: var(--blue-deep);
+}
+
+.md-view code {
+  font-family: Consolas, "Cascadia Mono", ui-monospace, monospace;
+  font-size: 0.9em;
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.md-view pre.md-code {
+  background: var(--surface);
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.md-view pre.md-code code {
+  padding: 0;
+  background: transparent;
+}
+
+.md-view img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.md-view hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 1.2em 0;
+}
+
+.note-reader {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.note-reader[hidden] {
+  display: none;
+}
+
+body.note-reader-open {
+  overflow: hidden;
+}
+
+.note-reader-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(8, 16, 28, 0.72);
+}
+
+.note-reader-frame {
+  position: relative;
+  z-index: 1;
+  width: min(44rem, 100%);
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(8, 16, 28, 0.28);
+}
+
+.note-reader-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.note-reader-name {
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-reader-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.note-reader-body {
+  overflow: auto;
+  padding: 16px 20px 24px;
+}
+
+.note-reader-body .note-body,
+.note-reader-body .note-skip {
+  margin-top: 0;
+}
+
 .password-toolbar {
   display: flex;
   gap: 8px;
