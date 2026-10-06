@@ -192,21 +192,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**6 October 2026, evening.** Production was moved on purpose to the admin reset-password build.
+**6 October 2026, night.** Production was moved on purpose to the refreshed look. Member tagging is hidden. Share links stay.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000008` | `ghcr.io/mcwut-src/mcwut_webapp:967bc98ef760e396a81a92e66becd261d80c9c44` |
-| Live | `ca-mcwut--0000009` | `ghcr.io/mcwut-src/mcwut_webapp:666a1bcf7d29e84cdd823e6b49e6cd772d5a5ecf` |
+| Previous (rollback) | `ca-mcwut--0000009` | `ghcr.io/mcwut-src/mcwut_webapp:666a1bcf7d29e84cdd823e6b49e6cd772d5a5ecf` |
+| Live | `ca-mcwut--0000010` | `ghcr.io/mcwut-src/mcwut_webapp:7a54c49262db4a178e34ef99fa3d5237c9d06d76` |
 
-`0000009` has 100% of the traffic and was Healthy. `0000008` is the photo-gallery build and stays available with no traffic. Older revision `ca-mcwut--0000007` is the password-vault image `d5f7461c29d0c3aed0550af0e971885aed82d46e`.
+`0000010` has 100% of the traffic and was Healthy. `0000009` is the previous admin reset-password build and stays available with no traffic.
 
-Checked while signed out, on `0000009`: both hosts `/health` return `ok`, Register is 404, `/files` and `/admin/reset-password` redirect to sign-in, and `/js/vault.js` still has the photo gallery. The log line `Database migrate and identity seed finished.` appeared. Sign in as admin and open **Reset password** to set another person's McWut login.
+Checked while signed out, on `0000010`: both hosts `/health` return `ok` from `4.172.131.145`, Register is 404, `/files` redirects to sign-in, and `/js/vault.js` still has the photo gallery and does not contain Tag a member. Azure SQL was briefly unavailable at startup (error 40613) and the app retried. The log line `Database migrate and identity seed finished.` appeared at 23:10 UTC. Sign in and confirm My files and Vault. `/files/shared` should send you to My files after sign-in.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000008=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000009=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
