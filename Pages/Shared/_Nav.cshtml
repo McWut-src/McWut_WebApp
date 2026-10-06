@@ -1,0 +1,65 @@
+@{
+    var path = (Context.Request.Path.Value ?? "/").TrimEnd('/');
+    if (path.Length == 0)
+    {
+        path = "/";
+    }
+    bool On(string route) => path.Equals(route, StringComparison.OrdinalIgnoreCase);
+    var files = On("/files");
+    var vault = On("/passwords");
+    var invites = On("/admin/invites");
+    var people = On("/admin/people");
+    var reset = On("/admin/reset-password");
+    var status = On("/admin/status");
+    var account = On("/account/password");
+}
+<nav class="side-nav" aria-label="Primary">
+    <a class="side-link is-primary @(files ? "active" : null)" asp-page="/Vault/Index">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+        <span>My files</span>
+    </a>
+    <a class="side-link is-primary @(vault ? "active" : null)" asp-page="/Passwords/Index">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span>Vault</span>
+    </a>
+</nav>
+@if (User.IsInRole("Admin"))
+{
+    <div class="side-label">Admin</div>
+    <nav class="side-nav" aria-label="Admin">
+        <a class="side-link @(people ? "active" : null)" asp-page="/Admin/People">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
+            <span>People</span>
+        </a>
+        <a class="side-link @(invites ? "active" : null)" asp-page="/Admin/Invites">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></svg>
+            <span>Invites</span>
+        </a>
+        <a class="side-link @(reset ? "active" : null)" asp-page="/Admin/ResetPassword">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="14" r="4"/><path d="M11.5 12.5L20 4"/><path d="M17 7l3 3"/><path d="M15 9l2 2"/></svg>
+            <span>Reset password</span>
+        </a>
+        <a class="side-link @(status ? "active" : null)" asp-page="/Admin/Status">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+            <span>Status</span>
+        </a>
+    </nav>
+}
+<div class="side-spacer"></div>
+<div class="side-account">
+    <p class="side-email">@User.Identity?.Name</p>
+    <a class="side-link @(account ? "active" : null)" asp-page="/Account/Password">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="14" r="4"/><path d="M11.5 12.5L20 4"/><path d="M17 7l3 3"/><path d="M15 9l2 2"/></svg>
+        <span>Sign-in password</span>
+    </a>
+    <form method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+        <button type="submit" class="side-button">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2"/><path d="M4 12h10"/><path d="M11 9l3 3-3 3"/></svg>
+            <span>Sign out</span>
+        </button>
+    </form>
+    <a class="side-link" asp-page="/Privacy">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+        <span>Privacy</span>
+    </a>
+</div>

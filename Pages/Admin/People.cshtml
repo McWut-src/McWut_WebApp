@@ -4,8 +4,14 @@
     ViewData["Title"] = "People";
 }
 
-<h1 class="h3 mb-3">People</h1>
-<p class="text-muted">Turn an account off when someone should not sign in. Their files stay. Open Register stays off. New people still join from <a asp-page="/Admin/Invites">Invites</a>.</p>
+<div class="page-head">
+    <div>
+        <h1 class="page-title">People</h1>
+        <p class="page-kicker">Turn an account off when someone should not sign in. Their files stay. New people still join from <a asp-page="/Admin/Invites">Invites</a>.</p>
+    </div>
+</div>
+
+<div class="panel">
 
 @if (Model.Notice is not null)
 {
@@ -57,4 +63,5 @@
         }
         </tbody>
     </table>
+</div>
 </div>

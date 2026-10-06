@@ -68,7 +68,7 @@ Open **http://localhost:8080**
 | Check | Want |
 |---|---|
 | Header | **McWut** |
-| After `vince@mcwut.com` / `vince` | **My files**, **Shared files** |
+| After `vince@mcwut.com` / `vince` | **My files**, **Vault**. No Shared files, no Tag a member |
 | http://localhost:8080/Identity/Account/Register | **404** |
 | Drop a real (non-empty) file | Link works in a private window |
 | Paste a sentence | Private window shows the text on `/s/...` |

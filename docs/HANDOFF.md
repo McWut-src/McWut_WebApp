@@ -15,10 +15,9 @@ Read this when you are working alone. Pushing code does **not** change the live 
 A private family file drop.
 
 - Sign in with email and password. Open Register is **404**. New people join only from a link you create under **Invites**.
-- **My files** (`/files`): drop files, or paste text. You get a link. Default keep time is 7 days (also 1 day, 30 days, or forever). Optional password.
-- **Shared files** (`/files/shared`): files another member tagged you on. No link needed.
-- Old `/Vault` and `/Vault/Shared` redirect to the new URLs.
-- Photos (jpeg, png, gif, webp) show as thumbnails on My files and Shared files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short text note still shows on the share page.
+- **My files** (`/files`): drop files, or paste text. You get a link. Default keep time is 7 days (also 1 day, 30 days, or forever). Optional password. That link is how a file is shared.
+- Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. Member tagging is hidden. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
+- Photos (jpeg, png, gif, webp) show as thumbnails on My files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short text note still shows on the share page.
 - **People** (`/admin/people`): turn an account off or back on. Files stay. You cannot turn yourself off, and the last admin must stay on. A turned-off person is signed out on their next click.
 - **Reset password** (`/admin/reset-password`): admin sets a new McWut sign-in password for any account. Separate from the personal Passwords vault.
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
@@ -89,7 +88,7 @@ docker compose down
 ## Click-through (Dev and QA)
 
 1. Header says **McWut**.
-2. After sign-in: **My files**, **Shared files**, **Passwords**, and for admin **Invites**, **People**, **Reset password**, **Status**. Header **Password** opens the sign-in password change.
+2. After sign-in: **My files**, **Vault**, and for admin **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no Tag a member control. Header **Password** opens the sign-in password change. `/files/shared` redirects to My files.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
 4. Paste a sentence, upload, open the `/s/...` link in a private window. The sentence is visible. Download works.
 5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too.
@@ -172,7 +171,7 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | Path | What |
 |---|---|
 | `McWutWebApp.csproj`, `Program.cs`, `Pages/`, `Controllers/` | The website |
-| `Pages/Vault/` | My files and Shared files screens. URLs are `/files`, not `/Vault` |
+| `Pages/Vault/` | My files screen. URL is `/files`, not `/Vault`. `/files/shared` redirects here. |
 | `Pages/Passwords/` | Saved logins at `/passwords`. API is `Controllers/PasswordsController.cs` |
 | `Pages/Account/Password.cshtml` | Change the McWut sign-in password |
 | `wwwroot/js/passwords.js` | Search, list, edit, copy, open |

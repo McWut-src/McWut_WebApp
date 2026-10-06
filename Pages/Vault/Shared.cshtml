@@ -4,21 +4,29 @@
     ViewData["Title"] = "Shared files";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+<div class="page-head">
     <div>
-        <h1 class="h3 mb-1">Shared files</h1>
-        <p class="text-muted mb-0">Files others tagged you on, without needing a link. Click a photo to view it.</p>
+        <h1 class="page-title">Shared files</h1>
+        <p class="page-kicker">Files tagged to you. Photos open larger.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Vault/Index">My files</a>
 </div>
 
-<div class="card shadow-sm">
+<section class="browser card">
     <div class="card-body">
+        <div class="browser-bar">
+            <label class="search-field">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+                <input id="shared-search" type="search" placeholder="Search files" autocomplete="off" aria-label="Search shared files" />
+            </label>
+            <button type="button" class="icon-btn" id="shared-refresh" title="Refresh" aria-label="Refresh">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.2-5.5"/><path d="M20 4v5h-5"/></svg>
+            </button>
+        </div>
         <div id="shared-files">
-            <p class="text-muted">Loading…</p>
+            <p class="empty">Loading…</p>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     <script src="~/js/vault.js" asp-append-version="true"></script>

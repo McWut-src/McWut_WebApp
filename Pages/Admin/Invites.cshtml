@@ -4,8 +4,14 @@
     ViewData["Title"] = "Invites";
 }
 
-<h1 class="h3 mb-3">Invites</h1>
-<p class="text-muted">People can join only with a link you create. Open Register stays off.</p>
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Invites</h1>
+        <p class="page-kicker">People can join only with a link you create.</p>
+    </div>
+</div>
+
+<div class="panel mb-3">
 
 <form method="post" class="row g-2 align-items-end mb-4">
     <div class="col-md-5">
@@ -20,6 +26,7 @@
         <button type="submit" class="btn btn-primary">Create invite</button>
     </div>
 </form>
+</div>
 
 @if (Model.CreatedUrl is not null)
 {
@@ -29,6 +36,7 @@
     </div>
 }
 
+<div class="panel">
 <table class="table">
     <thead>
         <tr>
@@ -50,3 +58,4 @@
     }
     </tbody>
 </table>
+</div>

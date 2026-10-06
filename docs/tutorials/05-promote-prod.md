@@ -61,7 +61,7 @@ Wait for Healthy, then:
 1. https://mcwut.com/health → `ok`  
 2. https://www.mcwut.com/health → `ok`  
 3. Sign in as **`vince@mcwut.com`** with the **prod** password (personal vault — **not** `vince`).  
-4. Header **McWut**, nav **My files** / **Shared files**.  
+4. Header **McWut**, nav **My files** / **Vault**. No Shared files item.  
 5. https://mcwut.com/Identity/Account/Register → **404**.  
 6. Upload a **non-empty** file. Copy link. Private window, download.
 

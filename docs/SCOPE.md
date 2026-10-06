@@ -11,7 +11,7 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 
 ## Shipped
 
-- Product name **McWut**. **My files** / **Shared files**. URLs `/files` and `/files/shared` (`/Vault` redirects).
+- Product name **McWut**. **My files** at `/files`. Share a file with a link. `/Vault` and `/files/shared` redirect to My files.
 - Join only with an invite. `/Identity/Account/Register` is **404**.
 - Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
 - Paste text on My files (stored as a normal text file).
@@ -19,10 +19,10 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 - Admin **People** (turn an account off / on) and **Status**.
 - Admin **Reset password** (`/admin/reset-password`) to set another person's McWut sign-in password.
 - Personal **Passwords** vault and header **Password** change.
-- Photo gallery thumbnails and large view on My files and Shared files.
+- Photo gallery thumbnails and large view on My files.
 - Privacy page describes what is stored.
 
-**Left on purpose:** `Pages/Vault/` folder name, `FamilyVault.*` project names, `McWutWebApp.csproj` name. The Identity Register files stay in the project so the 404 can keep winning.
+**Left on purpose:** `Pages/Vault/` folder name, `FamilyVault.*` project names, `McWutWebApp.csproj` name. The Identity Register files stay in the project so the 404 can keep winning. Member-to-member file grants stay in the code and database, and are hidden from the screens. Notes for a later design: [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 
 **Not built:** generated thumbnail files, video previews, email, richer audit UI.
 

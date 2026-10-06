@@ -1,10 +1,12 @@
 @page "/s/{token}"
 @model McWutWebApp.Pages.Share.IndexModel
 @{
-    ViewData["Title"] = "Shared files";
+    ViewData["Title"] = "Share";
 }
 
-<h1 class="h3 mb-3">@(Model.Drop?.Title ?? Model.Files.FirstOrDefault()?.OriginalFileName ?? "Shared files")</h1>
+<div class="page-head">
+    <h1 class="page-title">@(Model.Drop?.Title ?? Model.Files.FirstOrDefault()?.OriginalFileName ?? "Share")</h1>
+</div>
 
 @if (Model.RequiresPassword)
 {

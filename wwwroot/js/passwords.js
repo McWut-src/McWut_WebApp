@@ -59,6 +59,10 @@
         return null;
     }
 
+    function icon(name, extra) {
+        return window.mcwutIcon ? window.mcwutIcon(name, extra) : "";
+    }
+
     function matches(item, query) {
         if (!query) {
             return true;
@@ -77,22 +81,32 @@
             return;
         }
         await navigator.clipboard.writeText(text);
-        const previous = button.textContent;
-        button.textContent = "Copied";
-        setTimeout(() => { button.textContent = previous; }, 1200);
+        const previous = button.getAttribute("aria-label") || "Copy";
+        const previousTitle = button.getAttribute("title") || previous;
+        button.classList.add("is-copied");
+        button.setAttribute("aria-label", "Copied");
+        button.setAttribute("title", "Copied");
+        setTimeout(() => {
+            button.classList.remove("is-copied");
+            button.setAttribute("aria-label", previous);
+            button.setAttribute("title", previousTitle);
+        }, 1200);
     }
 
     function renderList() {
         const query = (searchEl?.value || "").trim().toLowerCase();
         const visible = items.filter(item => matches(item, query));
         if (visible.length === 0) {
-            listEl.innerHTML = `<p class="text-muted p-3 mb-0">${items.length === 0 ? "No logins yet." : "No matches."}</p>`;
+            listEl.innerHTML = `<p class="empty">${items.length === 0 ? "No logins yet." : "No matches."}</p>`;
             return;
         }
         listEl.innerHTML = visible.map(item => `
-            <button type="button" class="password-item${item.id === selectedId ? " active" : ""}" data-id="${esc(item.id)}" role="option">
-                <div class="fw-semibold">${esc(item.name)}</div>
-                <div class="small text-muted">${esc(item.username || item.url || "")}</div>
+            <button type="button" class="password-item${item.id === selectedId ? " active" : ""}" data-id="${esc(item.id)}" role="option" aria-selected="${item.id === selectedId ? "true" : "false"}">
+                <span class="pw-mark">${icon("lock")}</span>
+                <span>
+                    <span class="pw-name">${esc(item.name)}</span>
+                    <span class="pw-sub">${esc(item.username || item.url || "No username")}</span>
+                </span>
             </button>`).join("");
     }
 
@@ -100,9 +114,9 @@
         return `
             <div class="mb-3">
                 <div class="form-label mb-1">${label}</div>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <div class="password-value flex-grow-1">${value}</div>
-                    ${actions}
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="password-value secret flex-grow-1">${value}</div>
+                    <div class="field-tools">${actions}</div>
                 </div>
             </div>`;
     }
@@ -110,7 +124,7 @@
     function renderDetail() {
         const item = selected();
         if (!item && !editing) {
-            detailEl.innerHTML = `<div class="card-body"><p class="text-muted mb-0">Select a login, or create one.</p></div>`;
+            detailEl.innerHTML = `<div class="card-body"><p class="empty">Select a login, or create one.</p></div>`;
             return;
         }
 
@@ -131,6 +145,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="pw-password">Password</label>
                         <input id="pw-password" class="form-control" type="password" value="${esc(current.password)}" autocomplete="new-password" />
+                        <button type="button" class="btn btn-link btn-sm px-0" id="pw-show-edit">Show</button>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="pw-url">URL</label>
@@ -155,14 +170,14 @@
                 ${item.unreadable ? `<div class="alert alert-warning">This login could not be read. Saving a new copy replaces it.</div>` : ""}
                 <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                     <h2 class="h5 mb-0">${esc(item.name)}</h2>
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-primary" id="pw-edit">Edit</button>
-                        <button type="button" class="btn btn-outline-danger" id="pw-delete">Delete</button>
+                    <div class="field-tools">
+                        <button type="button" class="icon-btn" id="pw-edit" title="Edit" aria-label="Edit">${icon("pencil")}</button>
+                        <button type="button" class="icon-btn danger" id="pw-delete" title="Delete" aria-label="Delete">${icon("trash")}</button>
                     </div>
                 </div>
-                ${fieldRow("Username", `<span id="pw-username-text">${esc(item.username || "—")}</span>`, item.username ? `<button type="button" class="btn btn-sm btn-outline-secondary" data-copy="username">Copy</button>` : "")}
-                ${fieldRow("Password", `<span id="pw-password-text">${item.password ? "••••••••" : "—"}</span>`, item.password ? `<button type="button" class="btn btn-sm btn-outline-secondary" id="pw-show">Show</button><button type="button" class="btn btn-sm btn-outline-secondary" data-copy="password">Copy</button>` : "")}
-                ${fieldRow("URL", href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>` : `<span>${esc(item.url || "—")}</span>`, href ? `<button type="button" class="btn btn-sm btn-outline-secondary" data-copy="url">Copy</button><a class="btn btn-sm btn-outline-primary" href="${esc(href)}" target="_blank" rel="noopener noreferrer">Open</a>` : "")}
+                ${fieldRow("Username", `<span id="pw-username-text">${esc(item.username || "—")}</span>`, item.username ? `<button type="button" class="icon-btn" data-copy="username" title="Copy username" aria-label="Copy username">${icon("copy")}</button>` : "")}
+                ${fieldRow("Password", `<span id="pw-password-text">${item.password ? "••••••••" : "—"}</span>`, item.password ? `<button type="button" class="icon-btn" id="pw-show" title="Show password" aria-label="Show password">${icon("eye", "icon-show")}${icon("eye-off", "icon-hide")}</button><button type="button" class="icon-btn" data-copy="password" title="Copy password" aria-label="Copy password">${icon("copy")}</button>` : "")}
+                ${fieldRow("URL", href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>` : `<span>${esc(item.url || "—")}</span>`, href ? `<button type="button" class="icon-btn" data-copy="url" title="Copy URL" aria-label="Copy URL">${icon("copy")}</button><a class="icon-btn" href="${esc(href)}" target="_blank" rel="noopener noreferrer" title="Open" aria-label="Open">${icon("external")}</a>` : "")}
                 <div class="mb-0">
                     <div class="form-label">Information</div>
                     <div class="password-notes">${esc(item.information || "—")}</div>
@@ -220,14 +235,27 @@
             renderDetail();
             return;
         }
+        if (button.id === "pw-show-edit") {
+            const input = document.getElementById("pw-password");
+            if (!input) {
+                return;
+            }
+            const hidden = input.type === "password";
+            input.type = hidden ? "text" : "password";
+            button.textContent = hidden ? "Hide" : "Show";
+            return;
+        }
         if (button.id === "pw-show" && item) {
             const text = document.getElementById("pw-password-text");
-            const shown = detailEl.dataset.passwordShown === "1";
+            const reveal = detailEl.dataset.passwordShown !== "1";
             if (text) {
-                text.textContent = shown ? "••••••••" : item.password;
+                text.textContent = reveal ? item.password : "••••••••";
             }
-            detailEl.dataset.passwordShown = shown ? "0" : "1";
-            button.textContent = shown ? "Show" : "Hide";
+            detailEl.dataset.passwordShown = reveal ? "1" : "0";
+            button.classList.toggle("is-revealed", reveal);
+            const label = reveal ? "Hide password" : "Show password";
+            button.setAttribute("aria-label", label);
+            button.setAttribute("title", label);
             return;
         }
         if (button.dataset.copy && item) {
@@ -288,6 +316,6 @@
     });
 
     load(null).catch(err => {
-        listEl.innerHTML = `<p class="text-danger p-3 mb-0">${esc(err.message)}</p>`;
+        listEl.innerHTML = `<p class="empty">${esc(err.message)}</p>`;
     });
 })();

@@ -176,6 +176,6 @@ app.MapRazorPages()
 app.MapControllers();
 app.MapGet("/health", () => Results.Text("ok")).AllowAnonymous();
 app.MapGet("/Vault", () => Results.Redirect("/files")).AllowAnonymous();
-app.MapGet("/Vault/Shared", () => Results.Redirect("/files/shared")).AllowAnonymous();
+app.MapGet("/Vault/Shared", () => Results.Redirect("/files")).AllowAnonymous();
 
 app.Run();

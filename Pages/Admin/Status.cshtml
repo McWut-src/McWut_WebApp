@@ -4,25 +4,23 @@
     ViewData["Title"] = "Status";
 }
 
-<h1 class="h3 mb-3">Status</h1>
-<p class="text-muted">A look at this running site. The public address <a href="/health">/health</a> still answers <code>ok</code> for the host. This page does not show passwords or connection strings.</p>
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Status</h1>
+        <p class="page-kicker">This running site. <a href="/health">/health</a> still answers <code>ok</code>. No passwords or connection strings here.</p>
+    </div>
+</div>
 
 @if (Model.Problem is not null)
 {
     <div class="alert alert-danger">@Model.Problem</div>
 }
 
-<dl class="row">
-    <dt class="col-sm-3">Environment</dt>
-    <dd class="col-sm-9">@Model.EnvironmentName</dd>
-    <dt class="col-sm-3">Database</dt>
-    <dd class="col-sm-9">@Model.DatabaseProvider — @(Model.DatabaseOk ? "reachable" : "not reachable")</dd>
-    <dt class="col-sm-3">File storage</dt>
-    <dd class="col-sm-9">@Model.StorageProvider</dd>
-    <dt class="col-sm-3">Accounts</dt>
-    <dd class="col-sm-9">@Model.UserCount</dd>
-    <dt class="col-sm-3">Files kept</dt>
-    <dd class="col-sm-9">@Model.FileCount</dd>
-    <dt class="col-sm-3">Open invites</dt>
-    <dd class="col-sm-9">@Model.OpenInviteCount</dd>
+<dl class="status-list panel">
+    <div><dt>Environment</dt><dd>@Model.EnvironmentName</dd></div>
+    <div><dt>Database</dt><dd>@Model.DatabaseProvider — @(Model.DatabaseOk ? "reachable" : "not reachable")</dd></div>
+    <div><dt>File storage</dt><dd>@Model.StorageProvider</dd></div>
+    <div><dt>Accounts</dt><dd>@Model.UserCount</dd></div>
+    <div><dt>Files kept</dt><dd>@Model.FileCount</dd></div>
+    <div><dt>Open invites</dt><dd>@Model.OpenInviteCount</dd></div>
 </dl>

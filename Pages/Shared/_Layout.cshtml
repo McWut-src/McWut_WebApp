@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -12,66 +12,61 @@
     @inject Microsoft.AspNetCore.Identity.SignInManager<Microsoft.AspNetCore.Identity.IdentityUser> SignInManager
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">McWut</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+<body class="@(SignInManager.IsSignedIn(User) ? "is-auth" : "is-guest")">
+    <div class="app-shell">
+        <header class="topbar">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <button class="top-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-menu" aria-controls="app-menu" aria-label="Open menu" title="Menu">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Vault/Index">My files</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Vault/Shared">Shared files</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Passwords/Index">Passwords</a>
-                            </li>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-page="/Admin/Invites">Invites</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-page="/Admin/People">People</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-page="/Admin/ResetPassword">Reset password</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-page="/Admin/Status">Status</a>
-                                </li>
-                            }
-                        }
-                    </ul>
-                    <partial name="_LoginPartial" />
+            }
+            <a class="brand" asp-area="" asp-page="/Index">McWut</a>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <a class="top-icon d-lg-none" asp-page="/Vault/Index" title="My files" aria-label="My files">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+                </a>
+                <a class="top-icon d-lg-none" asp-page="/Passwords/Index" title="Password vault" aria-label="Password vault">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                </a>
+                <span class="top-mail">@User.Identity?.Name</span>
+            }
+            else
+            {
+                <a class="top-signin" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
+            }
+        </header>
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <aside class="sidebar">
+                <partial name="_Nav" />
+            </aside>
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="app-menu" aria-labelledby="app-menu-label">
+                <div class="offcanvas-header">
+                    <h2 class="offcanvas-title h6 mb-0" id="app-menu-label">McWut</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column">
+                    <partial name="_Nav" />
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - McWut - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        }
+        <div class="app-main">
+            <main role="main">
+                @RenderBody()
+            </main>
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <footer class="guest-foot">&copy; 2026 McWut · <a asp-area="" asp-page="/Privacy">Privacy</a></footer>
+            }
         </div>
-    </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/icons.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

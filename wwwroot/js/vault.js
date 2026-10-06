@@ -28,7 +28,7 @@
             return "Forever";
         }
         const when = new Date(iso);
-        return when.toLocaleString();
+        return when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
     }
 
     function formatSize(bytes) {
@@ -56,6 +56,50 @@
         return `/api/files/${esc(file.id)}/content?preview=true`;
     }
 
+    function icon(name, extra) {
+        return window.mcwutIcon ? window.mcwutIcon(name, extra) : "";
+    }
+
+    function iconButton(action, name, label, danger) {
+        return `<button type="button" class="icon-btn${danger ? " danger" : ""}" data-action="${action}" title="${label}" aria-label="${label}">${icon(name)}</button>`;
+    }
+
+    function flashButton(button, label) {
+        const previous = button.getAttribute("aria-label") || "";
+        const previousTitle = button.getAttribute("title") || "";
+        button.classList.add("is-copied");
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
+        setTimeout(() => {
+            button.classList.remove("is-copied");
+            button.setAttribute("aria-label", previous);
+            button.setAttribute("title", previousTitle);
+        }, 1200);
+    }
+
+    function fileQuery(inputId) {
+        return (document.getElementById(inputId)?.value || "").trim().toLowerCase();
+    }
+
+    function filterFiles(files, inputId) {
+        const query = fileQuery(inputId);
+        if (!query) {
+            return files;
+        }
+        return files.filter(file => String(file.originalFileName || "").toLowerCase().includes(query));
+    }
+
+    function fileMeta(file, withDownloads) {
+        const bits = [formatSize(file.sizeBytes), formatExpiry(file.expiresAt)];
+        if (withDownloads && (file.downloadCount || file.maxDownloads != null)) {
+            bits.push(file.maxDownloads != null ? `${file.downloadCount} / ${file.maxDownloads}` : `${file.downloadCount} downloads`);
+        }
+        if (file.hasPassword) {
+            bits.push("password");
+        }
+        return esc(bits.join(" · "));
+    }
+
     function photoCard(file, actions) {
         return `
             <article class="photo-card" data-id="${esc(file.id)}">
@@ -63,7 +107,7 @@
                     <img alt="" loading="lazy" src="${previewSrc(file)}">
                 </button>
                 <div class="photo-name" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
-                <div class="small text-muted">${formatSize(file.sizeBytes)}${file.hasPassword ? " · password" : ""}</div>
+                <div class="photo-meta">${formatSize(file.sizeBytes)}${file.hasPassword ? " · password" : ""}</div>
                 ${actions}
             </article>`;
     }
@@ -71,15 +115,30 @@
     function ownedPhotoActions() {
         return `
             <div class="photo-actions">
-                <button type="button" class="btn btn-sm btn-outline-primary" data-action="link">Link</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-action="download">Download</button>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete">Delete</button>
-            </div>
-            <select class="form-select form-select-sm mt-1" data-action="grant">${memberOptions()}</select>`;
+                ${iconButton("link", "link", "Copy link")}
+                ${iconButton("download", "download", "Download")}
+                ${iconButton("delete", "trash", "Delete", true)}
+            </div>`;
     }
 
-    function sharedPhotoActions(file) {
-        return `<a class="btn btn-sm btn-primary mt-1" href="/api/files/${esc(file.id)}/content">Download</a>`;
+    function fileGlyph(file) {
+        return `<div class="file-glyph" aria-hidden="true">${icon(isImage(file.contentType) ? "image" : "files")}</div>`;
+    }
+
+    function ownedRow(file) {
+        return `
+            <div class="file-row" data-id="${esc(file.id)}">
+                ${fileGlyph(file)}
+                <div class="file-main">
+                    <div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
+                    <div class="file-meta">${fileMeta(file, true)}</div>
+                </div>
+                <div class="file-actions">
+                    ${iconButton("link", "link", "Copy link")}
+                    ${iconButton("download", "download", "Download")}
+                    ${iconButton("delete", "trash", "Delete", true)}
+                </div>
+            </div>`;
     }
 
     function pasteFile() {
@@ -108,11 +167,8 @@
     const fileList = document.getElementById("file-list");
     const uploadBtn = document.getElementById("upload-btn");
     const myFiles = document.getElementById("my-files");
-    const sharedFiles = document.getElementById("shared-files");
     let queued = [];
-    let members = [];
     let ownedFiles = [];
-    let sharedList = [];
     let viewerPhotos = [];
     let viewerIndex = -1;
     let viewerReturn = null;
@@ -160,93 +216,49 @@
 
     document.getElementById("paste-text")?.addEventListener("input", renderQueue);
 
-    async function loadMembers() {
-        try {
-            members = await api("/api/members", { headers: headers() }) || [];
-        } catch {
-            members = [];
+    function paintLibrary(target, files, sourceCount, photoActions, rowBuilder, emptyText) {
+        if (sourceCount === 0) {
+            target.innerHTML = `<p class="empty">${emptyText}</p>`;
+            return;
         }
+        if (files.length === 0) {
+            target.innerHTML = `<p class="empty">No matches.</p>`;
+            return;
+        }
+        const photos = files.filter(f => isImage(f.contentType));
+        const others = files.filter(f => !isImage(f.contentType));
+        const grid = photos.length === 0 ? "" : `
+            <div class="section-label">Photos</div>
+            <div class="photo-grid" aria-label="Photos">
+                ${photos.map(f => photoCard(f, photoActions(f))).join("")}
+            </div>`;
+        const rows = others.length === 0 ? "" : `
+            <div class="section-label">Files</div>
+            ${others.map(rowBuilder).join("")}`;
+        target.innerHTML = grid + rows;
     }
 
-    function memberOptions() {
-        if (members.length === 0) {
-            return `<option value="">No other members have signed in yet</option>`;
-        }
-        return `<option value="">Tag a member</option>` +
-            members.map(m => `<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join("");
+    function paintOwned() {
+        if (!myFiles) return;
+        paintLibrary(
+            myFiles,
+            filterFiles(ownedFiles, "file-search"),
+            ownedFiles.length,
+            () => ownedPhotoActions(),
+            ownedRow,
+            "No files yet.");
     }
 
     async function renderOwned() {
         if (!myFiles) return;
-        const files = await api("/api/files", { headers: headers() }) || [];
-        ownedFiles = files;
-        if (files.length === 0) {
-            myFiles.innerHTML = `<p class="text-muted mb-0">No files yet.</p>`;
-            return;
-        }
-        const photos = files.filter(f => isImage(f.contentType));
-        const others = files.filter(f => !isImage(f.contentType));
-        const grid = photos.length === 0 ? "" : `
-            <div class="photo-grid" aria-label="Photos">
-                ${photos.map(f => photoCard(f, ownedPhotoActions())).join("")}
-            </div>`;
-        const table = others.length === 0 ? "" : `
-            <table class="table align-middle">
-                <thead><tr><th>File</th><th>Expires</th><th>Downloads</th><th></th></tr></thead>
-                <tbody>
-                    ${others.map(f => `
-                        <tr data-id="${esc(f.id)}">
-                            <td>
-                                <div>${esc(f.originalFileName)}</div>
-                                <div class="small text-muted">${formatSize(f.sizeBytes)}${f.hasPassword ? " · password" : ""}</div>
-                            </td>
-                            <td><span class="badge text-bg-secondary">${esc(formatExpiry(f.expiresAt))}</span></td>
-                            <td>${esc(f.downloadCount)}${f.maxDownloads != null ? " / " + esc(f.maxDownloads) : ""}</td>
-                            <td class="text-end">
-                                <div class="btn-group btn-group-sm mb-1">
-                                    <button type="button" class="btn btn-outline-primary" data-action="link">Link</button>
-                                    <button type="button" class="btn btn-outline-secondary" data-action="download">Download</button>
-                                    <button type="button" class="btn btn-outline-danger" data-action="delete">Delete</button>
-                                </div>
-                                <select class="form-select form-select-sm" data-action="grant">${memberOptions()}</select>
-                            </td>
-                        </tr>`).join("")}
-                </tbody>
-            </table>`;
-        myFiles.innerHTML = grid + table;
+        ownedFiles = await api("/api/files", { headers: headers() }) || [];
+        paintOwned();
     }
 
-    async function renderShared() {
-        if (!sharedFiles) return;
-        const files = await api("/api/files/shared-with-me", { headers: headers() }) || [];
-        sharedList = files;
-        if (files.length === 0) {
-            sharedFiles.innerHTML = `<p class="text-muted mb-0">Nothing has been tagged to you yet.</p>`;
-            return;
-        }
-        const photos = files.filter(f => isImage(f.contentType));
-        const others = files.filter(f => !isImage(f.contentType));
-        const grid = photos.length === 0 ? "" : `
-            <div class="photo-grid" aria-label="Photos">
-                ${photos.map(f => photoCard(f, sharedPhotoActions(f))).join("")}
-            </div>`;
-        const table = others.length === 0 ? "" : `
-            <table class="table align-middle">
-                <thead><tr><th>File</th><th>Expires</th><th></th></tr></thead>
-                <tbody>
-                    ${others.map(f => `
-                        <tr>
-                            <td>
-                                ${esc(f.originalFileName)}
-                                <div class="small text-muted">${formatSize(f.sizeBytes)}</div>
-                            </td>
-                            <td>${esc(formatExpiry(f.expiresAt))}</td>
-                            <td class="text-end"><a class="btn btn-sm btn-primary" href="/api/files/${esc(f.id)}/content">Download</a></td>
-                        </tr>`).join("")}
-                </tbody>
-            </table>`;
-        sharedFiles.innerHTML = grid + table;
-    }
+    document.getElementById("file-search")?.addEventListener("input", paintOwned);
+    document.getElementById("file-refresh")?.addEventListener("click", () => {
+        renderOwned().catch(err => { myFiles.innerHTML = `<p class="empty">${esc(err.message)}</p>`; });
+    });
 
     function ensureViewer() {
         if (document.getElementById("photo-viewer")) {
@@ -266,10 +278,10 @@
                 <div class="photo-viewer-bar">
                     <div class="photo-viewer-name" data-photo-name></div>
                     <div class="photo-viewer-buttons">
-                        <button type="button" class="btn btn-sm btn-light" data-photo-prev>Previous</button>
-                        <button type="button" class="btn btn-sm btn-light" data-photo-next>Next</button>
-                        <a class="btn btn-sm btn-primary" data-photo-download>Download</a>
-                        <button type="button" class="btn btn-sm btn-light" data-photo-close>Close</button>
+                        <button type="button" class="icon-btn" data-photo-prev title="Previous" aria-label="Previous">${icon("left")}</button>
+                        <button type="button" class="icon-btn" data-photo-next title="Next" aria-label="Next">${icon("right")}</button>
+                        <a class="icon-btn" data-photo-download title="Download" aria-label="Download">${icon("download")}</a>
+                        <button type="button" class="icon-btn" data-photo-close title="Close" aria-label="Close">${icon("close")}</button>
                     </div>
                 </div>
             </div>`;
@@ -430,8 +442,7 @@
     document.getElementById("copy-link")?.addEventListener("click", async () => {
         const shareUrl = document.getElementById("share-url");
         await navigator.clipboard.writeText(shareUrl.value);
-        document.getElementById("copy-link").textContent = "Copied";
-        setTimeout(() => { document.getElementById("copy-link").textContent = "Copy"; }, 1500);
+        flashButton(document.getElementById("copy-link"), "Copied");
     });
 
     myFiles?.addEventListener("click", async (e) => {
@@ -459,38 +470,11 @@
                     body: JSON.stringify({ allowPreview: true })
                 });
                 await navigator.clipboard.writeText(link.url);
-                button.textContent = "Copied";
-                setTimeout(() => { button.textContent = "Link"; }, 1500);
+                flashButton(button, "Copied");
             }
         } catch (err) {
             alert(err.message);
         }
-    });
-
-    myFiles?.addEventListener("change", async (e) => {
-        const select = e.target.closest("select[data-action='grant']");
-        if (!select || !select.value) return;
-        const id = select.closest("[data-id]").getAttribute("data-id");
-        try {
-            await api(`/api/files/${id}/grants`, {
-                method: "POST",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify({ userId: select.value, permission: "Download" })
-            });
-            select.value = "";
-            alert("Tagged. They will see it under Shared files.");
-        } catch (err) {
-            alert(err.message);
-        }
-    });
-
-    sharedFiles?.addEventListener("click", (event) => {
-        const button = event.target.closest("button[data-action='view']");
-        if (!button) {
-            return;
-        }
-        const id = button.closest("[data-id]").getAttribute("data-id");
-        openViewer(sharedList, id, button);
     });
 
     document.addEventListener("keydown", (event) => {
@@ -510,21 +494,11 @@
     });
 
     async function start() {
-        if (myFiles || sharedFiles) {
-            await loadMembers();
-        }
         if (myFiles) {
             try {
                 await renderOwned();
             } catch (err) {
-                myFiles.innerHTML = `<p class="text-danger">${esc(err.message)}</p>`;
-            }
-        }
-        if (sharedFiles) {
-            try {
-                await renderShared();
-            } catch (err) {
-                sharedFiles.innerHTML = `<p class="text-danger">${esc(err.message)}</p>`;
+                myFiles.innerHTML = `<p class="empty">${esc(err.message)}</p>`;
             }
         }
     }
