@@ -13,20 +13,40 @@ public sealed class DatabaseStartupWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        var delay = TimeSpan.FromSeconds(5);
+        while (!stoppingToken.IsCancellationRequested)
         {
-            using (var scope = scopes.CreateScope())
+            try
             {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await db.Database.MigrateAsync(stoppingToken).ConfigureAwait(false);
-            }
+                using (var scope = scopes.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    await db.Database.MigrateAsync(stoppingToken).ConfigureAwait(false);
+                }
 
-            await IdentitySeed.SeedAsync(scopes, stoppingToken).ConfigureAwait(false);
-            logger.LogInformation("Database migrate and identity seed finished.");
-        }
-        catch (Exception ex)
-        {
-            logger.LogCritical(ex, "Database migrate or identity seed failed.");
+                await IdentitySeed.SeedAsync(scopes, stoppingToken).ConfigureAwait(false);
+                logger.LogInformation("Database migrate and identity seed finished.");
+                return;
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Database migrate or identity seed failed. Retrying in {DelaySeconds} seconds.", delay.TotalSeconds);
+                try
+                {
+                    await Task.Delay(delay, stoppingToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                var next = delay.TotalSeconds * 2;
+                delay = TimeSpan.FromSeconds(Math.Min(300, next));
+            }
         }
     }
 }

@@ -188,7 +188,25 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-Fill this in when you promote. One line is enough.
+**6 October 2026.** Production was moved on purpose.
 
-- Image before this handoff: (see Azure revision history)
-- Image after the October 2026 paste / people / preview change: **not promoted yet when this file was written**. Update this line after you point **ca-mcwut** at the new SHA.
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000004` | `ghcr.io/mcwut-src/mcwut_webapp:53c1826167badfec9ca28afafeac8d65b8afd685` |
+| Live after the paste / people / preview push | `ca-mcwut--0000005` | `ghcr.io/mcwut-src/mcwut_webapp:fd92b738590374f6c22663ec27410133954c7d0d` |
+
+Checked while signed out: both hosts `/health` return `ok`, Register is 404, the home page says McWut and mentions paste, `/Vault` redirects to `/files`.
+
+**Sign-in and upload were not checked.** Azure SQL free database `sql-mcwut` is paused for the rest of October 2026 (error 42119). It said the free amount renews at 12:00 AM UTC on **1 November 2026**. The site stays up. Login, invites, and files need the database.
+
+To use it before November: Azure portal → the database → **Compute and Storage** → **Continue using database with additional charges**. That costs money for the rest of the month.
+
+The app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). After this retry build is the live image, you do not have to restart the container when SQL wakes up. Until that build is live, restart revision `ca-mcwut--0000005` after the database is back, or it will keep the failed one-shot migrate from the first boot.
+
+Rollback, if the new site is wrong and you want the old one:
+
+```powershell
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000004=100
+```
+
+Do not delete the SQL server or the storage account.
