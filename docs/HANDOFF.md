@@ -193,15 +193,17 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 | | Revision | Image |
 |---|---|---|
 | Previous (rollback) | `ca-mcwut--0000004` | `ghcr.io/mcwut-src/mcwut_webapp:53c1826167badfec9ca28afafeac8d65b8afd685` |
-| Live after the paste / people / preview push | `ca-mcwut--0000005` | `ghcr.io/mcwut-src/mcwut_webapp:fd92b738590374f6c22663ec27410133954c7d0d` |
+| Live | `ca-mcwut--0000006` | `ghcr.io/mcwut-src/mcwut_webapp:6d86a22f309c6ef2503d9d144feed7197d381316` |
 
-Checked while signed out: both hosts `/health` return `ok`, Register is 404, the home page says McWut and mentions paste, `/Vault` redirects to `/files`.
+`ca-mcwut--0000005` was the paste / people / preview build (`fd92b73`). It was replaced the same day by `0000006`, which is that build plus “keep trying the database”.
+
+Checked while signed out, on `0000006`: both hosts `/health` return `ok`, Register is 404, the home page says McWut and mentions paste, `/Vault` redirects to `/files`. Logs show migrate **retrying** (not a crash).
 
 **Sign-in and upload were not checked.** Azure SQL free database `sql-mcwut` is paused for the rest of October 2026 (error 42119). It said the free amount renews at 12:00 AM UTC on **1 November 2026**. The site stays up. Login, invites, and files need the database.
 
 To use it before November: Azure portal → the database → **Compute and Storage** → **Continue using database with additional charges**. That costs money for the rest of the month.
 
-The app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). After this retry build is the live image, you do not have to restart the container when SQL wakes up. Until that build is live, restart revision `ca-mcwut--0000005` after the database is back, or it will keep the failed one-shot migrate from the first boot.
+The live app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). When SQL wakes up, you do not have to restart the container. Look for the log line `Database migrate and identity seed finished.` Then sign in with the **prod** password (Azure secret `website-admin-password`, not `vince`) and upload one real file.
 
 Rollback, if the new site is wrong and you want the old one:
 
