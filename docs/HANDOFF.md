@@ -18,7 +18,7 @@ A private family file drop.
 - **My files** (`/files`): drop files, or paste text. You get a link. Default keep time is 7 days (also 1 day, 30 days, or forever). Optional password.
 - **Shared files** (`/files/shared`): files another member tagged you on. No link needed.
 - Old `/Vault` and `/Vault/Shared` redirect to the new URLs.
-- Photos (jpeg, png, gif, webp) show a small preview. A short text note shows on the share page. Previews do not count as downloads. SVG and HTML stay downloads.
+- Photos (jpeg, png, gif, webp) show as thumbnails on My files and Shared files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short text note still shows on the share page.
 - **People** (`/admin/people`): turn an account off or back on. Files stay. You cannot turn yourself off, and the last admin must stay on. A turned-off person is signed out on their next click.
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
 - **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list.
@@ -43,16 +43,20 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 ## What was added in the last change
 
-Database migration `AddPasswordVault` for SQLite and for SQL Server. Startup applies it. Table `PasswordVaultItems`.
+No new database migration.
+
+- Photo gallery on My files and Shared files. Thumbnails use the photo itself, shown smaller. Click opens a large view with Download and Close. Previous, Next, and the arrow keys move through the photos on that page.
+
+The password vault is already on the site. Database migration `AddPasswordVault` (SQLite and SQL Server) created `PasswordVaultItems`.
 
 - **Passwords** (`/passwords`): each signed-in person has their own list. Fields are name, username, password, URL, and information. Copy is on the username, password, and URL. Open shows up when the URL is `http://` or `https://`. Edit, Save, and Delete. Search matches name, username, URL, and information.
 - The name is stored as text so the list can show it. Username, password, URL, and notes are encrypted with this site's data-protection key (purpose `McWut.PasswordVault.v1`). Another member's request for your item is 404. Losing the key ring makes an item unreadable; saving a new copy replaces it.
 - **Change sign-in password** (`/account/password`). That is the McWut login, separate from a saved login. After a change you stay signed in.
 - Privacy page says the vault is stored.
 
-Already on the site before this build: paste, image and text previews, People, Status, lockout, filename escaping.
+Already on the site before this build: the password vault, paste, People, Status, lockout, filename escaping.
 
-Still not built, on purpose: generated thumbnail files, video previews, email, public Register, renaming `FamilyVault`.
+Still not built, on purpose: separate small thumbnail files, video previews, email, public Register, renaming `FamilyVault`.
 
 ---
 
@@ -94,7 +98,7 @@ docker compose down
 2. After sign-in: **My files**, **Shared files**, **Passwords**, and for admin **Invites**, **People**, **Status**. Header **Password** opens the sign-in password change.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
 4. Paste a sentence, upload, open the `/s/...` link in a private window. The sentence is visible. Download works.
-5. Drop a real photo. A small picture shows in the list. The share page shows it too.
+5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too.
 6. **People**: turn `member@` off. That login says the account is turned off. Turn it back on. Sign-in works again.
 7. **Status** loads and does not show a connection string.
 8. `/health` is `ok`.
