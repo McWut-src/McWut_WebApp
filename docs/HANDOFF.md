@@ -194,25 +194,23 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**6 October 2026.** Production was moved on purpose.
+**6 October 2026, later the same day.** Production was moved on purpose to the password vault build.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000004` | `ghcr.io/mcwut-src/mcwut_webapp:53c1826167badfec9ca28afafeac8d65b8afd685` |
-| Live | `ca-mcwut--0000006` | `ghcr.io/mcwut-src/mcwut_webapp:6d86a22f309c6ef2503d9d144feed7197d381316` |
+| Previous (rollback) | `ca-mcwut--0000006` | `ghcr.io/mcwut-src/mcwut_webapp:6d86a22f309c6ef2503d9d144feed7197d381316` |
+| Live | `ca-mcwut--0000007` | `ghcr.io/mcwut-src/mcwut_webapp:d5f7461c29d0c3aed0550af0e971885aed82d46e` |
 
-`ca-mcwut--0000005` was the paste / people / preview build (`fd92b73`). It was replaced the same day by `0000006`, which is that build plus “keep trying the database”.
+`0000007` has 100% of the traffic and was Healthy. `0000006` is still active with no traffic. Older revision `ca-mcwut--0000004` is the image `53c1826167badfec9ca28afafeac8d65b8afd685`.
 
-Checked while signed out, on `0000006`: both hosts `/health` return `ok`, Register is 404, the home page says McWut and mentions paste, `/Vault` redirects to `/files`. Logs show migrate **retrying** (not a crash).
+Checked while signed out, on `0000007`: both hosts `/health` return `ok`, Register is 404, `/passwords` redirects to sign-in, and `/js/passwords.js` is the new vault page script. The log line `Database migrate and identity seed finished.` appeared, and SQL is reading and writing `PasswordVaultItems`.
 
-**Sign-in and upload were not checked on `0000006`.** At that time Azure SQL `sql-mcwut` was paused (error 42119). On 6 October 2026 Vince said the database is being paid for again, and both public hosts returned `/health` `ok` from `4.172.131.145`.
+Docker QA on this PC passed before the promote: create a login, reject a `javascript:` URL, the other toy user cannot read it, change the sign-in password and change it back, then delete the login. The prod password was not used from here. Sign in yourself with the Azure secret `website-admin-password` and save one real login.
 
-The app retries migrate and the admin seed until they succeed (every 5 seconds, then longer, up to 5 minutes). Look for the log line `Database migrate and identity seed finished.` Then sign in with the **prod** password (Azure secret `website-admin-password`, not `vince`) and upload one real file. The password-vault migration runs in that same step. It creates `PasswordVaultItems`. Do not restart the container just to migrate.
-
-Rollback, if the new site is wrong and you want the old one:
+Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000004=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000006=100
 ```
 
-Do not delete the SQL server or the storage account.
+Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
