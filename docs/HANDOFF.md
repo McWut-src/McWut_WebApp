@@ -45,9 +45,10 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 No new database migration.
 
-- **Reset password** (`/admin/reset-password`): admin-only page to set a new sign-in password for any account. Uses Identity password reset (security stamp updates). Confirm dialog before save. Does not change account on/off (that stays on People).
+- New share links are short: `/s/` plus eight letters or digits. Older longer links still open. Invite links stay long.
+- A note, `.txt`, `.csv`, `.json`, or `.md` file can be read on My files and on the share page. Markdown is formatted. Opening that view does not count as a download. HTML and SVG stay downloads.
 
-Already on the site before this build: photo gallery, password vault, paste, People, Status, lockout, filename escaping.
+Already on the site before this build: photo gallery, password vault, paste, People, Reset password, Status, lockout, filename escaping.
 
 Still not built, on purpose: separate small thumbnail files, video previews, email, public Register, renaming `FamilyVault`.
 
@@ -193,23 +194,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**6 October 2026, night.** Production was moved on purpose to the refreshed look. Member tagging is hidden. Share links stay.
+**6 October 2026, night.** Production was moved on purpose to short share links and the note reader.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000009` | `ghcr.io/mcwut-src/mcwut_webapp:666a1bcf7d29e84cdd823e6b49e6cd772d5a5ecf` |
-| Live | `ca-mcwut--0000010` | `ghcr.io/mcwut-src/mcwut_webapp:7a54c49262db4a178e34ef99fa3d5237c9d06d76` |
+| Previous (rollback) | `ca-mcwut--0000010` | `ghcr.io/mcwut-src/mcwut_webapp:7a54c49262db4a178e34ef99fa3d5237c9d06d76` |
+| Live | `ca-mcwut--0000011` | `ghcr.io/mcwut-src/mcwut_webapp:5d9b9d0783f272e28101127fe089745444c7a2fb` |
 
-`0000010` has 100% of the traffic and was Healthy. `0000009` is the previous admin reset-password build and stays available with no traffic.
+`0000011` has 100% of the traffic and was Healthy. `0000010` is the previous refreshed-UI build and stays available with no traffic.
 
-Checked while signed out, on `0000010`: both hosts `/health` return `ok` from `4.172.131.145`, Register is 404, `/files` redirects to sign-in, and `/js/vault.js` still has the photo gallery and does not contain Tag a member. Azure SQL was briefly unavailable at startup (error 40613) and the app retried. The log line `Database migrate and identity seed finished.` appeared at 23:10 UTC. Sign in and confirm My files and Vault. `/files/shared` should send you to My files after sign-in.
+Checked while signed out, on `0000011`: both hosts `/health` return `ok` from `4.172.131.145`, Register is 404, `/files` redirects to sign-in, `/js/reader.js` is served, and `/js/vault.js` has the reader and does not contain Tag a member. The log line `Database migrate and identity seed finished.` appeared at 23:43 UTC. Sign in and confirm a new share link is short, and that a note opens on My files and on that link.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000009=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000010=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
-
-Short share links and the note reader are in the working copy after 6 October 2026. They are not on revision `0000010` until the next promote.
