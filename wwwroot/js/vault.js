@@ -99,7 +99,10 @@
     }
 
     function fileMeta(file, withDownloads) {
-        const bits = [formatSize(file.sizeBytes), formatExpiry(file.expiresAt)];
+        const bits = [formatSize(file.sizeBytes)];
+        if (file.expiresAt) {
+            bits.push(formatExpiry(file.expiresAt));
+        }
         if (withDownloads && (file.downloadCount || file.maxDownloads != null)) {
             bits.push(file.maxDownloads != null ? `${file.downloadCount} / ${file.maxDownloads}` : `${file.downloadCount} downloads`);
         }
@@ -116,7 +119,7 @@
                     <img alt="" loading="lazy" src="${previewSrc(file)}">
                 </button>
                 <div class="photo-name" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
-                <div class="photo-meta">${formatSize(file.sizeBytes)}${file.hasPassword ? " · password" : ""}</div>
+                <div class="photo-meta">${formatSize(file.sizeBytes)}${file.expiresAt ? " · " + esc(formatExpiry(file.expiresAt)) : ""}${file.hasPassword ? " · password" : ""}</div>
                 ${actions}
             </article>`;
     }
@@ -191,7 +194,7 @@
         if (!text.trim()) {
             return null;
         }
-        let name = (document.getElementById("drop-title")?.value || "note").trim();
+        let name = (document.getElementById("note-name")?.value || "note").trim();
         name = name.replace(/[\\/]/g, "-").replace(/[\u0000-\u001f]/g, "");
         name = name.replace(/\.[^.]+$/, "");
         if (!name || name === "." || name === "..") {
@@ -257,7 +260,55 @@
         });
     }
 
-    document.getElementById("paste-text")?.addEventListener("input", renderQueue);
+    function optionSummary() {
+        const ttl = document.getElementById("ttl")?.value || "0";
+        const labels = { "0": "Kept forever", "1": "Kept 1 day", "7": "Kept 7 days", "30": "Kept 30 days" };
+        let text = labels[ttl] || "Kept forever";
+        if ((document.getElementById("password")?.value || "").length > 0) {
+            text += " · password";
+        }
+        return text;
+    }
+
+    function syncOptions() {
+        const summary = document.getElementById("options-summary");
+        if (summary) {
+            summary.textContent = optionSummary();
+        }
+        const nameWrap = document.getElementById("note-name-wrap");
+        const pasteEl = document.getElementById("paste-text");
+        if (nameWrap) {
+            nameWrap.hidden = !pasteEl || !pasteEl.value.trim();
+        }
+    }
+
+    function resetOptions() {
+        const ttl = document.getElementById("ttl");
+        const password = document.getElementById("password");
+        const name = document.getElementById("note-name");
+        const options = document.getElementById("composer-options");
+        if (ttl) {
+            ttl.value = "0";
+        }
+        if (password) {
+            password.value = "";
+        }
+        if (name) {
+            name.value = "";
+        }
+        if (options) {
+            options.open = false;
+        }
+        syncOptions();
+    }
+
+    document.getElementById("paste-text")?.addEventListener("input", () => {
+        syncOptions();
+        renderQueue();
+    });
+    document.getElementById("note-name")?.addEventListener("input", renderQueue);
+    document.getElementById("ttl")?.addEventListener("change", syncOptions);
+    document.getElementById("password")?.addEventListener("input", syncOptions);
 
     function paintLibrary(target, files, sourceCount, photoActions, rowBuilder, emptyText) {
         if (sourceCount === 0) {
@@ -503,19 +554,16 @@
 
     document.getElementById("upload-btn")?.addEventListener("click", async () => {
         const status = document.getElementById("upload-status");
-        const linkBox = document.getElementById("link-box");
-        const shareUrl = document.getElementById("share-url");
+        const button = document.getElementById("upload-btn");
         status.hidden = false;
-        status.textContent = "Uploading…";
-        linkBox.hidden = true;
+        status.textContent = "Saving…";
+        if (button) {
+            button.disabled = true;
+        }
         try {
             const ttl = Number(document.getElementById("ttl").value);
             const retention = { days: ttl === 0 ? null : ttl };
             const password = document.getElementById("password").value || null;
-            let title = document.getElementById("drop-title").value || "";
-            if (title.length > 200) {
-                title = title.slice(0, 200);
-            }
             const batch = queued.slice();
             const pasted = pasteFile();
             if (pasted) {
@@ -523,6 +571,13 @@
             }
             if (batch.length === 0) {
                 throw new Error("Choose a file or paste some text.");
+            }
+            let title = "";
+            if (pasted) {
+                title = pasted.name.replace(/\.txt$/i, "");
+                if (title.length > 200) {
+                    title = title.slice(0, 200);
+                }
             }
             const drop = await api("/api/drops", {
                 method: "POST",
@@ -561,14 +616,6 @@
                     headers: headers()
                 });
             }
-            const link = await api(`/api/drops/${drop.id}/links`, {
-                method: "POST",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify({ retention, password, allowPreview: true })
-            });
-            shareUrl.value = link.url;
-            linkBox.hidden = false;
-            status.textContent = "Ready. Copy the link to share.";
             queued = [];
             if (fileInput) {
                 fileInput.value = "";
@@ -577,17 +624,14 @@
             if (pasteEl) {
                 pasteEl.value = "";
             }
+            resetOptions();
             renderQueue();
+            status.textContent = "Saved.";
             await renderOwned();
         } catch (err) {
             status.textContent = err.message;
+            renderQueue();
         }
-    });
-
-    document.getElementById("copy-link")?.addEventListener("click", async () => {
-        const shareUrl = document.getElementById("share-url");
-        await navigator.clipboard.writeText(shareUrl.value);
-        flashButton(document.getElementById("copy-link"), "Copied");
     });
 
     myFiles?.addEventListener("click", async (e) => {

@@ -438,6 +438,78 @@ body {
   text-align: left;
 }
 
+.composer-options {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.composer-options summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 6px;
+}
+
+.composer-options summary:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(29, 95, 208, 0.18);
+}
+
+.composer-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.composer-options summary::marker {
+  content: "";
+}
+
+.composer-options-label {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.composer-options-label::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 6px;
+  border-style: solid;
+  border-width: 4px 0 4px 5px;
+  border-color: transparent transparent transparent var(--muted);
+  vertical-align: 1px;
+}
+
+.composer-options[open] .composer-options-label::before {
+  border-width: 5px 4px 0 4px;
+  border-color: var(--muted) transparent transparent transparent;
+}
+
+.composer-options-summary {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.composer-options-body {
+  padding-top: 12px;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 .short-target {
   overflow: hidden;
   text-overflow: ellipsis;

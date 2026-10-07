@@ -14,7 +14,7 @@
 <div class="workspace">
     <section class="composer card">
         <div class="card-body">
-            <h2 class="h6 mb-3">New drop</h2>
+            <h2 class="h6 mb-3">Add</h2>
             <div id="dropzone" class="vault-dropzone mb-3">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V6"/><path d="M8 9l4-4 4 4"/><path d="M5 19h14"/></svg>
                 <p class="mb-1 fw-semibold">Drop files</p>
@@ -27,34 +27,34 @@
                 <label class="form-label" for="paste-text">Paste text</label>
                 <textarea id="paste-text" class="form-control" rows="4" placeholder="A note, a list, a snippet"></textarea>
             </div>
-            <div class="mb-3">
-                <label class="form-label" for="drop-title">Title</label>
-                <input id="drop-title" class="form-control" placeholder="Photos" />
-            </div>
-            <div class="row g-2 mb-3">
-                <div class="col-6">
-                    <label class="form-label" for="ttl">Keep for</label>
-                    <select id="ttl" class="form-select">
-                        <option value="7" selected>7 days</option>
-                        <option value="1">1 day</option>
-                        <option value="30">30 days</option>
-                        <option value="0">Forever</option>
-                    </select>
+            <button type="button" class="btn btn-primary w-100" id="upload-btn" disabled>Save</button>
+            <details class="composer-options" id="composer-options">
+                <summary>
+                    <span class="composer-options-label">Options</span>
+                    <span class="composer-options-summary" id="options-summary">Kept forever</span>
+                </summary>
+                <div class="composer-options-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="ttl">Keep</label>
+                        <select id="ttl" class="form-select">
+                            <option value="0" selected>Forever</option>
+                            <option value="30">30 days</option>
+                            <option value="7">7 days</option>
+                            <option value="1">1 day</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input id="password" type="password" class="form-control" autocomplete="new-password" />
+                        <p class="field-hint">Asked for when someone opens a share link. You can still open the file while signed in.</p>
+                    </div>
+                    <div id="note-name-wrap" hidden>
+                        <label class="form-label" for="note-name">Name</label>
+                        <input id="note-name" class="form-control" placeholder="note" maxlength="200" />
+                    </div>
                 </div>
-                <div class="col-6">
-                    <label class="form-label" for="password">Link password</label>
-                    <input id="password" type="password" class="form-control" autocomplete="new-password" />
-                </div>
-            </div>
-            <button type="button" class="btn btn-primary w-100" id="upload-btn" disabled>Upload</button>
+            </details>
             <div id="upload-status" class="small mt-3" hidden></div>
-            <div id="link-box" class="mt-3" hidden>
-                <label class="form-label" for="share-url">Share link</label>
-                <div class="input-group">
-                    <input id="share-url" class="form-control" readonly />
-                    <button type="button" class="btn btn-outline-primary" id="copy-link" aria-label="Copy link" title="Copy link">Copy</button>
-                </div>
-            </div>
         </div>
     </section>
     <section class="browser card">
