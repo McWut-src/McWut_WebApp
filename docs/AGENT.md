@@ -15,10 +15,10 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
-| Rollback | `ca-mcwut--0000011` | `ghcr.io/mcwut-src/mcwut_webapp:5d9b9d0783f272e28101127fe089745444c7a2fb` |
+| Live | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
+| Rollback | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
 
-Commit `602fe0e` is the shortener (“Add a short link for any web address.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
+Commit `7724cde` is the URLs page (“Add a URLs page for short links and public share links.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
 
 `git push` of `main` builds `ghcr.io/mcwut-src/mcwut_webapp:<full SHA>` and moves the tag `:qa` to that commit. It does not change https://mcwut.com. Do not point Azure at `:qa` or `:latest`. Pin the full feature SHA.
 
@@ -27,7 +27,7 @@ Promote only when Vince asks to publish or promote. A docs request, including �
 Rollback of the image above:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000011=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000012=100
 ```
 
 ## How Vince wants changes shipped

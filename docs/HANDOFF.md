@@ -48,7 +48,7 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 Database migration `AddShortLinks` (SQLite `20261007004423`, SQL Server `20261007004430`). Production applied the SQL Server migration on revision `0000012`.
 
-- **Shorten a link**, now on **URLs** in the working copy. A public web address, including one that starts with `www`, becomes an `/s/` link. Opening it redirects to that address. It stays until you delete it. Only `http` and `https` public addresses are accepted. URLs also lists file share links. This move is not on https://mcwut.com until you promote it. The live site still has the shortener on My files.
+- **URLs** (`/urls`) holds **Shorten a link** and the list of public links. A public web address, including one that starts with `www`, becomes an `/s/` link. Opening it redirects to that address. It stays until you delete it. Only `http` and `https` public addresses are accepted. File and upload share links from My files are on the same list. Deleting a share link leaves the file in My files.
 - A file share link still shows the file. New file links stay short: `/s/` plus eight letters or digits. Older longer file links still open. Invite links stay long.
 - A note, `.txt`, `.csv`, `.json`, or `.md` file can be read on My files and on the share page. Markdown is formatted. Opening that view does not count as a download. HTML and SVG stay downloads.
 
@@ -201,21 +201,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**7 October 2026, 00:58 UTC.** Production was moved on purpose to shortening any web address.
+**7 October 2026, 11:01 UTC.** Production was moved on purpose to the URLs page.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000011` | `ghcr.io/mcwut-src/mcwut_webapp:5d9b9d0783f272e28101127fe089745444c7a2fb` |
-| Live | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
+| Previous (rollback) | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
+| Live | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
 
-`0000012` has 100% of the traffic and was Healthy. `0000011` is the previous short-share-link and note-reader build. It is inactive with no traffic and can be brought back.
+`0000013` has 100% of the traffic and was Healthy. `0000012` is the previous build, where shorten lived on My files. It has no traffic and can be brought back.
 
-Checked while signed out, on `0000012`: both hosts `/health` return `ok`, Register is 404, `/files` redirects to sign-in, and `/js/vault.js` contains the shortener and does not contain Tag a member. Startup applied migration `20261007004430_AddShortLinks` and logged `Database migrate and identity seed finished.` at 00:58 UTC. Sign in and shorten `www.example.com/page?id=3`. The `/s/` link should open that address. A file share link should still show the file.
+Checked while signed out, on `0000013`: both hosts `/health` return `ok`, Register is 404, `/files` and `/urls` redirect to sign-in, `/js/urls.js` has the shortener and the public-link list, and `/js/vault.js` does not contain the shortener or Tag a member. Startup logged `Database migrate and identity seed finished.` at 11:01 UTC. There was no new database migration. Sign in, open **URLs**, and shorten `www.example.com/page?id=3`. The `/s/` link should open that address. A file share from My files should show on URLs.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000011=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000012=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
