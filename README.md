@@ -1,6 +1,6 @@
 # McWut
 
-Site for **https://mcwut.com**: sign in, keep your files, share a link, see what others tagged you.
+Site for **https://mcwut.com**: sign in, keep your files, share a link, shorten a web address, and save your own logins.
 
 Local login (Dev only): `vince@mcwut.com` / `vince`. Register is **off** until you add people yourself.
 
@@ -16,8 +16,11 @@ How to work, from planning to **you** promoting prod: [docs/tutorials/README.md]
 
 If you are picking this up alone: [docs/HANDOFF.md](docs/HANDOFF.md).
 
+If you are an agent: [docs/AGENT.md](docs/AGENT.md).
+
 ## Docs
 
+- [docs/AGENT.md](docs/AGENT.md) — guidelines for a future agent  
 - [docs/HANDOFF.md](docs/HANDOFF.md) — how to run, test, and promote  
 - [docs/SCOPE.md](docs/SCOPE.md) — what’s done and what is left  
 - [docs/archive/](docs/archive/) — finished hosting notes (Path A, deploy options)

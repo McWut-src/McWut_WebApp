@@ -1,8 +1,9 @@
 # McWut — current cycle
 
-**Updated:** 6 October 2026  
+**Updated:** 7 October 2026  
 **Live:** https://mcwut.com · https://www.mcwut.com  
 **Handoff:** [HANDOFF.md](HANDOFF.md)  
+**Agent guide:** [AGENT.md](AGENT.md)  
 **No open Register. No public invite until you send a link.**
 
 Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/README.md).

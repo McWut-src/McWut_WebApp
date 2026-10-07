@@ -1,12 +1,14 @@
 # McWut handoff
 
 **For:** Vince  
-**Written:** 6 October 2026  
+**Written:** 7 October 2026  
 **Repo:** https://github.com/McWut-src/McWut_WebApp  
 **Folder:** `C:\vince\McWutWebApp`  
 **Live site:** https://mcwut.com and https://www.mcwut.com
 
 Read this when you are working alone. Pushing code does **not** change the live site. You promote after QA. The steps are below.
+
+An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/AGENT.md` is an old brief.
 
 ---
 
@@ -44,9 +46,10 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 ## What was added in the last change
 
-No new database migration.
+Database migration `AddShortLinks` (SQLite `20261007004423`, SQL Server `20261007004430`). Production applied the SQL Server migration on revision `0000012`.
 
-- New share links are short: `/s/` plus eight letters or digits. Older longer links still open. Invite links stay long.
+- **Shorten a link** on My files. A public web address, including one that starts with `www`, becomes an `/s/` link. Opening it redirects to that address. It stays until you delete it. Only `http` and `https` public addresses are accepted.
+- A file share link still shows the file. New file links stay short: `/s/` plus eight letters or digits. Older longer file links still open. Invite links stay long.
 - A note, `.txt`, `.csv`, `.json`, or `.md` file can be read on My files and on the share page. Markdown is formatted. Opening that view does not count as a download. HTML and SVG stay downloads.
 
 Already on the site before this build: photo gallery, password vault, paste, People, Reset password, Status, lockout, filename escaping.

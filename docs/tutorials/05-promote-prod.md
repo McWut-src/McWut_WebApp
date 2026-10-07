@@ -1,6 +1,8 @@
 # 5 — You promote to production
 
-**You** move a tested build onto Azure. Grok / Copilot / a `git push` must **not** do this for you.
+**You** move a tested build onto Azure. A `git push` does not do this.
+
+The normal rule is that an agent stops before this page. If you explicitly tell the agent to publish or promote a change, it may run the image update below and then record the revision in the handoff. A request to update docs and push is not a promote. Details: [../AGENT.md](../AGENT.md).
 
 If QA ([04-qa-docker.md](04-qa-docker.md)) was not green, **stop**.
 
