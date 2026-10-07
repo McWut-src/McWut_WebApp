@@ -196,23 +196,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**6 October 2026, night.** Production was moved on purpose to short share links and the note reader.
+**7 October 2026, 00:58 UTC.** Production was moved on purpose to shortening any web address.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000010` | `ghcr.io/mcwut-src/mcwut_webapp:7a54c49262db4a178e34ef99fa3d5237c9d06d76` |
-| Live | `ca-mcwut--0000011` | `ghcr.io/mcwut-src/mcwut_webapp:5d9b9d0783f272e28101127fe089745444c7a2fb` |
+| Previous (rollback) | `ca-mcwut--0000011` | `ghcr.io/mcwut-src/mcwut_webapp:5d9b9d0783f272e28101127fe089745444c7a2fb` |
+| Live | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
 
-`0000011` has 100% of the traffic and was Healthy. `0000010` is the previous refreshed-UI build and stays available with no traffic.
+`0000012` has 100% of the traffic and was Healthy. `0000011` is the previous short-share-link and note-reader build. It is inactive with no traffic and can be brought back.
 
-Checked while signed out, on `0000011`: both hosts `/health` return `ok` from `4.172.131.145`, Register is 404, `/files` redirects to sign-in, `/js/reader.js` is served, and `/js/vault.js` has the reader and does not contain Tag a member. The log line `Database migrate and identity seed finished.` appeared at 23:43 UTC. Sign in and confirm a new share link is short, and that a note opens on My files and on that link.
+Checked while signed out, on `0000012`: both hosts `/health` return `ok`, Register is 404, `/files` redirects to sign-in, and `/js/vault.js` contains the shortener and does not contain Tag a member. Startup applied migration `20261007004430_AddShortLinks` and logged `Database migrate and identity seed finished.` at 00:58 UTC. Sign in and shorten `www.example.com/page?id=3`. The `/s/` link should open that address. A file share link should still show the file.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000010=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000011=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
-
-Shortening any web address is in the working copy after this note. It is not on revision `0000011` until the next promote.
