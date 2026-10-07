@@ -15,10 +15,10 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
-| Rollback | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
+| Live | `ca-mcwut--0000014` | `ghcr.io/mcwut-src/mcwut_webapp:abd8ec755a8666aabf8907e12815528f5e37ebee` |
+| Rollback | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
 
-Commit `7724cde` is the URLs page (“Add a URLs page for short links and public share links.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
+Commit `abd8ec7` saves a file privately and keeps it forever (“Save files privately by default and keep them forever.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
 
 `git push` of `main` builds `ghcr.io/mcwut-src/mcwut_webapp:<full SHA>` and moves the tag `:qa` to that commit. It does not change https://mcwut.com. Do not point Azure at `:qa` or `:latest`. Pin the full feature SHA.
 
@@ -27,7 +27,7 @@ Promote only when Vince asks to publish or promote. A docs request, including �
 Rollback of the image above:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000012=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000013=100
 ```
 
 ## How Vince wants changes shipped
@@ -53,6 +53,7 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 - Dev and Docker QA: `vince@mcwut.com` / `vince` (admin) and `member@mcwut.com` / `member`. Production does not seed `member@`. Production sign-in for `vince@mcwut.com` is the Azure secret `website-admin-password`.
 - Three primary places: **My files** (`/files`), **URLs** (`/urls`), and **Vault** (`/passwords`, page title “Password vault”). Do not add a Shared files nav item or a Tag a member control. `/files/shared` and `/Vault/Shared` redirect to My files. Grant APIs and tables stay unused. A later design is in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 - Do not invent folders or vault categories.
+- **Save** on My files stores a private file and keeps it forever. It does not create a share link. **Options** can keep the file for 1, 7, or 30 days, and can set a password. That password is asked for when someone opens a share link. The signed-in owner still opens the file. A pasted note with no name is saved as `note`. The link icon still creates a public link, and that link still lasts 7 days because the request omits a keep time.
 - File share links are public `/s/` plus eight letters or digits. Older longer file links still open. Invite tokens stay long.
 - **URLs** is where **Shorten a link** lives, and where the signed-in person sees every public link they have made. That list is shortened web addresses plus share links from My files (a file or a whole upload). Each row can be viewed, opened, or deleted. Deleting a file share link revokes it and leaves the file in My files. Opening a shortened `/s/` token redirects (302) to the stored address. A file token still shows the file page. The same eight-character space is shared. `ShortTokenAllocator` checks both tables. Short links stay until the owner deletes them. There is no keep-for time and no click count. The share-link list is `GET /api/links` from `ShareLinkService.ListOwnedAsync`. Revoked links are omitted. Expired ones stay so they can be deleted. SQLite still cannot `ORDER BY` a `DateTimeOffset`; sort after the load.
 - If the pasted address has no scheme, store `https://`. Accept only `http` and `https`. Reject `javascript:`, `data:`, `file:`, userinfo, `localhost`, `*.local`, and private or loopback addresses. Rules live in `ShortLinkRules`.

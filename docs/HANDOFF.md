@@ -17,7 +17,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 A private family file drop.
 
 - Sign in with email and password. Open Register is **404**. New people join only from a link you create under **Invites**.
-- **My files** (`/files`): drop files, or paste text. You get a short public link, like `https://mcwut.com/s/Ab12Cd34`. Older longer `/s/...` links still open. Default keep time is 7 days (also 1 day, 30 days, or forever). Optional password. That link is how a file is shared.
+- **My files** (`/files`): drop files, or paste text, then **Save**. The file is private and kept forever. **Options** can keep it for 1, 7, or 30 days, and can set a password that a later share link asks for. A pasted note can be named there. With no name it is saved as `note`. The link icon on a file makes a public `/s/` link of eight letters or digits. That link lasts 7 days. Older longer `/s/...` links still open.
 - **URLs** (`/urls`): **Shorten a link**. Paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it. The same page lists every public link you have made, including file shares from My files. View shows the link. Quick open follows it. Delete stops the link. A file stays in My files.
 - Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. Member tagging is hidden. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 - Photos (jpeg, png, gif, webp) show as thumbnails on My files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short note or a Markdown file can be read on My files and on the share page. Opening that view does not count as a download.
@@ -95,7 +95,7 @@ docker compose down
 1. Header says **McWut**.
 2. After sign-in: **My files**, **Vault**, and for admin **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no Tag a member control. Header **Password** opens the sign-in password change. `/files/shared` redirects to My files.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
-4. Paste a sentence, upload, open the `/s/...` link in a private window. The link is short (eight letters after `/s/`). The sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. On **URLs**, shorten `www.example.com/page?id=3` and open that short link: it goes to that address. The same page lists that link and the file share link. Delete removes the link.
+4. Paste a sentence and **Save**. The status is Saved, and there is no share box. The file is in the list with no removal date. Open **Options**, set Keep to 1 day and a password, name the note, and Save again. That row shows a date and the word password. You can still read it while signed in. The link icon copies a short `/s/` link (eight letters after `/s/`). That link lasts 7 days. Open it in a private window: it asks for the password, then the sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. On **URLs**, shorten `www.example.com/page?id=3` and open that short link: it goes to that address. The same page lists that link and the file share link. Delete removes the link.
 5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too.
 6. **People**: turn `member@` off. That login says the account is turned off. Turn it back on. Sign-in works again.
 7. **Reset password**: as admin, set `member@` to a temporary password, sign in as member with it, then set it back to `member`.
@@ -149,7 +149,7 @@ az containerapp update --name ca-mcwut --resource-group McWutStorage --image ghc
    - https://www.mcwut.com/health → `ok`
    - https://mcwut.com/Identity/Account/Register → 404
    - Sign in as `vince@mcwut.com` with the **prod** password
-   - Upload a non-empty file, open the link in a private window, download
+   - Save a non-empty file. It stays in My files with no share link. Use the link icon for a public link, then open that in a private window and download
 
 Longer notes: [tutorials/05-promote-prod.md](tutorials/05-promote-prod.md).
 
@@ -201,21 +201,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**7 October 2026, 11:01 UTC.** Production was moved on purpose to the URLs page.
+**7 October 2026, 14:08 UTC.** Production was moved on purpose to private saves that stay forever.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000012` | `ghcr.io/mcwut-src/mcwut_webapp:602fe0ea49b4c290bb711dec97a4afb4826608da` |
-| Live | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
+| Previous (rollback) | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
+| Live | `ca-mcwut--0000014` | `ghcr.io/mcwut-src/mcwut_webapp:abd8ec755a8666aabf8907e12815528f5e37ebee` |
 
-`0000013` has 100% of the traffic and was Healthy. `0000012` is the previous build, where shorten lived on My files. It has no traffic and can be brought back.
+`0000014` has 100% of the traffic and was Healthy. `0000013` is the previous build, the URLs page. It has no traffic and can be brought back.
 
-Checked while signed out, on `0000013`: both hosts `/health` return `ok`, Register is 404, `/files` and `/urls` redirect to sign-in, `/js/urls.js` has the shortener and the public-link list, and `/js/vault.js` does not contain the shortener or Tag a member. Startup logged `Database migrate and identity seed finished.` at 11:01 UTC. There was no new database migration. Sign in, open **URLs**, and shorten `www.example.com/page?id=3`. The `/s/` link should open that address. A file share from My files should show on URLs.
+Checked while signed out, on `0000014`: both hosts `/health` return `ok`, Register is 404, and `/files` on both hosts redirects to sign-in. `/js/vault.js` contains **Kept forever** and **Saving**, and does not contain "Ready. Copy the link to share." Startup logged `Database migrate and identity seed finished.` at 14:08 UTC. There was no new database migration. Sign in, paste a note, and **Save**. It should stay in My files with no share link.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000012=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000013=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
