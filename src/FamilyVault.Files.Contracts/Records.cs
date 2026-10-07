@@ -46,6 +46,16 @@ public sealed record ShareLink(
     bool AllowPreview,
     DateTimeOffset? RevokedAt);
 
+public sealed record OwnedShareLink(
+    string Token,
+    ShareTargetKind TargetKind,
+    Guid TargetId,
+    string Label,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ExpiresAt,
+    bool HasPassword,
+    bool Expired);
+
 public sealed record FileGrant(
     Guid Id,
     ShareTargetKind TargetKind,

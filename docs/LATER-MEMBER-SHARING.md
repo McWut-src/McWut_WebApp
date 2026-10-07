@@ -34,4 +34,4 @@ Keep the link as the normal way to share. Member delivery should be easy to miss
 7. Use the same keep time and the same link password as the file. A member grant should not outlive the file.
 8. Viewing stays view and download. No editing someone else’s file.
 
-That keeps two primary places, **My files** and **Vault**, and makes member sharing a quiet extra on the link.
+That keeps **My files**, **URLs**, and **Vault** as the primary places, and makes member sharing a quiet extra on the link.

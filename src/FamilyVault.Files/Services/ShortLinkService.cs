@@ -33,7 +33,6 @@ public sealed class ShortLinkService(ApplicationDbContext db, TimeProvider time)
             .ConfigureAwait(false);
         return rows
             .OrderByDescending(x => x.CreatedAt)
-            .Take(100)
             .Select(ToRecord)
             .ToList();
     }

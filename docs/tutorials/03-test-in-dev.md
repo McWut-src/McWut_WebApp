@@ -7,10 +7,10 @@ Still Visual Studio, still **https://localhost:7047**. No Docker, no Azure.
 With the site running (F5):
 
 1. Brand in the header is **McWut** (not McWutWebApp).  
-2. After login, nav shows **My files** and **Vault**. There is no Shared files item.  
+2. After login, nav shows **My files**, **URLs**, and **Vault**. There is no Shared files item.  
 3. Open: `https://localhost:7047/Identity/Account/Register`  
    You want **404 / not found**, not a form.  
-4. **My files:** drop a **non-empty** file, get a short `/s/` link (eight letters), copy it. Paste `www.example.com/page?id=3` into **Shorten a link**. The short link opens that address.  
+4. **My files:** drop a **non-empty** file, get a short `/s/` link (eight letters), copy it. On **URLs**, paste `www.example.com/page?id=3` into **Shorten a link**. The short link opens that address. URLs lists that link and the file share. Quick open follows it. Delete removes it.  
 5. Private window: open that `/s/...` link **without** signing in, download.  
 6. `/files/shared` and old `/Vault` redirect to **My files**. There is no Tag a member control.  
 7. Signed in as admin: **Invites** in the nav. Create a link, open `/join/...` in a private window (or second browser).  

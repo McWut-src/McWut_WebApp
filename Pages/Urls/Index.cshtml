@@ -1,0 +1,52 @@
+@page "/urls"
+@model McWutWebApp.Pages.Urls.IndexModel
+@{
+    ViewData["Title"] = "URLs";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">URLs</h1>
+        <p class="page-kicker">Shorten a web address, and open or remove any public link you have made.</p>
+    </div>
+</div>
+
+<div class="workspace">
+    <section class="composer card">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Shorten a link</h2>
+            <label class="form-label" for="long-url">Long address</label>
+            <input id="long-url" class="form-control" placeholder="www.example.com/page?id=3" autocomplete="off" inputmode="url" />
+            <button type="button" class="btn btn-outline-primary w-100 mt-2" id="shorten-btn" disabled>Shorten</button>
+            <div id="short-status" class="small mt-2" hidden></div>
+            <div id="short-box" class="mt-2" hidden>
+                <label class="form-label" for="short-url">Short link</label>
+                <div class="input-group">
+                    <input id="short-url" class="form-control" readonly />
+                    <button type="button" class="btn btn-outline-primary" id="copy-short" aria-label="Copy short link" title="Copy short link">Copy</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="browser card">
+        <div class="card-body" id="url-browser">
+            <div class="browser-bar">
+                <label class="search-field">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+                    <input id="url-search" type="search" placeholder="Search links" autocomplete="off" aria-label="Search links" />
+                </label>
+                <button type="button" class="icon-btn" id="url-refresh" title="Refresh" aria-label="Refresh">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.2-5.5"/><path d="M20 4v5h-5"/></svg>
+                </button>
+            </div>
+            <div id="url-detail" class="url-detail" hidden></div>
+            <div id="url-list">
+                <p class="empty">Loading…</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/urls.js" asp-append-version="true"></script>
+}

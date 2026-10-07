@@ -37,6 +37,7 @@ public interface IShortLinkService
 public interface IShareLinkService
 {
     Task<ShareLink> CreateAsync(ShareTargetKind targetKind, Guid targetId, Guid createdByUserId, CreateShareLinkRequest request, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<OwnedShareLink>> ListOwnedAsync(Guid createdByUserId, CancellationToken cancellationToken = default);
     Task RevokeAsync(string token, Guid actorUserId, CancellationToken cancellationToken = default);
     Task<ShareLink?> ResolveAsync(string token, CancellationToken cancellationToken = default);
 }

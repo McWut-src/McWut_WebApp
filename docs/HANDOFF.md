@@ -18,7 +18,7 @@ A private family file drop.
 
 - Sign in with email and password. Open Register is **404**. New people join only from a link you create under **Invites**.
 - **My files** (`/files`): drop files, or paste text. You get a short public link, like `https://mcwut.com/s/Ab12Cd34`. Older longer `/s/...` links still open. Default keep time is 7 days (also 1 day, 30 days, or forever). Optional password. That link is how a file is shared.
-- **Shorten a link** on My files: paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it.
+- **URLs** (`/urls`): **Shorten a link**. Paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it. The same page lists every public link you have made, including file shares from My files. View shows the link. Quick open follows it. Delete stops the link. A file stays in My files.
 - Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. Member tagging is hidden. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 - Photos (jpeg, png, gif, webp) show as thumbnails on My files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short note or a Markdown file can be read on My files and on the share page. Opening that view does not count as a download.
 - **People** (`/admin/people`): turn an account off or back on. Files stay. You cannot turn yourself off, and the last admin must stay on. A turned-off person is signed out on their next click.
@@ -48,7 +48,7 @@ Dev/QA toy users exist only because the environment is Development. Production d
 
 Database migration `AddShortLinks` (SQLite `20261007004423`, SQL Server `20261007004430`). Production applied the SQL Server migration on revision `0000012`.
 
-- **Shorten a link** on My files. A public web address, including one that starts with `www`, becomes an `/s/` link. Opening it redirects to that address. It stays until you delete it. Only `http` and `https` public addresses are accepted.
+- **Shorten a link**, now on **URLs** in the working copy. A public web address, including one that starts with `www`, becomes an `/s/` link. Opening it redirects to that address. It stays until you delete it. Only `http` and `https` public addresses are accepted. URLs also lists file share links. This move is not on https://mcwut.com until you promote it. The live site still has the shortener on My files.
 - A file share link still shows the file. New file links stay short: `/s/` plus eight letters or digits. Older longer file links still open. Invite links stay long.
 - A note, `.txt`, `.csv`, `.json`, or `.md` file can be read on My files and on the share page. Markdown is formatted. Opening that view does not count as a download. HTML and SVG stay downloads.
 
@@ -95,7 +95,7 @@ docker compose down
 1. Header says **McWut**.
 2. After sign-in: **My files**, **Vault**, and for admin **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no Tag a member control. Header **Password** opens the sign-in password change. `/files/shared` redirects to My files.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
-4. Paste a sentence, upload, open the `/s/...` link in a private window. The link is short (eight letters after `/s/`). The sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. Shorten `www.example.com/page?id=3` and open that short link: it goes to that address.
+4. Paste a sentence, upload, open the `/s/...` link in a private window. The link is short (eight letters after `/s/`). The sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. On **URLs**, shorten `www.example.com/page?id=3` and open that short link: it goes to that address. The same page lists that link and the file share link. Delete removes the link.
 5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too.
 6. **People**: turn `member@` off. That login says the account is turned off. Turn it back on. Sign-in works again.
 7. **Reset password**: as admin, set `member@` to a temporary password, sign in as member with it, then set it back to `member`.
@@ -177,6 +177,7 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 |---|---|
 | `McWutWebApp.csproj`, `Program.cs`, `Pages/`, `Controllers/` | The website |
 | `Pages/Vault/` | My files screen. URL is `/files`, not `/Vault`. `/files/shared` redirects here. |
+| `Pages/Urls/` | URLs at `/urls`. Shorten a web address, and list, open, or delete public links. |
 | `Pages/Passwords/` | Saved logins at `/passwords`. API is `Controllers/PasswordsController.cs` |
 | `Pages/Account/Password.cshtml` | Change the McWut sign-in password |
 | `wwwroot/js/passwords.js` | Search, list, edit, copy, open |
@@ -184,7 +185,8 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | `Pages/Join/` | `/join/{token}` |
 | `Pages/Share/` | `/s/{token}`. A file link shows the file. A shortened address redirects. |
 | `Controllers/ShortLinksController.cs` | Create, list, and delete a shortened address |
-| `wwwroot/js/vault.js` | Upload, paste, list, share link, shorten, reader |
+| `wwwroot/js/urls.js` | Shorten a link, and view, open, copy, or delete public links |
+| `wwwroot/js/vault.js` | Upload, paste, list, share link, reader |
 | `wwwroot/js/reader.js` | Plain text and Markdown reading |
 | `src/FamilyVault.Files` | Database, files, links, cleanup |
 | `src/FamilyVault.Files.Azure` | Blob storage when `Files:Provider` is Azure |

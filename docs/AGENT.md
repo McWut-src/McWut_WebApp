@@ -51,10 +51,10 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 
 - Open Register stays 404. People join from an admin invite at `/join/{token}`.
 - Dev and Docker QA: `vince@mcwut.com` / `vince` (admin) and `member@mcwut.com` / `member`. Production does not seed `member@`. Production sign-in for `vince@mcwut.com` is the Azure secret `website-admin-password`.
-- Two primary places: **My files** (`/files`) and **Vault** (`/passwords`, page title “Password vault”). Do not add a Shared files nav item or a Tag a member control. `/files/shared` and `/Vault/Shared` redirect to My files. Grant APIs and tables stay unused. A later design is in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
+- Three primary places: **My files** (`/files`), **URLs** (`/urls`), and **Vault** (`/passwords`, page title “Password vault”). Do not add a Shared files nav item or a Tag a member control. `/files/shared` and `/Vault/Shared` redirect to My files. Grant APIs and tables stay unused. A later design is in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 - Do not invent folders or vault categories.
 - File share links are public `/s/` plus eight letters or digits. Older longer file links still open. Invite tokens stay long.
-- **Shorten a link** on My files stores a public web address. Opening that `/s/` token redirects (302) to the address. A file token still shows the file page. The same eight-character space is shared. `ShortTokenAllocator` checks both tables. Short links stay until the owner deletes them. There is no keep-for time and no click count.
+- **URLs** is where **Shorten a link** lives, and where the signed-in person sees every public link they have made. That list is shortened web addresses plus share links from My files (a file or a whole upload). Each row can be viewed, opened, or deleted. Deleting a file share link revokes it and leaves the file in My files. Opening a shortened `/s/` token redirects (302) to the stored address. A file token still shows the file page. The same eight-character space is shared. `ShortTokenAllocator` checks both tables. Short links stay until the owner deletes them. There is no keep-for time and no click count. The share-link list is `GET /api/links` from `ShareLinkService.ListOwnedAsync`. Revoked links are omitted. Expired ones stay so they can be deleted. SQLite still cannot `ORDER BY` a `DateTimeOffset`; sort after the load.
 - If the pasted address has no scheme, store `https://`. Accept only `http` and `https`. Reject `javascript:`, `data:`, `file:`, userinfo, `localhost`, `*.local`, and private or loopback addresses. Rules live in `ShortLinkRules`.
 - Photos are jpeg, png, gif, and webp. The thumbnail is the photo itself, scaled with CSS. Do not generate thumbnail files. The viewer uses `/api/files/{id}/content?preview=true` and that open does not count as a download. SVG and HTML stay downloads.
 - Notes, `.txt`, `.csv`, `.json`, and `.md` can be read on My files and on the file share page. Markdown is rendered in the page. That open does not count as a download.
@@ -67,9 +67,10 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 | Change | Place |
 |---|---|
 | My files screen | `Pages/Vault/` served at `/files` |
-| Shorten form and list | `Pages/Vault/Index.cshtml`, `wwwroot/js/vault.js`, `wwwroot/css/site.css` |
+| URLs screen | `Pages/Urls/` served at `/urls`, `wwwroot/js/urls.js` |
+| Shorten form and public-link list | `Pages/Urls/Index.cshtml`, `wwwroot/js/urls.js`, `wwwroot/css/site.css` |
 | Public `/s/{token}` | `Pages/Share/Index.cshtml.cs`. Resolve a short link before the file link. `Redirect` the stored address. |
-| Short-link API | `Controllers/ShortLinksController.cs` at `/api/short-links`. File-link revoke stays `DELETE /api/links/{token}`. |
+| Short-link API | `Controllers/ShortLinksController.cs` at `/api/short-links`. File and drop share list is `GET /api/links`. Revoke stays `DELETE /api/links/{token}`. |
 | Rules and table | `src/FamilyVault.Files` |
 | Password vault UI | `Pages/Passwords/`, `wwwroot/js/passwords.js` |
 | Admin | `Pages/Admin/` |
@@ -81,7 +82,7 @@ dotnet ef migrations add Name --context SqliteApplicationDbContext --output-dir 
 dotnet ef migrations add Name --context SqlServerApplicationDbContext --output-dir Data/Migrations/SqlServer --project src\FamilyVault.Files\FamilyVault.Files.csproj --startup-project src\FamilyVault.Files\FamilyVault.Files.csproj
 ```
 
-SQLite cannot `ORDER BY` a `DateTimeOffset`. Load the rows, then sort in memory. `FileLibrary` and `ShortLinkService` already do this.
+SQLite cannot `ORDER BY` a `DateTimeOffset`. Load the rows, then sort in memory. `FileLibrary`, `ShortLinkService`, and `ShareLinkService.ListOwnedAsync` already do this.
 
 The app listens on port 8080 before it migrates, in `Hosting/DatabaseStartupWorker.cs`, so `/health` can be Healthy while SQL is still waking.
 

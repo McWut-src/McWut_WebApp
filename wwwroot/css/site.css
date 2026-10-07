@@ -438,12 +438,6 @@ body {
   text-align: left;
 }
 
-.shorten {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
 .short-target {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -528,6 +522,48 @@ body {
   align-items: center;
   padding: 10px 4px;
   border-top: 1px solid var(--line);
+}
+
+.file-row.is-selected {
+  background: var(--blue-soft);
+  border-radius: 8px;
+}
+
+.url-detail {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7f9fc;
+}
+
+.url-detail[hidden] {
+  display: none;
+}
+
+.url-kind {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.url-target,
+.url-when {
+  overflow-wrap: anywhere;
+}
+
+.url-when {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.url-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .file-glyph {
