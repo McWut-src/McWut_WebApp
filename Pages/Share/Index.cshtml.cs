@@ -11,6 +11,7 @@ namespace McWutWebApp.Pages.Share;
 [AllowAnonymous]
 public class IndexModel(
     IShareLinkService links,
+    IShortLinkService shortcuts,
     IFileAccessService access,
     IFileLibrary library,
     IDropService drops,
@@ -60,6 +61,12 @@ public class IndexModel(
         if (string.IsNullOrWhiteSpace(Token))
         {
             return NotFound();
+        }
+
+        var shortcut = await shortcuts.ResolveAsync(Token, cancellationToken);
+        if (shortcut is not null)
+        {
+            return Redirect(shortcut.TargetUrl);
         }
 
         Link = await links.ResolveAsync(Token, cancellationToken);

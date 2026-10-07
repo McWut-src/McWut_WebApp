@@ -11,7 +11,7 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 
 ## Shipped
 
-- Product name **McWut**. **My files** at `/files`. Share a file with a short public link (`/s/` plus eight letters). Older longer links still open. `/Vault` and `/files/shared` redirect to My files.
+- Product name **McWut**. **My files** at `/files`. Share a file with a short public link (`/s/` plus eight letters). Paste any web address and get the same kind of short link; opening it goes to that address. Older longer links still open. `/Vault` and `/files/shared` redirect to My files.
 - Join only with an invite. `/Identity/Account/Register` is **404**.
 - Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
 - Paste text on My files (stored as a normal text file).

@@ -44,7 +44,7 @@ public sealed class ShareLinkService(
         var link = new ShareLinkEntity
         {
             Id = Guid.NewGuid(),
-            Token = await NewTokenAsync(cancellationToken).ConfigureAwait(false),
+            Token = await ShortTokenAllocator.AllocateAsync(db, cancellationToken).ConfigureAwait(false),
             TargetKind = targetKind,
             TargetId = targetId,
             CreatedByUserId = createdByUserId,
@@ -58,23 +58,6 @@ public sealed class ShareLinkService(
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await audit.RecordAsync("LinkCreate", targetKind, targetId, createdByUserId, link.Token, null, cancellationToken).ConfigureAwait(false);
         return link.ToRecord();
-    }
-
-    private async Task<string> NewTokenAsync(CancellationToken cancellationToken)
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            var token = ShareTokenGenerator.CreateShort();
-            var taken = await db.ShareLinks.AsNoTracking()
-                .AnyAsync(l => l.Token == token, cancellationToken)
-                .ConfigureAwait(false);
-            if (!taken)
-            {
-                return token;
-            }
-        }
-
-        return ShareTokenGenerator.CreateShort();
     }
 
     public async Task RevokeAsync(string token, Guid actorUserId, CancellationToken cancellationToken = default)

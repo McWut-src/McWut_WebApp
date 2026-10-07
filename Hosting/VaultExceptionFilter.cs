@@ -23,6 +23,7 @@ public sealed class VaultExceptionFilter : IExceptionFilter
             },
             InvalidFileNameException ex => new BadRequestObjectResult(new { error = ex.Message }),
             PasswordVaultValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            ShortLinkValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidContentTypeException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidRangeException => new StatusCodeResult(StatusCodes.Status416RangeNotSatisfiable),
             UnauthorizedAccessException => new UnauthorizedResult(),

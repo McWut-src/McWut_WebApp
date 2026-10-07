@@ -290,6 +290,38 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("ShareLinks", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.ShortLinkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetUrl")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("ShortLinks", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.StoredFileEntity", b =>
                 {
                     b.Property<Guid>("Id")

@@ -76,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<IDropService, DropService>();
         services.AddScoped<IUploadSessionService, UploadSessionService>();
         services.AddScoped<IShareLinkService, ShareLinkService>();
+        services.AddScoped<IShortLinkService, ShortLinkService>();
         services.AddScoped<IGrantService, GrantService>();
         services.AddScoped<IFileContentService, FileContentService>();
         services.AddScoped<IFileLifecycle, FileLifecycle>();

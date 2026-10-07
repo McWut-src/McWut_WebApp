@@ -15,7 +15,16 @@
             return null;
         }
         const text = await response.text();
-        const data = text ? JSON.parse(text) : null;
+        let data = null;
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                if (response.ok) {
+                    throw err;
+                }
+            }
+        }
         if (!response.ok) {
             const message = data && (data.error || data.title) ? (data.error || data.title) : `Request failed (${response.status})`;
             throw new Error(message);
@@ -641,12 +650,124 @@
         }
     });
 
+    const shortLinksEl = document.getElementById("short-links");
+    const longUrl = document.getElementById("long-url");
+    const shortenBtn = document.getElementById("shorten-btn");
+    let shortLinks = [];
+
+    function paintShortLinks() {
+        if (!shortLinksEl) {
+            return;
+        }
+        if (shortLinks.length === 0) {
+            shortLinksEl.innerHTML = "";
+            return;
+        }
+        shortLinksEl.innerHTML = `
+            <div class="section-label">Links</div>
+            ${shortLinks.map(link => `
+                <div class="file-row" data-token="${esc(link.token)}">
+                    <div class="file-glyph" aria-hidden="true">${icon("link")}</div>
+                    <div class="file-main">
+                        <div class="file-title" title="${esc(link.url)}">${esc(link.url.replace(/^https?:\/\//, ""))}</div>
+                        <div class="file-meta short-target" title="${esc(link.targetUrl)}">${esc(link.targetUrl)}</div>
+                    </div>
+                    <div class="file-actions">
+                        ${iconButton("copy-short", "copy", "Copy link")}
+                        ${iconButton("delete-short", "trash", "Delete", true)}
+                    </div>
+                </div>`).join("")}`;
+    }
+
+    async function renderShortLinks() {
+        if (!shortLinksEl) {
+            return;
+        }
+        shortLinks = await api("/api/short-links", { headers: headers() }) || [];
+        paintShortLinks();
+    }
+
+    longUrl?.addEventListener("input", () => {
+        if (shortenBtn) {
+            shortenBtn.disabled = !longUrl.value.trim();
+        }
+    });
+
+    longUrl?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            shortenBtn?.click();
+        }
+    });
+
+    shortenBtn?.addEventListener("click", async () => {
+        const status = document.getElementById("short-status");
+        const box = document.getElementById("short-box");
+        const output = document.getElementById("short-url");
+        status.hidden = false;
+        status.textContent = "Shortening…";
+        box.hidden = true;
+        try {
+            const link = await api("/api/short-links", {
+                method: "POST",
+                headers: headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ url: longUrl.value.trim() })
+            });
+            output.value = link.url;
+            box.hidden = false;
+            status.textContent = "Ready. Copy the short link.";
+            longUrl.value = "";
+            shortenBtn.disabled = true;
+            await renderShortLinks();
+        } catch (err) {
+            status.textContent = err.message;
+        }
+    });
+
+    document.getElementById("copy-short")?.addEventListener("click", async () => {
+        const output = document.getElementById("short-url");
+        await navigator.clipboard.writeText(output.value);
+        flashButton(document.getElementById("copy-short"), "Copied");
+    });
+
+    shortLinksEl?.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) {
+            return;
+        }
+        const row = button.closest("[data-token]");
+        const token = row.getAttribute("data-token");
+        const link = shortLinks.find(item => item.token === token);
+        const action = button.getAttribute("data-action");
+        try {
+            if (action === "copy-short" && link) {
+                await navigator.clipboard.writeText(link.url);
+                flashButton(button, "Copied");
+            } else if (action === "delete-short") {
+                if (!confirm("Delete this short link?")) {
+                    return;
+                }
+                await api(`/api/short-links/${encodeURIComponent(token)}`, { method: "DELETE", headers: headers() });
+                await renderShortLinks();
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    });
+
     async function start() {
         if (myFiles) {
             try {
                 await renderOwned();
             } catch (err) {
                 myFiles.innerHTML = `<p class="empty">${esc(err.message)}</p>`;
+            }
+        }
+        if (shortLinksEl) {
+            try {
+                await renderShortLinks();
+            } catch (err) {
+                shortLinksEl.innerHTML = `<p class="empty">${esc(err.message)}</p>`;
             }
         }
     }

@@ -26,6 +26,14 @@ public interface IUploadSessionService
     Task AbortAsync(Guid sessionId, Guid ownerUserId, CancellationToken cancellationToken = default);
 }
 
+public interface IShortLinkService
+{
+    Task<ShortLink> CreateAsync(Guid ownerUserId, string? url, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ShortLink>> ListOwnedAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(string token, Guid actorUserId, CancellationToken cancellationToken = default);
+    Task<ShortLink?> ResolveAsync(string token, CancellationToken cancellationToken = default);
+}
+
 public interface IShareLinkService
 {
     Task<ShareLink> CreateAsync(ShareTargetKind targetKind, Guid targetId, Guid createdByUserId, CreateShareLinkRequest request, CancellationToken cancellationToken = default);

@@ -7,7 +7,7 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">My files</h1>
-        <p class="page-kicker">Drop a file or paste a note. Photos and notes open here. A Markdown file opens formatted.</p>
+        <p class="page-kicker">Drop a file, paste a note, or shorten a long address.</p>
     </div>
 </div>
 
@@ -55,6 +55,20 @@
                     <button type="button" class="btn btn-outline-primary" id="copy-link" aria-label="Copy link" title="Copy link">Copy</button>
                 </div>
             </div>
+            <div class="shorten">
+                <h2 class="h6 mb-2">Shorten a link</h2>
+                <label class="form-label" for="long-url">Long address</label>
+                <input id="long-url" class="form-control" placeholder="www.example.com/page?id=3" autocomplete="off" inputmode="url" />
+                <button type="button" class="btn btn-outline-primary w-100 mt-2" id="shorten-btn" disabled>Shorten</button>
+                <div id="short-status" class="small mt-2" hidden></div>
+                <div id="short-box" class="mt-2" hidden>
+                    <label class="form-label" for="short-url">Short link</label>
+                    <div class="input-group">
+                        <input id="short-url" class="form-control" readonly />
+                        <button type="button" class="btn btn-outline-primary" id="copy-short" aria-label="Copy short link" title="Copy short link">Copy</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
     <section class="browser card">
@@ -68,6 +82,7 @@
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.2-5.5"/><path d="M20 4v5h-5"/></svg>
                 </button>
             </div>
+            <div id="short-links"></div>
             <div id="my-files">
                 <p class="empty">Loading…</p>
             </div>

@@ -25,6 +25,13 @@ public sealed record Drop(
     int DownloadCount,
     bool HasPassword);
 
+public sealed record ShortLink(
+    Guid Id,
+    string Token,
+    string TargetUrl,
+    Guid OwnerUserId,
+    DateTimeOffset CreatedAt);
+
 public sealed record ShareLink(
     Guid Id,
     string Token,
