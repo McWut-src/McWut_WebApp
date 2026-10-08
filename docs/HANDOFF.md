@@ -1,7 +1,7 @@
 # McWut handoff
 
 **For:** Vince  
-**Written:** 7 October 2026  
+**Written:** 8 October 2026  
 **Repo:** https://github.com/McWut-src/McWut_WebApp  
 **Folder:** `C:\vince\McWutWebApp`  
 **Live site:** https://mcwut.com and https://www.mcwut.com
@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. This build adds the home dashboard, Profile, a color you pick, an icon sidebar, and signed-in Privacy. They are not on https://mcwut.com until you promote. The live image is still `ca-mcwut--0000014`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. The live image is `ca-mcwut--0000015`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is four cards: **My files**, **Vault**, **URLs**, **Profile**. The sidebar uses the same order and can fold down to icons.
@@ -203,21 +203,21 @@ Startup listens on port 8080 **before** it migrates the database, so Azure’s p
 
 ## Promotion log
 
-**7 October 2026, 14:08 UTC.** Production was moved on purpose to private saves that stay forever.
+**8 October 2026, 01:43 UTC.** Production was moved on purpose to the signed-in home, Profile, and color picker.
 
 | | Revision | Image |
 |---|---|---|
-| Previous (rollback) | `ca-mcwut--0000013` | `ghcr.io/mcwut-src/mcwut_webapp:7724cdefbec3a505c8816fe1e18b60c896f73e3b` |
-| Live | `ca-mcwut--0000014` | `ghcr.io/mcwut-src/mcwut_webapp:abd8ec755a8666aabf8907e12815528f5e37ebee` |
+| Previous (rollback) | `ca-mcwut--0000014` | `ghcr.io/mcwut-src/mcwut_webapp:abd8ec755a8666aabf8907e12815528f5e37ebee` |
+| Live | `ca-mcwut--0000015` | `ghcr.io/mcwut-src/mcwut_webapp:849b4934fca968afea4a80e634f226dac9086b6e` |
 
-`0000014` has 100% of the traffic and was Healthy. `0000013` is the previous build, the URLs page. It has no traffic and can be brought back.
+`0000015` has 100% of the traffic and was Healthy. `0000014` is the previous build, private saves that stay forever. It has no traffic and can be brought back.
 
-Checked while signed out, on `0000014`: both hosts `/health` return `ok`, Register is 404, and `/files` on both hosts redirects to sign-in. `/js/vault.js` contains **Kept forever** and **Saving**, and does not contain "Ready. Copy the link to share." Startup logged `Database migrate and identity seed finished.` at 14:08 UTC. There was no new database migration. Sign in, paste a note, and **Save**. It should stay in My files with no share link.
+Checked while signed out, on `0000015`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, and `/files` redirect to sign-in. The sign-in page shows McWut, email, password, and Remember me. It does not show a privacy link, an invitation sentence, or a toy password. `/favicon.svg` is the house mark. SQL was paused (error 40613) and the app retried. Startup logged `Database migrate and identity seed finished.` at 01:43 UTC. That run applied `AddMemberColor`. Sign in and open Profile to pick a color. Save on My files still stores a private file.
 
 Rollback, if the new site is wrong and you want the previous one:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000013=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000014=100
 ```
 
 Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to the full SHA above.
