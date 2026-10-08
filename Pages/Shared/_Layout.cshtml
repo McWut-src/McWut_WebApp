@@ -1,48 +1,85 @@
+@using McWutWebApp.Hosting
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Identity.SignInManager<Microsoft.AspNetCore.Identity.IdentityUser> SignInManager
+@inject FamilyVault.Files.Contracts.IFamilyRoster Roster
+@{
+    var signedIn = SignInManager.IsSignedIn(User);
+    var bare = ViewData["Bare"] as bool? == true;
+    var shownName = User.Identity?.Name ?? "";
+    string? accent = null;
+    if (signedIn)
+    {
+        var id = User.GetVaultUserId();
+        if (id is not null)
+        {
+            var member = await Roster.GetAsync(id.Value, Context.RequestAborted);
+            shownName = MemberNames.Shown(member?.DisplayName, User.Identity?.Name);
+            accent = MemberColors.Normalize(member?.AccentColor);
+        }
+
+        ViewData["ShownName"] = shownName;
+        ViewData["Accent"] = accent;
+    }
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <script>
+        try {
+            if (localStorage.getItem("mcwut-nav") === "icons") {
+                document.documentElement.classList.add("is-rail");
+            }
+        } catch (e) { }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - McWut</title>
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" asp-append-version="true" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/McWutWebApp.styles.css" asp-append-version="true" />
-    @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
-    @inject Microsoft.AspNetCore.Identity.SignInManager<Microsoft.AspNetCore.Identity.IdentityUser> SignInManager
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
 </head>
-<body class="@(SignInManager.IsSignedIn(User) ? "is-auth" : "is-guest")">
+<body class="@(signedIn ? "is-auth" : "is-guest")@(bare ? " is-bare" : null)">
     <div class="app-shell">
         <header class="topbar">
-            @if (SignInManager.IsSignedIn(User))
+            @if (signedIn)
             {
                 <button class="top-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-menu" aria-controls="app-menu" aria-label="Open menu" title="Menu">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
                 </button>
             }
             <a class="brand" asp-area="" asp-page="/Index">McWut</a>
-            @if (SignInManager.IsSignedIn(User))
+            @if (signedIn)
             {
                 <a class="top-icon d-lg-none" asp-page="/Vault/Index" title="My files" aria-label="My files">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
                 </a>
+                <a class="top-icon d-lg-none" asp-page="/Passwords/Index" title="Vault" aria-label="Vault">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                </a>
                 <a class="top-icon d-lg-none" asp-page="/Urls/Index" title="URLs" aria-label="URLs">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
                 </a>
-                <a class="top-icon d-lg-none" asp-page="/Passwords/Index" title="Password vault" aria-label="Password vault">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                <a class="top-icon d-lg-none" asp-page="/Profile/Index" title="Profile" aria-label="Profile">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
                 </a>
-                <span class="top-mail">@User.Identity?.Name</span>
-            }
-            else
-            {
-                <a class="top-signin" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
+                <span class="top-mail">
+                    @if (accent is not null)
+                    {
+                        <span class="me-dot" style="background: @accent" aria-hidden="true"></span>
+                    }
+                    @shownName
+                </span>
             }
         </header>
-        @if (SignInManager.IsSignedIn(User))
+        @if (signedIn)
         {
             <aside class="sidebar">
+                <button type="button" class="rail-toggle" id="rail-toggle" aria-pressed="false" title="Icons only" aria-label="Icons only">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+                </button>
                 <partial name="_Nav" />
             </aside>
             <div class="offcanvas offcanvas-start" tabindex="-1" id="app-menu" aria-labelledby="app-menu-label">
@@ -59,10 +96,6 @@
             <main role="main">
                 @RenderBody()
             </main>
-            @if (!SignInManager.IsSignedIn(User))
-            {
-                <footer class="guest-foot">&copy; 2026 McWut · <a asp-area="" asp-page="/Privacy">Privacy</a></footer>
-            }
         </div>
     </div>
 

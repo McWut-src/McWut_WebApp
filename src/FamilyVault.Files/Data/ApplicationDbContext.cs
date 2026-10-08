@@ -34,6 +34,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.HasKey(x => x.UserId);
             b.Property(x => x.DisplayName).HasMaxLength(256).IsRequired();
             b.Property(x => x.Email).HasMaxLength(256);
+            b.Property(x => x.AccentColor).HasMaxLength(7);
         });
 
         modelBuilder.Entity<StoredFileEntity>(b =>

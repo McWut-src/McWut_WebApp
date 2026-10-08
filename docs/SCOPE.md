@@ -12,16 +12,16 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 
 ## Shipped
 
-- Product name **McWut**. **My files** at `/files`. **Save** stores a private file and keeps it forever. Keep, a password, and a note name are under **Options**. The link icon on a file makes the public `/s/` link. **URLs** at `/urls` shortens a web address and lists every public link you have made (a file share, a whole upload, or a shortened address). You can view, open, or delete each one. Opening a shortened address goes to that address. A file link still shows the file. Older longer links still open. `/Vault` and `/files/shared` redirect to My files.
+- Product name **McWut**. Signed-in home is a dashboard: **My files**, **Vault**, **URLs**, **Profile**. Signed-out visitors see the sign-in form. **My files** at `/files`. **Save** stores a private file and keeps it forever. Keep, a password, and a note name are under **Options**. The link icon on a file makes the public `/s/` link. **URLs** at `/urls` shortens a web address and lists every public link you have made (a file share, a whole upload, or a shortened address). You can view, open, or delete each one. Opening a shortened address goes to that address. A file link still shows the file. Older longer links still open. `/Vault` and `/files/shared` redirect to My files. Public `/s/` and `/join` stay open without an account.
 - Join only with an invite. `/Identity/Account/Register` is **404**.
 - Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
 - Paste text on My files (stored as a normal text file).
 - Photo previews. Short notes and Markdown files can be read on My files and on the share page.
 - Admin **People** (turn an account off / on) and **Status**.
 - Admin **Reset password** (`/admin/reset-password`) to set another person's McWut sign-in password.
-- Personal **Passwords** vault and header **Password** change.
+- Personal **Passwords** vault. **Profile** (`/profile`) sets your name, a color for later, and your own sign-in password.
 - Photo gallery thumbnails and large view on My files.
-- Privacy page describes what is stored.
+- Privacy page describes what is stored. It is only there once you are signed in.
 
 **Left on purpose:** `Pages/Vault/` folder name, `FamilyVault.*` project names, `McWutWebApp.csproj` name. The Identity Register files stay in the project so the 404 can keep winning. Member-to-member file grants stay in the code and database, and are hidden from the screens. Notes for a later design: [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 

@@ -18,10 +18,7 @@ public class PasswordModel(UserManager<IdentityUser> users, SignInManager<Identi
     public string? Notice { get; private set; }
     public int RequiredLength { get; private set; }
 
-    public void OnGet()
-    {
-        RequiredLength = users.Options.Password.RequiredLength;
-    }
+    public IActionResult OnGet() => RedirectToPage("/Profile/Index");
 
     public async Task<IActionResult> OnPostAsync()
     {

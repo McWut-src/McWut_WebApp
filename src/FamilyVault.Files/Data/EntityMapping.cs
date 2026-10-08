@@ -66,5 +66,6 @@ public static class EntityMapping
     public static FamilyMember ToRecord(this FamilyMemberEntity e) => new(
         e.UserId,
         e.Email,
-        e.DisplayName);
+        e.DisplayName,
+        e.AccentColor);
 }

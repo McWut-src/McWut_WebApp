@@ -88,6 +88,7 @@ public interface IFileAudit
 public interface IFamilyRoster
 {
     Task UpsertAsync(FamilyMember member, CancellationToken cancellationToken = default);
+    Task UpdateProfileAsync(Guid userId, string? email, string displayName, string? accentColor, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<FamilyMember>> ListAsync(CancellationToken cancellationToken = default);
     Task<FamilyMember?> GetAsync(Guid userId, CancellationToken cancellationToken = default);
 }

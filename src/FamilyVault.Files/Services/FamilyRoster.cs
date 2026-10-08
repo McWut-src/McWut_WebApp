@@ -25,12 +25,43 @@ public sealed class FamilyRoster(ApplicationDbContext db, TimeProvider time) : I
         else
         {
             existing.Email = member.Email ?? existing.Email;
-            if (!string.IsNullOrWhiteSpace(member.DisplayName))
+            if (string.IsNullOrWhiteSpace(existing.DisplayName))
             {
-                existing.DisplayName = member.DisplayName;
+                existing.DisplayName = string.IsNullOrWhiteSpace(member.DisplayName) ? "Member" : member.DisplayName.Trim();
             }
 
             existing.LastSeenAt = now;
+        }
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task UpdateProfileAsync(Guid userId, string? email, string displayName, string? accentColor, CancellationToken cancellationToken = default)
+    {
+        var now = time.GetUtcNow();
+        var row = await db.FamilyMembers.FirstOrDefaultAsync(m => m.UserId == userId, cancellationToken).ConfigureAwait(false);
+        if (row is null)
+        {
+            db.FamilyMembers.Add(new FamilyMemberEntity
+            {
+                UserId = userId,
+                Email = email,
+                DisplayName = displayName.Trim(),
+                AccentColor = accentColor,
+                FirstSeenAt = now,
+                LastSeenAt = now
+            });
+        }
+        else
+        {
+            row.DisplayName = displayName.Trim();
+            row.AccentColor = accentColor;
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                row.Email = email;
+            }
+
+            row.LastSeenAt = now;
         }
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

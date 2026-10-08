@@ -88,7 +88,8 @@ public sealed record FileAuditEvent(
 public sealed record FamilyMember(
     Guid UserId,
     string? Email,
-    string DisplayName);
+    string DisplayName,
+    string? AccentColor = null);
 
 public sealed record ByteRange(long From, long? To);
 

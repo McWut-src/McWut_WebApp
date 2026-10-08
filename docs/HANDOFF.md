@@ -14,9 +14,10 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop.
+A private family file drop. This build adds the home dashboard, Profile, a color you pick, an icon sidebar, and signed-in Privacy. They are not on https://mcwut.com until you promote. The live image is still `ca-mcwut--0000014`.
 
-- Sign in with email and password. Open Register is **404**. New people join only from a link you create under **Invites**.
+- Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
+- After sign-in, home is four cards: **My files**, **Vault**, **URLs**, **Profile**. The sidebar uses the same order and can fold down to icons.
 - **My files** (`/files`): drop files, or paste text, then **Save**. The file is private and kept forever. **Options** can keep it for 1, 7, or 30 days, and can set a password that a later share link asks for. A pasted note can be named there. With no name it is saved as `note`. The link icon on a file makes a public `/s/` link of eight letters or digits. That link lasts 7 days. Older longer `/s/...` links still open.
 - **URLs** (`/urls`): **Shorten a link**. Paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it. The same page lists every public link you have made, including file shares from My files. View shows the link. Quick open follows it. Delete stops the link. A file stays in My files.
 - Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. Member tagging is hidden. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
@@ -25,7 +26,7 @@ A private family file drop.
 - **Reset password** (`/admin/reset-password`): admin sets a new McWut sign-in password for any account. Separate from the personal Passwords vault.
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
 - **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list.
-- **Password** in the header (`/account/password`): change the password you use to sign in to McWut.
+- **Profile** (`/profile`): the name the family will see, a color kept for later, and the password you use to sign in. The color is not shown on a public link. `/account/password` opens this page. Privacy is linked from here, and only while you are signed in.
 - `/health` returns the text `ok`. Leave that alone. Azure uses it.
 
 Internal project names stay `McWutWebApp` and `FamilyVault.*`. Renaming them breaks Docker and Azure for no benefit to people using the site.
@@ -93,7 +94,7 @@ docker compose down
 ## Click-through (Dev and QA)
 
 1. Header says **McWut**.
-2. After sign-in: **My files**, **Vault**, and for admin **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no Tag a member control. Header **Password** opens the sign-in password change. `/files/shared` redirects to My files.
+2. After sign-in, home shows **My files**, **Vault**, **URLs**, and **Profile**. The sidebar matches. It can fold to icons. For admin: **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no Tag a member control. `/files/shared` redirects to My files. Signed out, `/` and `/Privacy` are the sign-in form, with no privacy link and no toy passwords.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
 4. Paste a sentence and **Save**. The status is Saved, and there is no share box. The file is in the list with no removal date. Open **Options**, set Keep to 1 day and a password, name the note, and Save again. That row shows a date and the word password. You can still read it while signed in. The link icon copies a short `/s/` link (eight letters after `/s/`). That link lasts 7 days. Open it in a private window: it asks for the password, then the sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. On **URLs**, shorten `www.example.com/page?id=3` and open that short link: it goes to that address. The same page lists that link and the file share link. Delete removes the link.
 5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too.
@@ -102,7 +103,7 @@ docker compose down
 8. **Status** loads and does not show a connection string.
 9. `/health` is `ok`.
 10. **Passwords**: create a login, copy the username and password, open the URL, edit, and save. Sign in as the other toy user and confirm that list does not show the first user's login.
-11. **Password** in the header changes the sign-in password. Change the toy password back to `vince` or `member` when you are done.
+11. **Profile** sets a name and a color, and changes the sign-in password. Change the toy password back to `vince` or `member` when you are done. `/account/password` opens Profile.
 
 Tests:
 
@@ -179,7 +180,8 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | `Pages/Vault/` | My files screen. URL is `/files`, not `/Vault`. `/files/shared` redirects here. |
 | `Pages/Urls/` | URLs at `/urls`. Shorten a web address, and list, open, or delete public links. |
 | `Pages/Passwords/` | Saved logins at `/passwords`. API is `Controllers/PasswordsController.cs` |
-| `Pages/Account/Password.cshtml` | Change the McWut sign-in password |
+| `Pages/Profile/` | Name, color, and your own sign-in password, at `/profile` |
+| `Pages/Account/Password.cshtml` | Old address. Opening it goes to Profile |
 | `wwwroot/js/passwords.js` | Search, list, edit, copy, open |
 | `Pages/Admin/` | Invites, People, Reset password, Status |
 | `Pages/Join/` | `/join/{token}` |

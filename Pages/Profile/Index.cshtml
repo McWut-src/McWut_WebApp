@@ -1,0 +1,73 @@
+@page "/profile"
+@model McWutWebApp.Pages.Profile.IndexModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Profile</h1>
+        <p class="page-kicker">Your name, a color, and the password you use to sign in.</p>
+    </div>
+</div>
+
+<div class="profile-sheet">
+    @if (Model.Notice is not null)
+    {
+        <div class="alert alert-success">@Model.Notice</div>
+    }
+
+    <section class="card mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-3">Name and color</h2>
+            <p class="field-hint mb-3">The color is for later, so the family can tell us apart. It is not shown on a public link.</p>
+            <form method="post" asp-page-handler="Profile" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label class="form-label" for="DisplayName">Name</label>
+                    <input asp-for="DisplayName" class="form-control" maxlength="40" autocomplete="nickname" />
+                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="AccentColor">Color</label>
+                    <div class="color-field">
+                        <input asp-for="AccentColor" type="color" class="color-pick" />
+                        <span class="color-hex" id="color-hex">@Model.AccentColor</span>
+                    </div>
+                    <span asp-validation-for="AccentColor" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card mb-3" id="password">
+        <div class="card-body">
+            <h2 class="h6 mb-1">Sign-in password</h2>
+            <p class="field-hint mb-3">This is the password for McWut, not a saved login. Use at least @Model.RequiredLength characters.</p>
+            <form method="post" asp-page-handler="Password" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="mb-3">
+                    <label class="form-label" for="CurrentPassword">Current password</label>
+                    <input asp-for="CurrentPassword" class="form-control" type="password" autocomplete="current-password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="NewPassword">New password</label>
+                    <input asp-for="NewPassword" class="form-control" type="password" autocomplete="new-password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="ConfirmPassword">Confirm new password</label>
+                    <input asp-for="ConfirmPassword" class="form-control" type="password" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">Save password</button>
+            </form>
+        </div>
+    </section>
+
+    <p class="mb-0"><a asp-page="/Privacy">Privacy</a></p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

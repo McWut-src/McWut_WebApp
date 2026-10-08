@@ -6,45 +6,52 @@
     }
     bool On(string route) => path.Equals(route, StringComparison.OrdinalIgnoreCase);
     var files = On("/files");
-    var urls = On("/urls");
     var vault = On("/passwords");
+    var urls = On("/urls");
+    var profile = On("/profile");
     var invites = On("/admin/invites");
     var people = On("/admin/people");
     var reset = On("/admin/reset-password");
     var status = On("/admin/status");
-    var account = On("/account/password");
+    var privacy = On("/privacy");
+    var shown = ViewData["ShownName"] as string ?? User.Identity?.Name;
+    var accent = ViewData["Accent"] as string;
 }
 <nav class="side-nav" aria-label="Primary">
-    <a class="side-link is-primary @(files ? "active" : null)" asp-page="/Vault/Index">
+    <a class="side-link is-primary @(files ? "active" : null)" asp-page="/Vault/Index" title="My files" aria-current="@(files ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
         <span>My files</span>
     </a>
-    <a class="side-link is-primary @(urls ? "active" : null)" asp-page="/Urls/Index">
+    <a class="side-link is-primary @(vault ? "active" : null)" asp-page="/Passwords/Index" title="Vault" aria-current="@(vault ? "page" : null)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span>Vault</span>
+    </a>
+    <a class="side-link is-primary @(urls ? "active" : null)" asp-page="/Urls/Index" title="URLs" aria-current="@(urls ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
         <span>URLs</span>
     </a>
-    <a class="side-link is-primary @(vault ? "active" : null)" asp-page="/Passwords/Index">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-        <span>Vault</span>
+    <a class="side-link is-primary @(profile ? "active" : null)" asp-page="/Profile/Index" title="Profile" aria-current="@(profile ? "page" : null)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
+        <span>Profile</span>
     </a>
 </nav>
 @if (User.IsInRole("Admin"))
 {
     <div class="side-label">Admin</div>
     <nav class="side-nav" aria-label="Admin">
-        <a class="side-link @(people ? "active" : null)" asp-page="/Admin/People">
+        <a class="side-link @(people ? "active" : null)" asp-page="/Admin/People" title="People" aria-current="@(people ? "page" : null)">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
             <span>People</span>
         </a>
-        <a class="side-link @(invites ? "active" : null)" asp-page="/Admin/Invites">
+        <a class="side-link @(invites ? "active" : null)" asp-page="/Admin/Invites" title="Invites" aria-current="@(invites ? "page" : null)">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/></svg>
             <span>Invites</span>
         </a>
-        <a class="side-link @(reset ? "active" : null)" asp-page="/Admin/ResetPassword">
+        <a class="side-link @(reset ? "active" : null)" asp-page="/Admin/ResetPassword" title="Reset password" aria-current="@(reset ? "page" : null)">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="14" r="4"/><path d="M11.5 12.5L20 4"/><path d="M17 7l3 3"/><path d="M15 9l2 2"/></svg>
             <span>Reset password</span>
         </a>
-        <a class="side-link @(status ? "active" : null)" asp-page="/Admin/Status">
+        <a class="side-link @(status ? "active" : null)" asp-page="/Admin/Status" title="Status" aria-current="@(status ? "page" : null)">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
             <span>Status</span>
         </a>
@@ -52,18 +59,20 @@
 }
 <div class="side-spacer"></div>
 <div class="side-account">
-    <p class="side-email">@User.Identity?.Name</p>
-    <a class="side-link @(account ? "active" : null)" asp-page="/Account/Password">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="14" r="4"/><path d="M11.5 12.5L20 4"/><path d="M17 7l3 3"/><path d="M15 9l2 2"/></svg>
-        <span>Sign-in password</span>
-    </a>
+    <p class="side-email">
+        @if (accent is not null)
+        {
+            <span class="me-dot" style="background: @accent" aria-hidden="true"></span>
+        }
+        <span class="side-who">@shown</span>
+    </p>
     <form method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
-        <button type="submit" class="side-button">
+        <button type="submit" class="side-button" title="Sign out">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2"/><path d="M4 12h10"/><path d="M11 9l3 3-3 3"/></svg>
             <span>Sign out</span>
         </button>
     </form>
-    <a class="side-link" asp-page="/Privacy">
+    <a class="side-link @(privacy ? "active" : null)" asp-page="/Privacy" title="Privacy" aria-current="@(privacy ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
         <span>Privacy</span>
     </a>

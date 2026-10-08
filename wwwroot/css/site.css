@@ -92,6 +92,9 @@ body {
 }
 
 .top-mail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
   max-width: 240px;
   overflow: hidden;
@@ -101,19 +104,17 @@ body {
   font-size: 0.86rem;
 }
 
-.top-signin {
-  margin-left: auto;
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.92rem;
+.me-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
 }
 
-.top-signin:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+.page-title .me-dot {
+  margin-right: 8px;
+  vertical-align: 1px;
 }
 
 .sidebar {
@@ -128,6 +129,24 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.rail-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 0 8px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.rail-toggle:hover {
+  background: #f3f6fa;
+  color: var(--ink);
 }
 
 .side-nav {
@@ -189,9 +208,16 @@ body {
 }
 
 .side-email {
-  margin: 0 10px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px 8px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.side-who {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -203,14 +229,42 @@ body {
   padding: 24px 28px 40px;
 }
 
-.guest-foot {
-  margin-top: 32px;
-  color: var(--muted);
-  font-size: 0.85rem;
+.is-guest.is-bare .topbar {
+  display: none;
 }
 
-.guest-foot a {
-  color: var(--muted);
+.is-guest.is-bare .app-shell {
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "main";
+}
+
+.is-guest.is-bare .app-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.is-guest.is-bare .app-main > main {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sign-card {
+  width: min(100%, 22rem);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.sign-mark {
+  margin: 0 0 2px;
+  color: var(--navy);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
 }
 
 .page-head {
@@ -301,7 +355,9 @@ body {
 .btn:focus-visible,
 .icon-btn:focus-visible,
 .side-link:focus-visible,
-.top-icon:focus-visible {
+.top-icon:focus-visible,
+.rail-toggle:focus-visible,
+.dest:focus-visible {
   border-color: #9db7e6;
   box-shadow: 0 0 0 3px rgba(29, 95, 208, 0.18);
   outline: 0;
@@ -1131,6 +1187,89 @@ body.note-reader-open {
   font-size: 0.9rem;
 }
 
+.profile-sheet {
+  max-width: 32rem;
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-pick {
+  width: 52px;
+  height: 40px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.color-pick::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+
+.color-pick::-moz-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+
+.color-hex {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+html.is-rail .is-auth .app-shell {
+  grid-template-columns: 76px minmax(0, 1fr);
+}
+
+html.is-rail .sidebar {
+  padding: 10px 8px;
+  align-items: center;
+}
+
+html.is-rail .sidebar .rail-toggle {
+  margin: 0 0 8px;
+}
+
+html.is-rail .sidebar .side-nav,
+html.is-rail .sidebar .side-account {
+  align-items: center;
+  width: 100%;
+}
+
+html.is-rail .sidebar .side-link,
+html.is-rail .sidebar .side-button {
+  position: relative;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  gap: 0;
+}
+
+html.is-rail .sidebar .side-link span,
+html.is-rail .sidebar .side-button span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+html.is-rail .sidebar .side-email,
+html.is-rail .sidebar .side-label {
+  display: none;
+}
+
 .status-list {
   display: grid;
   gap: 0;
@@ -1156,6 +1295,7 @@ body.note-reader-open {
 }
 
 @media (max-width: 991.98px) {
+  html.is-rail .is-auth .app-shell,
   .is-auth .app-shell {
     grid-template-columns: 1fr;
     grid-template-areas: "top" "main";

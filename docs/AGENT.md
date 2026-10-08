@@ -51,7 +51,10 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 
 - Open Register stays 404. People join from an admin invite at `/join/{token}`.
 - Dev and Docker QA: `vince@mcwut.com` / `vince` (admin) and `member@mcwut.com` / `member`. Production does not seed `member@`. Production sign-in for `vince@mcwut.com` is the Azure secret `website-admin-password`.
-- Three primary places: **My files** (`/files`), **URLs** (`/urls`), and **Vault** (`/passwords`, page title “Password vault”). Do not add a Shared files nav item or a Tag a member control. `/files/shared` and `/Vault/Shared` redirect to My files. Grant APIs and tables stay unused. A later design is in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
+- Signed-out visitors get the sign-in form. `/` and `/Privacy` require a sign-in. Do not put a privacy link, an invitation sentence, or the dev passwords on that screen. Public `/s/{token}` and `/join/{token}` stay reachable without an account. `/health` stays anonymous.
+- Signed-in home (`/`) is a dashboard with four places, in this order: **My files** (`/files`), **Vault** (`/passwords`, page title “Password vault”), **URLs** (`/urls`), and **Profile** (`/profile`). Do not add a fifth Home nav item. The brand goes back to the dashboard. Do not add a Shared files nav item or a Tag a member control. `/files/shared` and `/Vault/Shared` redirect to My files. Grant APIs and tables stay unused. A later design is in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
+- **Profile** stores a display name (not an email), a color they pick, and the person’s own sign-in password change. The color is any `#rrggbb` value, kept for a later family tag. It is not shown on a public link. `/account/password` redirects to Profile. Admin reset password stays at `/admin/reset-password`. `FamilyRoster.UpsertAsync` must not replace a chosen display name, and must not clear `AccentColor`. It may fill a blank name.
+- The desktop sidebar collapses to icons. The choice is `localStorage` key `mcwut-nav` (`icons` or `names`) and the class `is-rail` on `<html>`. Scope that CSS to `.sidebar` so the phone menu stays labeled.
 - Do not invent folders or vault categories.
 - **Save** on My files stores a private file and keeps it forever. It does not create a share link. **Options** can keep the file for 1, 7, or 30 days, and can set a password. That password is asked for when someone opens a share link. The signed-in owner still opens the file. A pasted note with no name is saved as `note`. The link icon still creates a public link, and that link still lasts 7 days because the request omits a keep time.
 - File share links are public `/s/` plus eight letters or digits. Older longer file links still open. Invite tokens stay long.
@@ -67,7 +70,9 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 
 | Change | Place |
 |---|---|
+| Home dashboard | `Pages/Index.cshtml` at `/` |
 | My files screen | `Pages/Vault/` served at `/files` |
+| Profile | `Pages/Profile/` at `/profile`. Name, color, own sign-in password. |
 | URLs screen | `Pages/Urls/` served at `/urls`, `wwwroot/js/urls.js` |
 | Shorten form and public-link list | `Pages/Urls/Index.cshtml`, `wwwroot/js/urls.js`, `wwwroot/css/site.css` |
 | Public `/s/{token}` | `Pages/Share/Index.cshtml.cs`. Resolve a short link before the file link. `Redirect` the stored address. |

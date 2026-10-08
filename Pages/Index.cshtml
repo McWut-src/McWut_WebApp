@@ -2,31 +2,42 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
+    var hello = Model.HelloName is null ? "Hello." : "Hello, " + Model.HelloName + ".";
 }
 
 <div class="home">
     <div class="page-head">
         <div>
-            <h1 class="page-title">McWut</h1>
-            <p class="page-kicker">Files, public links, and a private password vault for people you invite.</p>
+            <h1 class="page-title">
+                @if (Model.AccentColor is not null)
+                {
+                    <span class="me-dot" style="background: @Model.AccentColor" aria-hidden="true"></span>
+                }
+                @hello
+            </h1>
+            <p class="page-kicker">Files, logins, and links. Just for us.</p>
         </div>
     </div>
-
-    @if (User.Identity?.IsAuthenticated != true)
-    {
-        <div class="card" style="max-width: 28rem;">
-            <div class="card-body">
-                @if (Model.ShowDevCredentials)
-                {
-                    <h2 class="h6">Dev sign-in</h2>
-                    <p class="text-muted">This is a local project. Passwords are simple on purpose.</p>
-                    <ul>
-                        <li><strong>vince@mcwut.com</strong> / <strong>vince</strong> (admin)</li>
-                        <li><strong>member@mcwut.com</strong> / <strong>member</strong></li>
-                    </ul>
-                }
-                <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Sign in</a>
-            </div>
-        </div>
-    }
+    <div class="dest-grid">
+        <a class="dest" asp-page="/Vault/Index">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+            <strong>My files</strong>
+            <span>The things you keep.</span>
+        </a>
+        <a class="dest" asp-page="/Passwords/Index">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <strong>Vault</strong>
+            <span>Logins only you can see.</span>
+        </a>
+        <a class="dest" asp-page="/Urls/Index">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
+            <strong>URLs</strong>
+            <span>Links you have made.</span>
+        </a>
+        <a class="dest" asp-page="/Profile/Index">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
+            <strong>Profile</strong>
+            <span>Your name and color.</span>
+        </a>
+    </div>
 </div>
