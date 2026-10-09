@@ -1,6 +1,6 @@
 # Guidelines for a future agent
 
-**Written:** 8 October 2026  
+**Written:** 9 October 2026  
 **Read with:** [HANDOFF.md](HANDOFF.md), [SCOPE.md](SCOPE.md)  
 **Repo:** https://github.com/McWut-src/McWut_WebApp (`main`)  
 **Folder:** `C:\vince\McWutWebApp`
@@ -15,10 +15,10 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000015` | `ghcr.io/mcwut-src/mcwut_webapp:849b4934fca968afea4a80e634f226dac9086b6e` |
-| Rollback | `ca-mcwut--0000014` | `ghcr.io/mcwut-src/mcwut_webapp:abd8ec755a8666aabf8907e12815528f5e37ebee` |
+| Live | `ca-mcwut--0000016` | `ghcr.io/mcwut-src/mcwut_webapp:97a406eaae8fbaeaec862fe022bf0bf8753112b5` |
+| Rollback | `ca-mcwut--0000015` | `ghcr.io/mcwut-src/mcwut_webapp:849b4934fca968afea4a80e634f226dac9086b6e` |
 
-Commit `849b493` is the signed-in home, Profile, and color picker (“Add a signed-in home, profile, and a color picker.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
+Commit `97a406e` renders Markdown on the server and draws Mermaid diagrams (“Render Markdown on the server and draw Mermaid diagrams.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
 
 `git push` of `main` builds `ghcr.io/mcwut-src/mcwut_webapp:<full SHA>` and moves the tag `:qa` to that commit. It does not change https://mcwut.com. Do not point Azure at `:qa` or `:latest`. Pin the full feature SHA.
 
@@ -27,7 +27,7 @@ Promote only when Vince asks to publish or promote. A docs request, including �
 Rollback of the image above:
 
 ```powershell
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000014=100
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000015=100
 ```
 
 ## How Vince wants changes shipped
