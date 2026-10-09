@@ -16,7 +16,7 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 - Join only with an invite. `/Identity/Account/Register` is **404**.
 - Toy logins on Dev/QA: `vince@mcwut.com` / `vince`, `member@mcwut.com` / `member`.
 - Paste text on My files (stored as a normal text file).
-- Photo previews. Short notes and Markdown files can be read on My files and on the share page.
+- Photo previews. Short notes and Markdown files can be read on My files and on the share page. Markdown is rendered on the server. Mermaid diagrams in a note, including Gantt charts and mindmaps, are drawn in the browser.
 - Admin **People** (turn an account off / on) and **Status**.
 - Admin **Reset password** (`/admin/reset-password`) to set another person's McWut sign-in password.
 - Personal **Passwords** vault. **Profile** (`/profile`) sets your name, a color for later, and your own sign-in password.

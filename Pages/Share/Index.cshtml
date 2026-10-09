@@ -53,15 +53,13 @@ else
                             {
                                 <p class="note-skip">@note.Notice</p>
                             }
-                            if (note.Text is not null && note.Markdown)
+                            if (note.Body is not null && note.Html)
                             {
-                                <div class="md-read" data-markdown>
-                                    <pre class="md-source">@note.Text</pre>
-                                </div>
+                                <article class="md-view">@Html.Raw(note.Body)</article>
                             }
-                            else if (note.Text is not null)
+                            else if (note.Body is not null)
                             {
-                                <pre class="note-body">@note.Text</pre>
+                                <pre class="note-body">@note.Body</pre>
                             }
                         }
                     </div>

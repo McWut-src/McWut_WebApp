@@ -1,4 +1,6 @@
+using System.Text;
 using FamilyVault.Files.Contracts;
+using FamilyVault.Files.Security;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -107,6 +109,57 @@ public sealed class FilesController(
             ? await content.OpenPreviewAsync(ctx, id, range, cancellationToken)
             : await content.OpenDownloadAsync(ctx, id, range, cancellationToken);
         return HttpFileResults.File(opened, inline: preview);
+    }
+
+    [HttpGet("{id:guid}/html")]
+    [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> Html(Guid id, CancellationToken cancellationToken)
+    {
+        var ctx = AccessContextFactory.From(Request, User.GetVaultUserId());
+        var decision = await access.AuthorizeFileAsync(ctx, id, AccessIntent.Preview, cancellationToken);
+        if (decision.RequiresPassword)
+        {
+            throw new PasswordRequiredException();
+        }
+
+        if (!decision.Allowed)
+        {
+            throw new VaultNotFoundException();
+        }
+
+        var file = await library.GetAsync(id, cancellationToken) ?? throw new VaultNotFoundException();
+        if (!ReadableFiles.IsMarkdown(file.ContentType, file.OriginalFileName))
+        {
+            return BadRequest(new { error = "This file is not Markdown." });
+        }
+
+        if (file.SizeBytes <= 0)
+        {
+            return BadRequest(new { error = "This note is empty." });
+        }
+
+        if (file.SizeBytes > ReadableFiles.MaxPreviewBytes)
+        {
+            return new ObjectResult(new { error = "This note is too long to read here." })
+            {
+                StatusCode = StatusCodes.Status413PayloadTooLarge
+            };
+        }
+
+        await using var opened = await content.OpenPreviewAsync(ctx, id, range: null, cancellationToken);
+        using var reader = new StreamReader(opened.Stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+        var buffer = new char[ReadableFiles.MaxPreviewBytes + 1];
+        var count = await reader.ReadBlockAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+        if (count > ReadableFiles.MaxPreviewBytes)
+        {
+            return new ObjectResult(new { error = "This note is too long to read here." })
+            {
+                StatusCode = StatusCodes.Status413PayloadTooLarge
+            };
+        }
+
+        return new JsonResult(new { html = MarkdownHtml.ToHtml(new string(buffer, 0, count)) });
     }
 
     private async Task EnsureAsync(Guid id, AccessIntent intent, CancellationToken cancellationToken)

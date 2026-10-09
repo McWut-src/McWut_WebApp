@@ -61,7 +61,7 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 - **URLs** is where **Shorten a link** lives, and where the signed-in person sees every public link they have made. That list is shortened web addresses plus share links from My files (a file or a whole upload). Each row can be viewed, opened, or deleted. Deleting a file share link revokes it and leaves the file in My files. Opening a shortened `/s/` token redirects (302) to the stored address. A file token still shows the file page. The same eight-character space is shared. `ShortTokenAllocator` checks both tables. Short links stay until the owner deletes them. There is no keep-for time and no click count. The share-link list is `GET /api/links` from `ShareLinkService.ListOwnedAsync`. Revoked links are omitted. Expired ones stay so they can be deleted. SQLite still cannot `ORDER BY` a `DateTimeOffset`; sort after the load.
 - If the pasted address has no scheme, store `https://`. Accept only `http` and `https`. Reject `javascript:`, `data:`, `file:`, userinfo, `localhost`, `*.local`, and private or loopback addresses. Rules live in `ShortLinkRules`.
 - Photos are jpeg, png, gif, and webp. The thumbnail is the photo itself, scaled with CSS. Do not generate thumbnail files. The viewer uses `/api/files/{id}/content?preview=true` and that open does not count as a download. SVG and HTML stay downloads.
-- Notes, `.txt`, `.csv`, `.json`, and `.md` can be read on My files and on the file share page. Markdown is rendered in the page. That open does not count as a download.
+- Notes, `.txt`, `.csv`, `.json`, and `.md` can be read on My files and on the file share page. Markdown is rendered on the server with Markdig. A Mermaid diagram in the note, including a Gantt chart or a mindmap, is drawn in the browser. Raw HTML in a note stays text. Links and images are kept only for http and https. That open does not count as a download.
 - Password vault fields are name, username, password, url, and information. Search is in the browser and skips the password. Values are encrypted at rest with ASP.NET Data Protection, purpose `McWut.PasswordVault.v1`.
 - UI is Bootstrap 5 plus `wwwroot/css/site.css`. Do not add a UI library. Icons are inline stroke SVGs through `window.mcwutIcon` in `wwwroot/js/icons.js`. Use `title` and `aria-label`. Do not set `textContent` on an icon button. That removes the SVG.
 - White page, navy bar (`#0b1f3a`), small blue accents. The nav label for the password vault is **Vault**.
@@ -72,6 +72,7 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 |---|---|
 | Home dashboard | `Pages/Index.cshtml` at `/` |
 | My files screen | `Pages/Vault/` served at `/files` |
+| Markdown reader | `src/FamilyVault.Files/Security/MarkdownHtml.cs`, `wwwroot/js/reader.js`, Mermaid at `wwwroot/lib/mermaid/12.1.0/mermaid.min.js`. My files asks `GET /api/files/{id}/html`. |
 | Profile | `Pages/Profile/` at `/profile`. Name, color, own sign-in password. |
 | URLs screen | `Pages/Urls/` served at `/urls`, `wwwroot/js/urls.js` |
 | Shorten form and public-link list | `Pages/Urls/Index.cshtml`, `wwwroot/js/urls.js`, `wwwroot/css/site.css` |

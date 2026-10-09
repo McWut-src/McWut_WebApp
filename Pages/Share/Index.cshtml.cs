@@ -148,13 +148,13 @@ public class IndexModel(
             var markdown = ReadableFiles.IsMarkdown(file.ContentType, file.OriginalFileName);
             if (file.SizeBytes is <= 0 or > ReadableFiles.MaxPreviewBytes)
             {
-                notes[file.Id] = new ShareNote(null, markdown, "This note is too long to read here. Download it.");
+                notes[file.Id] = new ShareNote(null, false, "This note is too long to read here. Download it.");
                 continue;
             }
 
             if (shown >= 12)
             {
-                notes[file.Id] = new ShareNote(null, markdown, "Download this note to read it.");
+                notes[file.Id] = new ShareNote(null, false, "Download this note to read it.");
                 continue;
             }
 
@@ -162,7 +162,10 @@ public class IndexModel(
             {
                 await using var opened = await content.OpenPreviewAsync(ctx, file.Id, range: null, cancellationToken);
                 using var reader = new StreamReader(opened.Stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
-                notes[file.Id] = new ShareNote(await reader.ReadToEndAsync(cancellationToken), markdown, null);
+                var text = await reader.ReadToEndAsync(cancellationToken);
+                notes[file.Id] = markdown
+                    ? new ShareNote(MarkdownHtml.ToHtml(text), true, null)
+                    : new ShareNote(text, false, null);
                 shown++;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -175,4 +178,7 @@ public class IndexModel(
     }
 }
 
-public sealed record ShareNote(string? Text, bool Markdown, string? Notice);
+/// <summary>
+/// Body is sanitized HTML when Html is true. Otherwise it is plain text and the page encodes it.
+/// </summary>
+public sealed record ShareNote(string? Body, bool Html, string? Notice);

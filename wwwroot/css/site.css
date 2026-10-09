@@ -864,24 +864,8 @@ body.photo-viewer-open {
   color: var(--muted);
 }
 
-.md-read {
-  margin-top: 12px;
-}
-
-.md-read.is-rendered .md-source {
-  display: none;
-}
-
-.md-source {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  margin: 0;
-  font: inherit;
-  font-size: 0.95rem;
-  line-height: 1.55;
-}
-
 .md-view {
+  margin-top: 12px;
   overflow-wrap: anywhere;
   font-size: 1rem;
   line-height: 1.6;
@@ -937,16 +921,52 @@ body.photo-viewer-open {
   border-radius: 4px;
 }
 
-.md-view pre.md-code {
+.md-view pre:not(.mermaid) {
   background: var(--surface);
   padding: 12px 14px;
   border-radius: 8px;
   overflow: auto;
 }
 
-.md-view pre.md-code code {
+.md-view pre:not(.mermaid) code {
   padding: 0;
   background: transparent;
+}
+
+.md-view pre.mermaid {
+  background: transparent;
+  padding: 0;
+  overflow: auto;
+  text-align: center;
+}
+
+.md-view pre.mermaid iframe,
+.md-view pre.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.md-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.7em 0;
+  font-size: 0.95rem;
+}
+
+.md-view th,
+.md-view td {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.md-view th {
+  background: var(--surface);
+}
+
+.md-view input[type="checkbox"] {
+  margin-right: 0.4em;
 }
 
 .md-view img {
@@ -990,7 +1010,7 @@ body.note-reader-open {
 .note-reader-frame {
   position: relative;
   z-index: 1;
-  width: min(44rem, 100%);
+  width: min(64rem, 100%);
   max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
@@ -1028,7 +1048,8 @@ body.note-reader-open {
 }
 
 .note-reader-body .note-body,
-.note-reader-body .note-skip {
+.note-reader-body .note-skip,
+.note-reader-body .md-view {
   margin-top: 0;
 }
 

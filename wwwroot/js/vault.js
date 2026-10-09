@@ -496,6 +496,21 @@
         }
     }
 
+    async function failureMessage(response) {
+        try {
+            const problem = await response.json();
+            if (problem && problem.requiresPassword) {
+                return "This note needs a password.";
+            }
+            if (problem && problem.error) {
+                return String(problem.error);
+            }
+        } catch {
+            /* The body was not JSON. */
+        }
+        return "Could not open this note.";
+    }
+
     async function openNote(file, button) {
         if (!file || !canRead(file)) {
             return;
@@ -525,22 +540,29 @@
         waiting.textContent = "Opening…";
         body.appendChild(waiting);
         try {
-            const response = await fetch(`/api/files/${file.id}/content?preview=true`, { headers: { "Accept": "text/plain, text/markdown, */*" } });
-            if (!response.ok) {
-                throw new Error("Could not open this note.");
-            }
-            const text = await response.text();
-            body.replaceChildren();
             if (window.mcwutRead.isMarkdown(file)) {
+                const response = await fetch(`/api/files/${file.id}/html`, { headers: { "Accept": "application/json" } });
+                if (!response.ok) {
+                    throw new Error(await failureMessage(response));
+                }
+                const payload = await response.json();
+                if (!payload || typeof payload.html !== "string") {
+                    throw new Error("Could not open this note.");
+                }
                 const article = document.createElement("article");
                 article.className = "md-view";
-                article.innerHTML = window.mcwutRead.render(text);
-                body.appendChild(article);
+                article.innerHTML = payload.html;
+                body.replaceChildren(article);
+                await window.mcwutRead.mountDiagrams(article);
             } else {
+                const response = await fetch(`/api/files/${file.id}/content?preview=true`, { headers: { "Accept": "text/plain, text/markdown, */*" } });
+                if (!response.ok) {
+                    throw new Error("Could not open this note.");
+                }
                 const pre = document.createElement("pre");
                 pre.className = "note-body";
-                pre.textContent = text;
-                body.appendChild(pre);
+                pre.textContent = await response.text();
+                body.replaceChildren(pre);
             }
         } catch (err) {
             body.replaceChildren();
