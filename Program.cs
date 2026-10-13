@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FamilyVault.Files;
 using FamilyVault.Files.Azure;
 using FamilyVault.Files.Data;
+using FamilyVault.Files.Hosting;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -129,7 +130,17 @@ builder.Services.AddScoped<UpsertFamilyMemberFilter>();
 builder.Services.AddScoped<InviteService>();
 builder.Services.AddScoped<PasswordVaultService>();
 builder.Services.AddSingleton<RetentionMapper>();
-builder.Services.AddHostedService<DatabaseStartupWorker>();
+var useSqlServer = (builder.Configuration["Database:Provider"] ?? "Sqlite")
+    .Equals("SqlServer", StringComparison.OrdinalIgnoreCase);
+if (useSqlServer)
+{
+    builder.Services.AddSingleton<SqlServerDatabaseGate>();
+    builder.Services.AddSingleton<IStartupDatabaseContact>(sp => sp.GetRequiredService<SqlServerDatabaseGate>());
+}
+else
+{
+    builder.Services.AddHostedService<DatabaseStartupWorker>();
+}
 
 var app = builder.Build();
 
@@ -166,6 +177,11 @@ app.Use(async (context, next) =>
 });
 app.UseAuthentication();
 app.UseAuthorization();
+if (useSqlServer)
+{
+    app.UseMiddleware<SqlServerDatabaseMiddleware>();
+}
+
 app.UseMiddleware<RejectLockedOutUsersMiddleware>();
 
 app.MapStaticAssets().AllowAnonymous();

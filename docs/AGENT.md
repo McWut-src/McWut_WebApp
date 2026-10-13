@@ -45,7 +45,7 @@ az containerapp update --name ca-mcwut --resource-group McWutStorage --image ghc
 
 Leave the secrets `sql-connection`, `storage-connection`, and `website-admin-password` in place. Limit `az` output with `--query`. Do not print connection strings, the prod password, or password hashes.
 
-Wait until the new revision is Healthy and has the traffic. Signed-out checks: both hosts `/health` return `ok`, Register is 404, `/files` redirects to sign-in. Read the startup log for `Database migrate and identity seed finished.` SQL serverless can pause (errors 40613 and 42119). The app already retries. Do not add `EnableRetryOnFailure` unless Vince asks.
+Wait until the new revision is Healthy and has the traffic. Signed-out checks: both hosts `/health` return `ok`, Register is 404, `/files` redirects to sign-in. A cold start does not open Azure SQL, and it does not create a missing database. Migrate and identity seed run on the first request that needs the database, and only if `sql-mcwut` already exists. That log line is `Database migrate and identity seed finished.` SQL serverless can pause (errors 40613 and 42119). The app retries those errors on that request. Do not add `EnableRetryOnFailure` unless Vince asks.
 
 ## Product decisions to keep
 
@@ -91,7 +91,7 @@ dotnet ef migrations add Name --context SqlServerApplicationDbContext --output-d
 
 SQLite cannot `ORDER BY` a `DateTimeOffset`. Load the rows, then sort in memory. `FileLibrary`, `ShortLinkService`, and `ShareLinkService.ListOwnedAsync` already do this.
 
-The app listens on port 8080 before it migrates, in `Hosting/DatabaseStartupWorker.cs`, so `/health` can be Healthy while SQL is still waking.
+The app listens on port 8080 without opening Azure SQL. `/health` and the sign-in form do not query it. `DatabaseStartupWorker` migrates SQLite for Dev and Docker. Production uses `SqlServerDatabaseGate`.
 
 ## This PC
 
@@ -109,7 +109,7 @@ There are no browser tools in the agent session. For a UI change, drive Edge hea
 
 - Subscription **McWut** `28c232c7-c74d-47a1-9fe2-e290de1e6b47`, user `vincelp@hotmail.com`.
 - Group **McWutStorage** (Canada Central): Container App `ca-mcwut`, environment `cae-mcwut`, storage account `mcwutstorage`. Scale min 0, max 1, target port 8080.
-- Group **McWut_dbResourceGroup**: SQL server `mcwut`, database `sql-mcwut`. Serverless. It may pause.
+- Group **McWut_dbResourceGroup**: SQL server `mcwut`, database `sql-mcwut`. Serverless. It may pause. Do not create it with a plain `CREATE DATABASE`. That becomes provisioned General Purpose, 2 vCores, and it cannot pause.
 - DNS is at Namecheap. `www` is a CNAME to the container name. The apex A record is `4.172.131.145`. Do not edit DNS unless Vince asks.
 - Do not delete or recreate Azure SQL or the storage account.
 

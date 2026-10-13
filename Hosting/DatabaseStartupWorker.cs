@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace McWutWebApp.Hosting;
 
 /// <summary>
-/// Runs SQL migrate + identity seed after Kestrel is listening.
-/// Container Apps probes TCP 8080; blocking migrate in Program before Run() looks like a crash.
+/// Migrates and seeds SQLite for Dev and Docker after Kestrel is listening.
+/// Production SQL Server does not use this. A cold start must not open Azure SQL.
 /// </summary>
 public sealed class DatabaseStartupWorker(
     IServiceScopeFactory scopes,

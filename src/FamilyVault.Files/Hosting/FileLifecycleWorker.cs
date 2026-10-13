@@ -10,11 +10,33 @@ namespace FamilyVault.Files.Hosting;
 public sealed class FileLifecycleWorker(
     IServiceScopeFactory scopeFactory,
     IOptions<FilesOptions> options,
+    IStartupDatabaseContact databaseContact,
     ILogger<FileLifecycleWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        try
+        {
+            await databaseContact.WaitForRealUseAsync(stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         var interval = TimeSpan.FromMinutes(Math.Max(1, options.Value.SweepIntervalMinutes));
+        if (databaseContact.DeferBackgroundWork)
+        {
+            try
+            {
+                await Task.Delay(interval, stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try

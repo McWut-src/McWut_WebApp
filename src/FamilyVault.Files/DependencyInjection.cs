@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace FamilyVault.Files;
@@ -80,6 +81,7 @@ public static class DependencyInjection
         services.AddScoped<IGrantService, GrantService>();
         services.AddScoped<IFileContentService, FileContentService>();
         services.AddScoped<IFileLifecycle, FileLifecycle>();
+        services.TryAddSingleton<IStartupDatabaseContact, ImmediateStartupDatabaseContact>();
         services.AddHostedService<FileLifecycleWorker>();
 
         return services;

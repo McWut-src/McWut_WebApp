@@ -197,7 +197,7 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | `.github/workflows/ghcr.yml` | Builds the image. `:latest` only on a `v*` tag or a manual run with promote_prod checked |
 | `Dockerfile`, `docker-compose.yml` | QA on this PC |
 
-Startup listens on port 8080 **before** it migrates the database, so Azure’s probe does not kill the container. Migration runs in `Hosting/DatabaseStartupWorker.cs`.
+Startup listens on port 8080 without opening Azure SQL, so a cold start does not wake or create the database. Dev and Docker still migrate SQLite in `Hosting/DatabaseStartupWorker.cs`. Production migrates in `Hosting/SqlServerDatabaseGate.cs` on the first request that needs the database, and only when `sql-mcwut` already exists.
 
 ---
 
