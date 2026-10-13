@@ -28,7 +28,8 @@ public static class EntityMapping
         e.ExpiresAt,
         e.MaxDownloads,
         e.DownloadCount,
-        e.PasswordHash is not null);
+        e.PasswordHash is not null,
+        e.IsStory);
 
     public static ShareLink ToRecord(this ShareLinkEntity e) => new(
         e.Id,

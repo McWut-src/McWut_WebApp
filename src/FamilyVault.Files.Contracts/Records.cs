@@ -23,7 +23,20 @@ public sealed record Drop(
     DateTimeOffset? ExpiresAt,
     int? MaxDownloads,
     int DownloadCount,
-    bool HasPassword);
+    bool HasPassword,
+    bool IsStory = false);
+
+public sealed record Story(
+    Guid Id,
+    Guid OwnerUserId,
+    string Title,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ExpiresAt,
+    bool HasPassword,
+    StoredFile? Body,
+    IReadOnlyList<StoredFile> Attachments);
+
+public sealed record IncomingStory(Story Story, MemberTag From);
 
 public sealed record ShortLink(
     Guid Id,
@@ -90,6 +103,19 @@ public sealed record FamilyMember(
     string? Email,
     string DisplayName,
     string? AccentColor = null);
+
+public sealed record MemberTag(Guid UserId, string DisplayName, string Color);
+
+public sealed record IncomingFile(StoredFile File, MemberTag From);
+
+public sealed record OutgoingMemberShare(
+    Guid FileId,
+    string Label,
+    Guid UserId,
+    string DisplayName,
+    string Color,
+    DateTimeOffset GrantedAt,
+    ShareTargetKind Kind = ShareTargetKind.File);
 
 public sealed record ByteRange(long From, long? To);
 

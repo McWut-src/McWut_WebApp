@@ -40,6 +40,11 @@ namespace FamilyVault.Files.Data.Migrations.SqlServer
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<bool>("IsStory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<int?>("MaxDownloads")
                         .HasColumnType("int");
 

@@ -7,7 +7,7 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">My files</h1>
-        <p class="page-kicker">Drop a file or paste a note.</p>
+        <p class="page-kicker">Drop files, or write a story.</p>
     </div>
 </div>
 
@@ -24,8 +24,8 @@
                 <ul id="file-list" class="small mt-3 mb-0"></ul>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="paste-text">Paste text</label>
-                <textarea id="paste-text" class="form-control" rows="4" placeholder="A note, a list, a snippet"></textarea>
+                <label class="form-label" for="paste-text">Story</label>
+                <textarea id="paste-text" class="form-control" rows="4" placeholder="Write what the files are about, or a note on its own"></textarea>
             </div>
             <button type="button" class="btn btn-primary w-100" id="upload-btn" disabled>Save</button>
             <details class="composer-options" id="composer-options">
@@ -49,7 +49,7 @@
                         <p class="field-hint">Asked for when someone opens a share link. You can still open the file while signed in.</p>
                     </div>
                     <div id="note-name-wrap" hidden>
-                        <label class="form-label" for="note-name">Name</label>
+                        <label class="form-label" for="note-name">Title</label>
                         <input id="note-name" class="form-control" placeholder="note" maxlength="200" />
                     </div>
                 </div>
@@ -70,6 +70,10 @@
             </div>
             <div id="my-files">
                 <p class="empty">Loading…</p>
+            </div>
+            <div id="from-others" class="from-others" hidden>
+                <h2 class="from-others-title">From others</h2>
+                <div id="from-others-list"></div>
             </div>
         </div>
     </section>

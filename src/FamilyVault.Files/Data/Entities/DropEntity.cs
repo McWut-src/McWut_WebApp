@@ -11,6 +11,7 @@ public sealed class DropEntity
     public int? MaxDownloads { get; set; }
     public int DownloadCount { get; set; }
     public string? PasswordHash { get; set; }
+    public bool IsStory { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
     public ICollection<StoredFileEntity> Files { get; set; } = new List<StoredFileEntity>();
 }

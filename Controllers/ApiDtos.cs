@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FamilyVault.Files.Contracts;
 using McWutWebApp.Hosting;
 
@@ -8,6 +9,7 @@ public sealed class CreateDropBody
     public string? Title { get; set; }
     public RetentionInput? Retention { get; set; }
     public string? Password { get; set; }
+    public bool IsStory { get; set; }
 }
 
 public sealed class PatchDropBody
@@ -56,3 +58,36 @@ public sealed class LinkResponse
     public bool HasPassword { get; init; }
     public bool AllowPreview { get; init; }
 }
+
+public sealed record MemberFileResponse(
+    Guid Id,
+    Guid OwnerUserId,
+    string OriginalFileName,
+    string ContentType,
+    long SizeBytes,
+    FileStatus Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ExpiresAt,
+    int? MaxDownloads,
+    int DownloadCount,
+    bool HasPassword,
+    Guid? DropId,
+    string? ChecksumSha256,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<MemberTag>? SharedWith = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? FromUserId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FromName = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FromColor = null);
+
+public sealed record StoryResponse(
+    Guid Id,
+    Guid OwnerUserId,
+    string Title,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? ExpiresAt,
+    bool HasPassword,
+    StoredFile? Body,
+    IReadOnlyList<StoredFile> Attachments,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<MemberTag>? SharedWith = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? FromUserId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FromName = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FromColor = null);

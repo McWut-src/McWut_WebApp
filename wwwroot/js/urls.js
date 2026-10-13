@@ -96,12 +96,33 @@
         return when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
     }
 
+    function safeColor(value) {
+        const color = String(value || "").trim().toLowerCase();
+        return /^#[0-9a-f]{6}$/.test(color) ? color : "#0b1f3a";
+    }
+
+    function pillInk(color) {
+        const hex = safeColor(color).slice(1);
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 160 ? "#0b1f3a" : "#ffffff";
+    }
+
+    function memberPill(item) {
+        const color = safeColor(item.color);
+        return `<span class="member-pill" style="background:${color};color:${pillInk(color)}">${esc(item.person || "Member")}</span>`;
+    }
+
     function kindLabel(item) {
         if (item.kind === "web") {
             return "Web";
         }
         if (item.kind === "drop") {
             return "Shared files";
+        }
+        if (item.kind === "member") {
+            return "With a member";
         }
         return "File";
     }
@@ -114,6 +135,9 @@
     }
 
     function rowMeta(item) {
+        if (item.kind === "member") {
+            return item.person || "Member";
+        }
         if (item.kind === "web") {
             return item.target || "";
         }
@@ -143,7 +167,7 @@
         if (!text) {
             return true;
         }
-        const haystack = [rowTitle(item), rowMeta(item), item.url, item.target, item.label].join(" ").toLowerCase();
+        const haystack = [rowTitle(item), rowMeta(item), item.url, item.target, item.label, item.person].join(" ").toLowerCase();
         return haystack.includes(text);
     }
 
@@ -161,6 +185,21 @@
         if (!item) {
             detailEl.hidden = true;
             detailEl.innerHTML = "";
+            return;
+        }
+        if (item.kind === "member") {
+            detailEl.hidden = false;
+            detailEl.innerHTML = `
+                <div data-key="${esc(item.key)}">
+                    <p class="url-kind">${esc(kindLabel(item))}</p>
+                    <p>On McWut for ${esc(item.person || "Member")}</p>
+                    <div class="member-pills">${memberPill(item)}</div>
+                    <p class="url-when">Shared ${esc(formatWhen(item.createdAt))}.</p>
+                    <div class="url-detail-actions">
+                        <button type="button" class="btn btn-outline-primary" data-action="open">Quick open</button>
+                        <button type="button" class="btn btn-outline-danger" data-action="delete">Remove share</button>
+                    </div>
+                </div>`;
             return;
         }
         const expiry = item.kind === "web"
@@ -196,7 +235,7 @@
             return;
         }
         if (items.length === 0) {
-            listEl.innerHTML = `<p class="empty">No public links yet. Shorten an address, or share a file from My files.</p>`;
+            listEl.innerHTML = `<p class="empty">No links yet. Shorten an address, or share a file from My files.</p>`;
             return;
         }
         if (rows.length === 0) {
@@ -205,22 +244,25 @@
         }
         const error = loadError ? `<p class="small text-danger">${esc(loadError)}</p>` : "";
         listEl.innerHTML = error + rows.map(item => {
-            const glyph = item.kind === "web" ? "link" : "files";
+            const glyph = item.kind === "web" ? "link" : (item.kind === "member" ? "users" : "files");
             const title = rowTitle(item);
             const meta = rowMeta(item);
+            const metaHtml = item.kind === "member" ? memberPill(item) : esc(meta);
             const selected = item.key === selectedKey ? " is-selected" : "";
+            const removeLabel = item.kind === "member" ? "Remove share" : "Delete";
+            const copy = item.kind === "member" ? "" : iconButton("copy", "copy", "Copy link");
             return `
                 <div class="file-row${selected}" data-key="${esc(item.key)}">
                     <div class="file-glyph" aria-hidden="true">${icon(glyph)}</div>
                     <div class="file-main">
                         <button type="button" class="file-title file-title-btn" data-action="view" title="View ${esc(title)}">${esc(title)}</button>
-                        <div class="file-meta short-target" title="${esc(meta)}">${esc(meta)}</div>
+                        <div class="file-meta short-target" title="${esc(meta)}">${metaHtml}</div>
                     </div>
                     <div class="file-actions">
                         ${iconButton("view", "eye", "View")}
                         ${iconButton("open", "external", "Quick open")}
-                        ${iconButton("copy", "copy", "Copy link")}
-                        ${iconButton("delete", "trash", "Delete", true)}
+                        ${copy}
+                        ${iconButton("delete", "trash", removeLabel, true)}
                     </div>
                 </div>`;
         }).join("");
@@ -261,10 +303,28 @@
         };
     }
 
+    function fromMember(row) {
+        const targetKind = String(row.kind || "File").toLowerCase() === "drop" ? "drop" : "file";
+        return {
+            key: "member:" + row.fileId + ":" + row.userId,
+            kind: "member",
+            targetKind: targetKind,
+            fileId: row.fileId,
+            userId: row.userId,
+            label: row.label || (targetKind === "drop" ? "Story" : "Shared file"),
+            person: row.displayName || "Member",
+            color: row.color,
+            createdAt: row.grantedAt,
+            url: "",
+            target: ""
+        };
+    }
+
     async function load() {
         loadError = "";
         let shorts = [];
         let shares = [];
+        let members = [];
         const errors = [];
         try {
             shorts = await api("/api/short-links", { headers: headers() }) || [];
@@ -276,8 +336,13 @@
         } catch (err) {
             errors.push(err.message);
         }
+        try {
+            members = await api("/api/member-shares", { headers: headers() }) || [];
+        } catch (err) {
+            errors.push(err.message);
+        }
         loadError = errors.join(" ");
-        items = shorts.map(fromShort).concat(shares.map(fromShare));
+        items = shorts.map(fromShort).concat(shares.map(fromShare)).concat(members.map(fromMember));
         items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         if (selectedKey && !findKey(selectedKey)) {
             selectedKey = "";
@@ -293,19 +358,30 @@
     }
 
     function openItem(item) {
+        if (item.kind === "member") {
+            const hash = item.targetKind === "drop" ? "#story=" : "#file=";
+            window.open("/files" + hash + encodeURIComponent(item.fileId), "_blank", "noopener");
+            return;
+        }
         window.open(item.url, "_blank", "noopener,noreferrer");
     }
 
     async function deleteItem(item) {
-        const message = item.kind === "web"
-            ? "Delete this short link?"
-            : "Delete this share link? The file stays in My files.";
+        const message = item.kind === "member"
+            ? (item.targetKind === "drop"
+                ? "Remove this share? The story stays in My files."
+                : "Remove this share? The file stays in My files.")
+            : (item.kind === "web"
+                ? "Delete this short link?"
+                : "Delete this share link? The file stays in My files.");
         if (!confirm(message)) {
             return;
         }
-        const path = item.kind === "web"
-            ? `/api/short-links/${encodeURIComponent(item.token)}`
-            : `/api/links/${encodeURIComponent(item.token)}`;
+        const path = item.kind === "member"
+            ? `/api/member-shares/${encodeURIComponent(item.fileId)}/${encodeURIComponent(item.userId)}${item.targetKind === "drop" ? "?kind=drop" : ""}`
+            : (item.kind === "web"
+                ? `/api/short-links/${encodeURIComponent(item.token)}`
+                : `/api/links/${encodeURIComponent(item.token)}`);
         await api(path, { method: "DELETE", headers: headers() });
         if (selectedKey === item.key) {
             selectedKey = "";

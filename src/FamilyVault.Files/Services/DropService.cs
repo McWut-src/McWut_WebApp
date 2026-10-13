@@ -23,7 +23,8 @@ public sealed class DropService(
             CreatedAt = now,
             ExpiresAt = request.Retention.ExpiresAt,
             MaxDownloads = request.Retention.MaxDownloads,
-            PasswordHash = string.IsNullOrEmpty(request.Password) ? null : PasswordHashing.Hash(passwordHasher, request.Password)
+            PasswordHash = string.IsNullOrEmpty(request.Password) ? null : PasswordHashing.Hash(passwordHasher, request.Password),
+            IsStory = request.IsStory
         };
         db.Drops.Add(drop);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -108,5 +109,40 @@ public sealed class DropService(
         }
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<Story>> ListOwnedStoriesAsync(Guid ownerUserId, CancellationToken cancellationToken = default)
+    {
+        var now = time.GetUtcNow();
+        var drops = await db.Drops.AsNoTracking()
+            .Where(d => d.OwnerUserId == ownerUserId && d.DeletedAt == null && d.IsStory)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return await ComposeAsync(drops, now, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<Story>> ComposeAsync(
+        List<DropEntity> drops,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var liveDrops = drops
+            .Where(d => d.ExpiresAt is null || d.ExpiresAt > now)
+            .ToList();
+        if (liveDrops.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = liveDrops.Select(d => d.Id).ToList();
+        var files = await db.StoredFiles.AsNoTracking()
+            .Where(f => f.DropId != null && ids.Contains(f.DropId.Value) && f.DeletedAt == null && f.Status == FileStatus.Ready)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return liveDrops
+            .Select(drop => StoryComposer.Compose(drop, files, now))
+            .OfType<Story>()
+            .OrderByDescending(story => story.CreatedAt)
+            .ToList();
     }
 }

@@ -21,12 +21,28 @@ public sealed class FilesController(
     RetentionMapper retention) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<StoredFile>>> List(CancellationToken cancellationToken) =>
-        Ok(await library.ListOwnedAsync(User.RequireVaultUserId(), cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<MemberFileResponse>>> List(CancellationToken cancellationToken)
+    {
+        var userId = User.RequireVaultUserId();
+        var files = await library.ListOwnedAsync(userId, cancellationToken);
+        var tags = await grants.ListTagsForOwnerAsync(userId, cancellationToken);
+        return Ok(files.Select(file => ToResponse(file) with
+        {
+            SharedWith = tags.TryGetValue(file.Id, out var shared) ? shared : []
+        }).ToList());
+    }
 
     [HttpGet("shared-with-me")]
-    public async Task<ActionResult<IReadOnlyList<StoredFile>>> SharedWithMe(CancellationToken cancellationToken) =>
-        Ok(await grants.ListSharedWithMeAsync(User.RequireVaultUserId(), cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<MemberFileResponse>>> SharedWithMe(CancellationToken cancellationToken)
+    {
+        var rows = await grants.ListIncomingAsync(User.RequireVaultUserId(), cancellationToken);
+        return Ok(rows.Select(row => ToResponse(row.File) with
+        {
+            FromUserId = row.From.UserId,
+            FromName = row.From.DisplayName,
+            FromColor = row.From.Color
+        }).ToList());
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<StoredFile>> Get(Guid id, CancellationToken cancellationToken)
@@ -79,7 +95,8 @@ public sealed class FilesController(
     public async Task<ActionResult<FileGrant>> Grant(Guid id, [FromBody] GrantBody body, CancellationToken cancellationToken)
     {
         await EnsureAsync(id, AccessIntent.Manage, cancellationToken);
-        var grant = await grants.GrantAsync(ShareTargetKind.File, id, body.UserId, body.Permission, User.RequireVaultUserId(), cancellationToken);
+        // This menu can only share for reading. Manage stays with the owner.
+        var grant = await grants.GrantAsync(ShareTargetKind.File, id, body.UserId, FilePermission.Download, User.RequireVaultUserId(), cancellationToken);
         return Ok(grant);
     }
 
@@ -161,6 +178,21 @@ public sealed class FilesController(
 
         return new JsonResult(new { html = MarkdownHtml.ToHtml(new string(buffer, 0, count)) });
     }
+
+    private static MemberFileResponse ToResponse(StoredFile file) => new(
+        file.Id,
+        file.OwnerUserId,
+        file.OriginalFileName,
+        file.ContentType,
+        file.SizeBytes,
+        file.Status,
+        file.CreatedAt,
+        file.ExpiresAt,
+        file.MaxDownloads,
+        file.DownloadCount,
+        file.HasPassword,
+        file.DropId,
+        file.ChecksumSha256);
 
     private async Task EnsureAsync(Guid id, AccessIntent intent, CancellationToken cancellationToken)
     {

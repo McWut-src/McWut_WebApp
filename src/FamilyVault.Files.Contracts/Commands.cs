@@ -1,6 +1,6 @@
 namespace FamilyVault.Files.Contracts;
 
-public sealed record CreateDropRequest(string? Title, Retention Retention, string? Password);
+public sealed record CreateDropRequest(string? Title, Retention Retention, string? Password, bool IsStory = false);
 
 public sealed record UpdateDropRequest(string? Title, Retention? Retention, string? Password, bool ClearPassword);
 

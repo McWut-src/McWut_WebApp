@@ -27,6 +27,7 @@ public class IndexModel(
     public string? Error { get; private set; }
     public ShareLink? Link { get; private set; }
     public Drop? Drop { get; private set; }
+    public StoredFile? StoryBody { get; private set; }
     public IReadOnlyList<StoredFile> Files { get; private set; } = [];
     public IReadOnlyDictionary<Guid, ShareNote> Notes { get; private set; } = new Dictionary<Guid, ShareNote>();
 
@@ -102,7 +103,7 @@ public class IndexModel(
             }
 
             Files = [file];
-            await LoadPreviewsAsync(ctx, cancellationToken);
+            await LoadPreviewsAsync(ctx, Files, cancellationToken);
             return Page();
         }
 
@@ -124,12 +125,18 @@ public class IndexModel(
         }
 
         Drop = await drops.GetAsync(Link.TargetId, cancellationToken);
-        Files = await drops.ListFilesAsync(Link.TargetId, cancellationToken);
-        await LoadPreviewsAsync(ctx, cancellationToken);
+        var all = await drops.ListFilesAsync(Link.TargetId, cancellationToken);
+        if (Drop?.IsStory == true)
+        {
+            StoryBody = StoryFiles.FindBody(Drop.Title, all);
+        }
+
+        Files = StoryBody is null ? all : all.Where(file => file.Id != StoryBody.Id).ToList();
+        await LoadPreviewsAsync(ctx, all, cancellationToken);
         return Page();
     }
 
-    private async Task LoadPreviewsAsync(AccessContext ctx, CancellationToken cancellationToken)
+    private async Task LoadPreviewsAsync(AccessContext ctx, IReadOnlyList<StoredFile> files, CancellationToken cancellationToken)
     {
         if (Link is not { AllowPreview: true })
         {
@@ -138,7 +145,7 @@ public class IndexModel(
 
         var notes = new Dictionary<Guid, ShareNote>();
         var shown = 0;
-        foreach (var file in Files)
+        foreach (var file in files)
         {
             if (!ReadableFiles.IsReadable(file.ContentType, file.OriginalFileName))
             {

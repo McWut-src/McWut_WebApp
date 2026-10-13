@@ -75,6 +75,31 @@ public class FileAccessServiceTests
     }
 
     [Fact]
+    public async Task Grant_download_allows_preview_and_download_but_not_manage()
+    {
+        await using var fx = new SqliteFixture();
+        await fx.SeedMembersAsync();
+        var file = await SeedReadyFileAsync(fx);
+        fx.Db.FileGrants.Add(new FileGrantEntity
+        {
+            Id = Guid.NewGuid(),
+            TargetKind = ShareTargetKind.File,
+            TargetId = file.Id,
+            UserId = SqliteFixture.OtherId,
+            Permission = FilePermission.Download,
+            GrantedByUserId = SqliteFixture.OwnerId,
+            GrantedAt = Now
+        });
+        await fx.Db.SaveChangesAsync();
+        var access = CreateAccess(fx);
+        var ctx = new AccessContext(SqliteFixture.OtherId, null, null);
+
+        Assert.True((await access.AuthorizeFileAsync(ctx, file.Id, AccessIntent.Preview)).Allowed);
+        Assert.True((await access.AuthorizeFileAsync(ctx, file.Id, AccessIntent.Download)).Allowed);
+        Assert.False((await access.AuthorizeFileAsync(ctx, file.Id, AccessIntent.Manage)).Allowed);
+    }
+
+    [Fact]
     public async Task Drop_grant_covers_files_in_the_drop()
     {
         await using var fx = new SqliteFixture();

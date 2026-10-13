@@ -16,6 +16,7 @@ public interface IDropService
     Task<IReadOnlyList<StoredFile>> ListFilesAsync(Guid dropId, CancellationToken cancellationToken = default);
     Task<Drop> UpdateAsync(Guid dropId, UpdateDropRequest request, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid dropId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Story>> ListOwnedStoriesAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
 }
 
 public interface IUploadSessionService
@@ -48,6 +49,11 @@ public interface IGrantService
     Task RevokeAsync(ShareTargetKind targetKind, Guid targetId, Guid userId, Guid actorUserId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<FileGrant>> ListAsync(ShareTargetKind targetKind, Guid targetId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<StoredFile>> ListSharedWithMeAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<MemberTag>>> ListTagsForOwnerAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<IncomingFile>> ListIncomingAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<IncomingStory>> ListIncomingStoriesAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<MemberTag>>> ListTagsAsync(ShareTargetKind targetKind, IReadOnlyCollection<Guid> targetIds, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<OutgoingMemberShare>> ListOutgoingAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
 }
 
 public interface IFileAccessService

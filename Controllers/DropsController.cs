@@ -25,7 +25,7 @@ public sealed class DropsController(
         var userId = User.RequireVaultUserId();
         var drop = await drops.CreateAsync(
             userId,
-            new CreateDropRequest(body.Title, retention.FromDto(body.Retention), body.Password),
+            new CreateDropRequest(body.Title, retention.FromDto(body.Retention), body.Password, body.IsStory),
             cancellationToken);
         return Created($"/api/drops/{drop.Id}", drop);
     }

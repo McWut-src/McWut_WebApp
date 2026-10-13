@@ -1,37 +1,29 @@
-# Member sharing — later
+# Quiet member sharing
 
 **Written:** 6 October 2026  
-**Status:** Hidden from the screens. Public share links stay.
+**Updated:** 13 October 2026  
+**Status:** On My files and URLs. There is still no Shared files page.
 
-Vince asked to take member-to-member sharing off the product for now. A link is enough. This note is here so the idea can come back without putting a control on every file again.
+A people icon shares one file with one signed-in member. The public link stays the normal way to share with someone who is not on McWut.
 
-## What the screens do now
+## What the screens do
 
-- **My files** uploads a file or a note and gives a link. Optional link password. Optional keep time.
-- Anyone with that link can open it until it expires or the file is deleted.
-- **Vault** is still personal. Other members cannot open it.
-- There is no **Shared files** item and no **Tag a member** control.
-- `/files/shared` and `/Vault/Shared` redirect to My files.
+- **My files** keeps **Copy link** and **Download**. Download is still a direct download.
+- The people icon is titled “Share with a member”. It sits on the file row, on a photo card, on a story, and in the photo, note, and story readers beside Download. It does not say Tag a member. A story is the words plus the files saved together. Sharing it shares that whole story. The other person can read and download it, and cannot delete it or share it again.
+- The menu lists other members by display name, with a round swatch in their profile color. If they have not chosen a name, the tag shows the part of their email before @. The full address is not shown. If nobody else has joined, it says “No one else is on McWut yet.”
+- Checking a name shares that file. Unchecking removes the share. The file is not copied. The owner keeps it.
+- After a share, the file shows a small pill: the member’s color as the background, their name in white or navy.
+- When at least one file has been shared with the signed-in person, a **From others** group appears under their own files. It is hidden when empty. Those rows can be opened and downloaded. There is no delete, no copy link, and no share menu.
+- **URLs** lists the member share next to public links. The meta line is the color pill. There is no public address. Quick open returns to the file. Remove share revokes access and leaves the file in My files.
+- There is no **Shared files** item. `/files/shared` and `/Vault/Shared` redirect to My files.
+- The color is not shown on a public `/s/` link.
 
-## What was left in the code
+## Access
 
-The grant tables, `POST /api/files/{id}/grants`, and `GET /api/files/shared-with-me` are still in the project. Old grant rows in the database stay. Nothing on the screens calls them. Do not delete that code until a later design replaces it. Do not build a new member-share screen on top of the old row dropdown.
+Reuse `FileGrants`. No new table. `POST /api/files/{id}/grants` from this menu stores `Download` only, so the other person can list, preview, and download. They cannot delete, re-share, or make a public link. Only the owner can grant or revoke. A deleted or expired file drops off From others and off the URLs member list. Outgoing rows are `GET /api/member-shares`.
 
-## Why the old screen felt wrong
+Do not send email. The other person sees the file the next time they open My files. The share lasts as long as the file.
 
-The tag menu sat on every photo and every file. **Shared files** sat next to **My files** and **Vault**, so it looked like a third main product. Most of the time there was nothing there. The link already did the sharing.
+## What not to bring back
 
-## If this comes back
-
-Keep the link as the normal way to share. Member delivery should be easy to miss until someone wants it.
-
-1. Leave **Copy link** as the action on the file. Do not put a person picker back on the row.
-2. If a file should also appear for a signed-in member, put that choice inside the share step, after the link exists. One small optional line is enough: “Also show this to someone on McWut.”
-3. Do that once for the drop, not once per photo and once per file.
-4. Do not add a top-level nav item for an empty list. If a member has files from someone else, show a short **From others** group on My files, and only when that list is not empty.
-5. Do not print other people’s email addresses on the file row. A name inside the share step is enough.
-6. Do not send email until someone asks for it. The member sees the file the next time they open My files.
-7. Use the same keep time and the same link password as the file. A member grant should not outlive the file.
-8. Viewing stays view and download. No editing someone else’s file.
-
-That keeps **My files**, **URLs**, and **Vault** as the primary places, and makes member sharing a quiet extra on the link.
+The old tag menu sat on every row and **Shared files** looked like a third main product. Leave those out. Do not put a person picker inside Download, and do not label this control Tag a member.

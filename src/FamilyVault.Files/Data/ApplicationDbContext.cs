@@ -66,6 +66,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.HasKey(x => x.Id);
             b.Property(x => x.Title).HasMaxLength(200).IsRequired();
             b.Property(x => x.PasswordHash).HasMaxLength(256);
+            b.Property(x => x.IsStory).HasDefaultValue(false);
             b.HasIndex(x => new { x.OwnerUserId, x.DeletedAt });
             b.HasOne(x => x.Owner)
                 .WithMany()

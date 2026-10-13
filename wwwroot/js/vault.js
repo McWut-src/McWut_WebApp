@@ -73,6 +73,65 @@
         return `<button type="button" class="icon-btn${danger ? " danger" : ""}" data-action="${action}" title="${label}" aria-label="${label}">${icon(name)}</button>`;
     }
 
+    function sameId(a, b) {
+        return String(a || "").toLowerCase() === String(b || "").toLowerCase();
+    }
+
+    function safeColor(value) {
+        const color = String(value || "").trim().toLowerCase();
+        return /^#[0-9a-f]{6}$/.test(color) ? color : "#0b1f3a";
+    }
+
+    function pillInk(color) {
+        const hex = safeColor(color).slice(1);
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 160 ? "#0b1f3a" : "#ffffff";
+    }
+
+    function localPart(value) {
+        const text = String(value || "").trim();
+        const at = text.indexOf("@");
+        if (at <= 0) {
+            return "";
+        }
+        return text.slice(0, at).trim();
+    }
+
+    function memberLabel(member) {
+        const name = String(member.displayName || "").trim();
+        if (name && !name.includes("@")) {
+            return name;
+        }
+        return localPart(member.email) || localPart(name) || "Member";
+    }
+
+    function shareTags(file) {
+        if (Array.isArray(file.sharedWith) && file.sharedWith.length > 0) {
+            return file.sharedWith;
+        }
+        if (file.fromName) {
+            return [{ displayName: file.fromName, color: file.fromColor }];
+        }
+        return [];
+    }
+
+    function memberPills(tags) {
+        if (!tags || tags.length === 0) {
+            return "";
+        }
+        const pills = tags.map(tag => {
+            const color = safeColor(tag.color);
+            return `<span class="member-pill" style="background:${color};color:${pillInk(color)}">${esc(tag.displayName || "Member")}</span>`;
+        }).join("");
+        return `<div class="member-pills">${pills}</div>`;
+    }
+
+    function shareButton() {
+        return iconButton("share", "users", "Share with a member");
+    }
+
     function flashButton(button, label) {
         const previous = button.getAttribute("aria-label") || "";
         const previousTitle = button.getAttribute("title") || "";
@@ -90,12 +149,23 @@
         return (document.getElementById(inputId)?.value || "").trim().toLowerCase();
     }
 
+    function fileHaystack(file) {
+        const parts = [file.originalFileName || ""];
+        if (file.fromName) {
+            parts.push(file.fromName);
+        }
+        if (Array.isArray(file.sharedWith)) {
+            file.sharedWith.forEach(tag => parts.push(tag.displayName || ""));
+        }
+        return parts.join(" ").toLowerCase();
+    }
+
     function filterFiles(files, inputId) {
         const query = fileQuery(inputId);
         if (!query) {
             return files;
         }
-        return files.filter(file => String(file.originalFileName || "").toLowerCase().includes(query));
+        return files.filter(file => fileHaystack(file).includes(query));
     }
 
     function fileMeta(file, withDownloads) {
@@ -119,17 +189,27 @@
                     <img alt="" loading="lazy" src="${previewSrc(file)}">
                 </button>
                 <div class="photo-name" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
-                <div class="photo-meta">${formatSize(file.sizeBytes)}${file.expiresAt ? " · " + esc(formatExpiry(file.expiresAt)) : ""}${file.hasPassword ? " · password" : ""}</div>
+                <div class="photo-meta">${formatSize(file.sizeBytes)}${file.expiresAt ? " · " + esc(formatExpiry(file.expiresAt)) : ""}${file.hasPassword && !file.fromName ? " · password" : ""}</div>
+                ${memberPills(shareTags(file))}
                 ${actions}
             </article>`;
     }
 
-    function ownedPhotoActions() {
+    function ownedPhotoActions(file) {
+        const share = Array.isArray(file.sharedWith) ? shareButton() : "";
         return `
             <div class="photo-actions">
                 ${iconButton("link", "link", "Copy link")}
+                ${share}
                 ${iconButton("download", "download", "Download")}
                 ${iconButton("delete", "trash", "Delete", true)}
+            </div>`;
+    }
+
+    function incomingPhotoActions() {
+        return `
+            <div class="photo-actions">
+                ${iconButton("download", "download", "Download")}
             </div>`;
     }
 
@@ -147,18 +227,41 @@
             ? `<button type="button" class="file-title file-title-btn" data-action="read" title="Read ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
             : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`;
         const read = canRead(file) ? iconButton("read", "eye", "Read") : "";
+        const share = Array.isArray(file.sharedWith) ? shareButton() : "";
         return `
             <div class="file-row" data-id="${esc(file.id)}">
                 ${fileGlyph(file)}
                 <div class="file-main">
                     ${title}
                     <div class="file-meta">${fileMeta(file, true)}</div>
+                    ${memberPills(shareTags(file))}
                 </div>
                 <div class="file-actions">
                     ${read}
                     ${iconButton("link", "link", "Copy link")}
+                    ${share}
                     ${iconButton("download", "download", "Download")}
                     ${iconButton("delete", "trash", "Delete", true)}
+                </div>
+            </div>`;
+    }
+
+    function incomingRow(file) {
+        const title = canRead(file)
+            ? `<button type="button" class="file-title file-title-btn" data-action="read" title="Read ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
+            : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`;
+        const read = canRead(file) ? iconButton("read", "eye", "Read") : "";
+        return `
+            <div class="file-row" data-id="${esc(file.id)}">
+                ${fileGlyph(file)}
+                <div class="file-main">
+                    ${title}
+                    <div class="file-meta">${fileMeta({ ...file, hasPassword: false }, false)}</div>
+                    ${memberPills(shareTags(file))}
+                </div>
+                <div class="file-actions">
+                    ${read}
+                    ${iconButton("download", "download", "Download")}
                 </div>
             </div>`;
     }
@@ -185,25 +288,48 @@
         return "application/octet-stream";
     }
 
-    function pasteFile() {
-        const pasteEl = document.getElementById("paste-text");
-        if (!pasteEl) {
-            return null;
+    function cleanTitle(raw, fallback, max) {
+        let name = String(raw || "").trim();
+        name = name.replace(/[\\/]/g, "-").replace(/[\u0000-\u001f]/g, "").replace(/\.\./g, ".");
+        name = name.replace(/\.[^.]+$/, "");
+        name = name.trim().replace(/^\.+$/, "");
+        if (!name) {
+            name = fallback;
         }
-        const text = pasteEl.value;
+        const limit = max || 200;
+        if (name.length > limit) {
+            name = name.slice(0, limit).trim();
+        }
+        return name || fallback;
+    }
+
+    function typedTitle() {
+        return (document.getElementById("note-name")?.value || "").trim();
+    }
+
+    function storyText() {
+        const pasteEl = document.getElementById("paste-text");
+        return pasteEl ? pasteEl.value : "";
+    }
+
+    function noteBase() {
+        return typedTitle() ? cleanTitle(typedTitle(), "note", 200) : "note";
+    }
+
+    function storyTitle(text) {
+        if (typedTitle()) {
+            return cleanTitle(typedTitle(), "Story", 200);
+        }
+        const line = String(text || "").split(/\r?\n/).map(part => part.trim()).find(Boolean) || "";
+        return cleanTitle(line, "Story", 80);
+    }
+
+    function pasteFile() {
+        const text = storyText();
         if (!text.trim()) {
             return null;
         }
-        let name = (document.getElementById("note-name")?.value || "note").trim();
-        name = name.replace(/[\\/]/g, "-").replace(/[\u0000-\u001f]/g, "");
-        name = name.replace(/\.[^.]+$/, "");
-        if (!name || name === "." || name === "..") {
-            name = "note";
-        }
-        if (name.length > 240) {
-            name = name.slice(0, 240);
-        }
-        return new File([text], name + ".txt", { type: "text/plain" });
+        return new File([text], noteBase() + ".txt", { type: "text/plain" });
     }
 
     const dropzone = document.getElementById("dropzone");
@@ -213,22 +339,36 @@
     const myFiles = document.getElementById("my-files");
     let queued = [];
     let ownedFiles = [];
+    let incomingFiles = [];
+    let ownedStories = [];
+    let incomingStories = [];
     let viewerPhotos = [];
     let viewerIndex = -1;
     let viewerReturn = null;
     let noteReturn = null;
     let noteFileId = null;
+    let storyReturn = null;
+    let storyOpenId = null;
+    let menuFileId = null;
+    let menuToken = 0;
 
     function renderQueue() {
         if (!fileList) return;
-        const pasted = pasteFile();
+        const text = storyText();
+        const hasText = !!text.trim();
+        const isStory = hasText && queued.length > 0;
         const items = queued.map(f => `<li>${esc(f.name)} (${formatSize(f.size)})</li>`);
-        if (pasted) {
-            items.push(`<li>${esc(pasted.name)} (${formatSize(pasted.size)})</li>`);
+        if (isStory) {
+            items.push(`<li>Story · ${esc(storyTitle(text))}</li>`);
+        } else if (hasText) {
+            const pasted = pasteFile();
+            if (pasted) {
+                items.push(`<li>${esc(pasted.name)} (${formatSize(pasted.size)})</li>`);
+            }
         }
         fileList.innerHTML = items.join("");
         if (uploadBtn) {
-            uploadBtn.disabled = queued.length === 0 && !pasted;
+            uploadBtn.disabled = queued.length === 0 && !hasText;
         }
     }
 
@@ -310,17 +450,102 @@
     document.getElementById("ttl")?.addEventListener("change", syncOptions);
     document.getElementById("password")?.addEventListener("input", syncOptions);
 
-    function paintLibrary(target, files, sourceCount, photoActions, rowBuilder, emptyText) {
+    function storyDropIds(stories) {
+        return new Set((stories || []).map(story => String(story.id || "").toLowerCase()));
+    }
+
+    function withoutStories(files, stories) {
+        const ids = storyDropIds(stories);
+        return (files || []).filter(file => !file.dropId || !ids.has(String(file.dropId).toLowerCase()));
+    }
+
+    function storyHaystack(story) {
+        const parts = [story.title || ""];
+        if (story.fromName) {
+            parts.push(story.fromName);
+        }
+        if (story.body && story.body.originalFileName) {
+            parts.push(story.body.originalFileName);
+        }
+        (story.attachments || []).forEach(file => parts.push(file.originalFileName || ""));
+        if (Array.isArray(story.sharedWith)) {
+            story.sharedWith.forEach(tag => parts.push(tag.displayName || ""));
+        }
+        return parts.join(" ").toLowerCase();
+    }
+
+    function filterStories(stories) {
+        const query = fileQuery("file-search");
+        if (!query) {
+            return stories || [];
+        }
+        return (stories || []).filter(story => storyHaystack(story).includes(query));
+    }
+
+    function storyMeta(story) {
+        const count = (story.attachments || []).length;
+        const bits = [count === 1 ? "1 file" : count + " files"];
+        if (story.expiresAt) {
+            bits.push(formatExpiry(story.expiresAt));
+        }
+        if (story.hasPassword && !story.fromName) {
+            bits.push("password");
+        }
+        return esc(bits.join(" · "));
+    }
+
+    function storyThumbs(story) {
+        const photos = (story.attachments || []).filter(file => isImage(file.contentType)).slice(0, 4);
+        if (photos.length === 0) {
+            return "";
+        }
+        return `<div class="story-thumbs">${photos.map(file => `
+            <button type="button" class="story-thumb" data-action="view" data-file-id="${esc(file.id)}" aria-label="View ${esc(file.originalFileName)}">
+                <img alt="" loading="lazy" src="${previewSrc(file)}">
+            </button>`).join("")}</div>`;
+    }
+
+    function storyCard(story, owned) {
+        const title = esc(story.title || "Story");
+        const share = owned && Array.isArray(story.sharedWith) ? shareButton() : "";
+        const link = owned ? iconButton("link", "link", "Copy link") : "";
+        const remove = owned ? iconButton("delete", "trash", "Delete", true) : "";
+        return `
+            <div class="file-row story-card" data-id="${esc(story.id)}" data-kind="story">
+                <div class="file-glyph" aria-hidden="true">${icon("story")}</div>
+                <div class="file-main">
+                    <button type="button" class="file-title file-title-btn" data-action="read" title="Read ${title}">${title}</button>
+                    <div class="file-meta">${storyMeta(story)}</div>
+                    ${memberPills(shareTags(story))}
+                    ${storyThumbs(story)}
+                </div>
+                <div class="file-actions">
+                    ${iconButton("read", "eye", "Read")}
+                    ${link}
+                    ${share}
+                    ${iconButton("download", "download", "Download")}
+                    ${remove}
+                </div>
+            </div>`;
+    }
+
+    function paintLibrary(target, files, stories, sourceCount, photoActions, rowBuilder, emptyText) {
         if (sourceCount === 0) {
             target.innerHTML = `<p class="empty">${emptyText}</p>`;
             return;
         }
-        if (files.length === 0) {
+        const loose = withoutStories(files, stories);
+        const shownStories = filterStories(stories);
+        const shownFiles = filterFiles(loose, "file-search");
+        if (shownStories.length === 0 && shownFiles.length === 0) {
             target.innerHTML = `<p class="empty">No matches.</p>`;
             return;
         }
-        const photos = files.filter(f => isImage(f.contentType));
-        const others = files.filter(f => !isImage(f.contentType));
+        const photos = shownFiles.filter(f => isImage(f.contentType));
+        const others = shownFiles.filter(f => !isImage(f.contentType));
+        const storyHtml = shownStories.length === 0 ? "" : `
+            <div class="section-label">Stories</div>
+            ${shownStories.map(story => storyCard(story, Array.isArray(story.sharedWith))).join("")}`;
         const grid = photos.length === 0 ? "" : `
             <div class="section-label">Photos</div>
             <div class="photo-grid" aria-label="Photos">
@@ -329,27 +554,65 @@
         const rows = others.length === 0 ? "" : `
             <div class="section-label">Files</div>
             ${others.map(rowBuilder).join("")}`;
-        target.innerHTML = grid + rows;
+        target.innerHTML = storyHtml + grid + rows;
     }
 
     function paintOwned() {
         if (!myFiles) return;
         paintLibrary(
             myFiles,
-            filterFiles(ownedFiles, "file-search"),
-            ownedFiles.length,
-            () => ownedPhotoActions(),
+            ownedFiles,
+            ownedStories,
+            ownedFiles.length + ownedStories.length,
+            ownedPhotoActions,
             ownedRow,
             "No files yet.");
     }
 
-    async function renderOwned() {
-        if (!myFiles) return;
-        ownedFiles = await api("/api/files", { headers: headers() }) || [];
-        paintOwned();
+    function paintIncoming() {
+        const root = document.getElementById("from-others");
+        const list = document.getElementById("from-others-list");
+        if (!root || !list) {
+            return;
+        }
+        if (incomingFiles.length === 0 && incomingStories.length === 0) {
+            root.hidden = true;
+            list.innerHTML = "";
+            return;
+        }
+        root.hidden = false;
+        paintLibrary(
+            list,
+            incomingFiles,
+            incomingStories,
+            incomingFiles.length + incomingStories.length,
+            () => incomingPhotoActions(),
+            incomingRow,
+            "No files yet.");
     }
 
-    document.getElementById("file-search")?.addEventListener("input", paintOwned);
+    function paintLibraries() {
+        paintOwned();
+        paintIncoming();
+    }
+
+    async function renderOwned() {
+        if (!myFiles) return;
+        const [owned, incoming, stories, sharedStories] = await Promise.all([
+            api("/api/files", { headers: headers() }),
+            api("/api/files/shared-with-me", { headers: headers() }),
+            api("/api/stories", { headers: headers() }),
+            api("/api/stories/shared-with-me", { headers: headers() })
+        ]);
+        ownedFiles = owned || [];
+        incomingFiles = incoming || [];
+        ownedStories = stories || [];
+        incomingStories = sharedStories || [];
+        paintLibraries();
+        openFromHash();
+    }
+
+    document.getElementById("file-search")?.addEventListener("input", paintLibraries);
     document.getElementById("file-refresh")?.addEventListener("click", () => {
         renderOwned().catch(err => { myFiles.innerHTML = `<p class="empty">${esc(err.message)}</p>`; });
     });
@@ -374,6 +637,7 @@
                     <div class="photo-viewer-buttons">
                         <button type="button" class="icon-btn" data-photo-prev title="Previous" aria-label="Previous">${icon("left")}</button>
                         <button type="button" class="icon-btn" data-photo-next title="Next" aria-label="Next">${icon("right")}</button>
+                        <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-photo-download title="Download" aria-label="Download">${icon("download")}</a>
                         <button type="button" class="icon-btn" data-photo-close title="Close" aria-label="Close">${icon("close")}</button>
                     </div>
@@ -398,11 +662,13 @@
     }
 
     function showViewer() {
+        closeMenu();
         const file = viewerPhotos[viewerIndex];
         const root = document.getElementById("photo-viewer");
         if (!file || !root) {
             return;
         }
+        document.body.appendChild(root);
         const image = root.querySelector("img");
         image.src = `/api/files/${file.id}/content?preview=true`;
         image.alt = file.originalFileName || "Photo";
@@ -416,6 +682,7 @@
         next.hidden = !many;
         prev.disabled = viewerIndex <= 0;
         next.disabled = viewerIndex >= viewerPhotos.length - 1;
+        syncShareButton(root, file);
         root.hidden = false;
         document.body.classList.add("photo-viewer-open");
     }
@@ -440,7 +707,7 @@
 
     function openViewer(files, id, button) {
         viewerPhotos = files.filter(f => isImage(f.contentType));
-        viewerIndex = viewerPhotos.findIndex(f => f.id === id);
+        viewerIndex = viewerPhotos.findIndex(f => sameId(f.id, id));
         if (viewerIndex < 0) {
             return;
         }
@@ -467,6 +734,7 @@
                 <div class="note-reader-bar">
                     <div class="note-reader-name" data-note-name></div>
                     <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-note-download title="Download" aria-label="Download">${icon("download")}</a>
                         <button type="button" class="icon-btn" data-note-close title="Close" aria-label="Close">${icon("close")}</button>
                     </div>
@@ -515,14 +783,17 @@
         if (!file || !canRead(file)) {
             return;
         }
+        closeMenu();
         closeViewer();
         ensureNoteReader();
         noteReturn = button;
         noteFileId = file.id;
         const root = document.getElementById("note-reader");
+        document.body.appendChild(root);
         root.querySelector("[data-note-name]").textContent = file.originalFileName || "Note";
         const download = root.querySelector("[data-note-download]");
         download.href = `/api/files/${file.id}/content`;
+        syncShareButton(root, file);
         const body = root.querySelector("[data-note-body]");
         body.replaceChildren();
         root.hidden = false;
@@ -574,6 +845,197 @@
         root.querySelector(".note-reader-buttons [data-note-close]")?.focus();
     }
 
+    function findStory(id) {
+        return ownedStories.concat(incomingStories).find(story => sameId(story.id, id)) || null;
+    }
+
+    function storyForFile(id) {
+        return ownedStories.concat(incomingStories).find(story =>
+            sameId(story.id, id)
+            || (story.body && sameId(story.body.id, id))
+            || (story.attachments || []).some(file => sameId(file.id, id))) || null;
+    }
+
+    function ensureStoryReader() {
+        if (document.getElementById("story-reader")) {
+            return;
+        }
+        const root = document.createElement("div");
+        root.id = "story-reader";
+        root.className = "note-reader";
+        root.hidden = true;
+        root.setAttribute("role", "dialog");
+        root.setAttribute("aria-modal", "true");
+        root.setAttribute("aria-label", "Story");
+        root.innerHTML = `
+            <button type="button" class="note-reader-backdrop" data-story-close aria-label="Close"></button>
+            <div class="note-reader-frame">
+                <div class="note-reader-bar">
+                    <div class="note-reader-name" data-story-name></div>
+                    <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
+                        <a class="icon-btn" data-story-download title="Download" aria-label="Download">${icon("download")}</a>
+                        <button type="button" class="icon-btn" data-story-close title="Close" aria-label="Close">${icon("close")}</button>
+                    </div>
+                </div>
+                <div class="note-reader-body" data-story-body></div>
+            </div>`;
+        document.body.appendChild(root);
+        root.addEventListener("click", (event) => {
+            if (event.target.closest("[data-story-close]")) {
+                closeStory();
+                return;
+            }
+            const button = event.target.closest("[data-story-action]");
+            if (!button) {
+                return;
+            }
+            const story = findStory(storyOpenId);
+            const fileId = button.getAttribute("data-file-id");
+            const file = story && (story.attachments || []).find(item => sameId(item.id, fileId));
+            const action = button.getAttribute("data-story-action");
+            if (!story || !file) {
+                return;
+            }
+            if (action === "view") {
+                openViewer(story.attachments || [], file.id, button);
+            } else if (action === "read") {
+                openNote(file, button).catch(err => alert(err.message));
+            } else if (action === "download") {
+                window.location.href = `/api/files/${file.id}/content`;
+            }
+        });
+    }
+
+    function closeStory() {
+        const root = document.getElementById("story-reader");
+        if (!root || root.hidden) {
+            return;
+        }
+        root.hidden = true;
+        root.querySelector("[data-story-body]").replaceChildren();
+        storyOpenId = null;
+        const note = document.getElementById("note-reader");
+        if (!note || note.hidden) {
+            document.body.classList.remove("note-reader-open");
+        }
+        if (storyReturn) {
+            storyReturn.focus();
+            storyReturn = null;
+        }
+    }
+
+    function storyFilesHtml(story) {
+        const files = story.attachments || [];
+        if (files.length === 0) {
+            return "";
+        }
+        const photos = files.filter(file => isImage(file.contentType));
+        const others = files.filter(file => !isImage(file.contentType));
+        const grid = photos.length === 0 ? "" : `
+            <div class="photo-grid" aria-label="Photos in this story">
+                ${photos.map(file => `
+                    <article class="photo-card">
+                        <button type="button" class="photo-open" data-story-action="view" data-file-id="${esc(file.id)}" aria-label="View ${esc(file.originalFileName)}">
+                            <img alt="" loading="lazy" src="${previewSrc(file)}">
+                        </button>
+                        <div class="photo-name" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>
+                    </article>`).join("")}
+            </div>`;
+        const rows = others.map(file => {
+            const read = canRead(file)
+                ? `<button type="button" class="icon-btn" data-story-action="read" data-file-id="${esc(file.id)}" title="Read" aria-label="Read">${icon("eye")}</button>`
+                : "";
+            const title = canRead(file)
+                ? `<button type="button" class="file-title file-title-btn" data-story-action="read" data-file-id="${esc(file.id)}">${esc(file.originalFileName)}</button>`
+                : `<div class="file-title">${esc(file.originalFileName)}</div>`;
+            return `
+                <div class="file-row">
+                    ${fileGlyph(file)}
+                    <div class="file-main">
+                        ${title}
+                        <div class="file-meta">${fileMeta(file, false)}</div>
+                    </div>
+                    <div class="file-actions">
+                        ${read}
+                        <a class="icon-btn" href="/api/files/${esc(file.id)}/content" title="Download" aria-label="Download">${icon("download")}</a>
+                    </div>
+                </div>`;
+        }).join("");
+        return `<div class="story-reader-files">${grid}${rows}</div>`;
+    }
+
+    async function openStory(story, button) {
+        if (!story) {
+            return;
+        }
+        closeMenu();
+        closeViewer();
+        closeNote();
+        ensureStoryReader();
+        storyReturn = button || null;
+        storyOpenId = story.id;
+        const root = document.getElementById("story-reader");
+        document.body.appendChild(root);
+        root.querySelector("[data-story-name]").textContent = story.title || "Story";
+        const download = root.querySelector("[data-story-download]");
+        download.href = `/api/drops/${story.id}/archive`;
+        const share = root.querySelector("[data-share]");
+        const canShare = Array.isArray(story.sharedWith);
+        share.hidden = !canShare;
+        if (canShare) {
+            share.setAttribute("data-story-id", story.id);
+        } else {
+            share.removeAttribute("data-story-id");
+        }
+        const body = root.querySelector("[data-story-body]");
+        body.replaceChildren();
+        const words = document.createElement("div");
+        const files = document.createElement("div");
+        files.innerHTML = storyFilesHtml(story);
+        body.append(words, files);
+        root.hidden = false;
+        document.body.classList.add("note-reader-open");
+        const source = story.body;
+        if (!source) {
+            words.textContent = "";
+            const message = document.createElement("p");
+            message.className = "note-skip";
+            message.textContent = "This story has no words.";
+            words.appendChild(message);
+            root.querySelector("[data-story-close]")?.focus();
+            return;
+        }
+        if ((source.sizeBytes || 0) > (window.mcwutRead.maxBytes || 200000)) {
+            const message = document.createElement("p");
+            message.className = "note-skip";
+            message.textContent = "This story is too long to read here. Download it instead.";
+            words.appendChild(message);
+            root.querySelector("[data-story-close]")?.focus();
+            return;
+        }
+        const waiting = document.createElement("p");
+        waiting.className = "note-skip";
+        waiting.textContent = "Opening…";
+        words.appendChild(waiting);
+        try {
+            const response = await fetch(`/api/files/${source.id}/content?preview=true`, { headers: { "Accept": "text/plain, */*" } });
+            if (!response.ok) {
+                throw new Error("Could not open this story.");
+            }
+            const pre = document.createElement("pre");
+            pre.className = "note-body";
+            pre.textContent = await response.text();
+            words.replaceChildren(pre);
+        } catch (err) {
+            const message = document.createElement("p");
+            message.className = "note-skip";
+            message.textContent = err.message;
+            words.replaceChildren(message);
+        }
+        root.querySelector("[data-story-close]")?.focus();
+    }
+
     document.getElementById("upload-btn")?.addEventListener("click", async () => {
         const status = document.getElementById("upload-status");
         const button = document.getElementById("upload-btn");
@@ -586,30 +1048,28 @@
             const ttl = Number(document.getElementById("ttl").value);
             const retention = { days: ttl === 0 ? null : ttl };
             const password = document.getElementById("password").value || null;
+            const text = storyText();
+            const hasText = !!text.trim();
+            const isStory = hasText && queued.length > 0;
             const batch = queued.slice();
-            const pasted = pasteFile();
-            if (pasted) {
-                batch.push(pasted);
+            if (!hasText && batch.length === 0) {
+                throw new Error("Choose a file or write a story.");
             }
-            if (batch.length === 0) {
-                throw new Error("Choose a file or paste some text.");
-            }
-            let title = "";
-            if (pasted) {
-                title = pasted.name.replace(/\.txt$/i, "");
-                if (title.length > 200) {
-                    title = title.slice(0, 200);
-                }
-            }
+            const title = isStory ? storyTitle(text) : (hasText ? noteBase() : "");
             const drop = await api("/api/drops", {
                 method: "POST",
                 headers: headers({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     title,
                     retention,
-                    password
+                    password,
+                    isStory
                 })
             });
+            if (hasText) {
+                const bodyName = (isStory ? (drop.title || title) : noteBase()) + ".txt";
+                batch.push(new File([text], bodyName, { type: "text/plain" }));
+            }
             for (const file of batch) {
                 if (!file.size) {
                     throw new Error(file.name + " is empty. Choose a file that has some content.");
@@ -656,30 +1116,296 @@
         }
     });
 
-    myFiles?.addEventListener("click", async (e) => {
+    function menuIsOpen() {
+        const menu = document.getElementById("member-menu");
+        return !!menu && !menu.hidden;
+    }
+
+    function closeMenu() {
+        menuToken += 1;
+        menuFileId = null;
+        const menu = document.getElementById("member-menu");
+        if (menu) {
+            menu.hidden = true;
+        }
+    }
+
+    function ensureMenu() {
+        let menu = document.getElementById("member-menu");
+        if (menu) {
+            return menu;
+        }
+        menu = document.createElement("div");
+        menu.id = "member-menu";
+        menu.className = "member-menu";
+        menu.hidden = true;
+        menu.setAttribute("role", "group");
+        menu.setAttribute("aria-label", "Share with a member");
+        document.body.appendChild(menu);
+        menu.addEventListener("change", (event) => {
+            const input = event.target.closest("input[data-user-id]");
+            if (!input) {
+                return;
+            }
+            toggleShare(input).catch(err => alert(err.message));
+        });
+        return menu;
+    }
+
+    function placeMenu(button) {
+        const menu = ensureMenu();
+        const rect = button.getBoundingClientRect();
+        const width = menu.offsetWidth || 240;
+        let left = Math.min(rect.left, window.innerWidth - width - 8);
+        left = Math.max(8, left);
+        let top = rect.bottom + 6;
+        menu.style.left = left + "px";
+        menu.style.top = top + "px";
+        const height = menu.offsetHeight;
+        if (top + height > window.innerHeight - 8) {
+            menu.style.top = Math.max(8, rect.top - height - 6) + "px";
+        }
+    }
+
+    function syncShareButton(root, file) {
+        const button = root.querySelector("[data-share]");
+        if (!button) {
+            return;
+        }
+        const show = !!(file && Array.isArray(file.sharedWith));
+        button.hidden = !show;
+        if (show) {
+            button.setAttribute("data-file-id", file.id);
+        } else {
+            button.removeAttribute("data-file-id");
+        }
+    }
+
+    function syncPills(file) {
+        document.querySelectorAll("#my-files [data-id]").forEach(row => {
+            if (!sameId(row.getAttribute("data-id"), file.id)) {
+                return;
+            }
+            const html = memberPills(shareTags(file));
+            const current = row.querySelector(".member-pills");
+            if (!html) {
+                if (current) {
+                    current.remove();
+                }
+                return;
+            }
+            if (current) {
+                current.outerHTML = html;
+                return;
+            }
+            const meta = row.querySelector(".file-meta, .photo-meta");
+            if (meta) {
+                meta.insertAdjacentHTML("afterend", html);
+            }
+        });
+    }
+
+    async function loadMembers() {
+        const rows = await api("/api/members", { headers: headers() }) || [];
+        return rows.map(member => ({
+            userId: member.userId,
+            displayName: memberLabel(member),
+            color: safeColor(member.accentColor)
+        }));
+    }
+
+    async function openShareMenu(file, button) {
+        if (!file || !Array.isArray(file.sharedWith)) {
+            return;
+        }
+        if (menuIsOpen() && sameId(menuFileId, file.id)) {
+            closeMenu();
+            return;
+        }
+        const token = menuToken + 1;
+        menuToken = token;
+        menuFileId = file.id;
+        const people = await loadMembers();
+        if (token !== menuToken) {
+            return;
+        }
+        const menu = ensureMenu();
+        if (people.length === 0) {
+            menu.innerHTML = `<p class="member-menu-empty">No one else is on McWut yet.</p>`;
+        } else {
+            const shared = new Set((file.sharedWith || []).map(tag => String(tag.userId).toLowerCase()));
+            menu.innerHTML = people.map(member => {
+                const checked = shared.has(String(member.userId).toLowerCase()) ? " checked" : "";
+                return `<label class="member-menu-row">
+                    <input type="checkbox" data-user-id="${esc(member.userId)}" data-color="${member.color}"${checked}>
+                    <span class="member-swatch" style="background:${member.color}"></span>
+                    <span class="member-menu-name">${esc(member.displayName)}</span>
+                </label>`;
+            }).join("");
+        }
+        menu.hidden = false;
+        placeMenu(button);
+    }
+
+    async function toggleShare(input) {
+        const story = ownedStories.find(item => sameId(item.id, menuFileId));
+        const file = ownedFiles.find(item => sameId(item.id, menuFileId));
+        const target = story || file;
+        const userId = input.getAttribute("data-user-id");
+        if (!target || !userId) {
+            return;
+        }
+        const grantPath = story ? `/api/drops/${story.id}/grants` : `/api/files/${file.id}/grants`;
+        input.disabled = true;
+        try {
+            if (input.checked) {
+                await api(grantPath, {
+                    method: "POST",
+                    headers: headers({ "Content-Type": "application/json" }),
+                    body: JSON.stringify({ userId })
+                });
+                const row = input.closest(".member-menu-row");
+                const name = row ? row.querySelector(".member-menu-name").textContent : "Member";
+                const color = safeColor(input.getAttribute("data-color"));
+                target.sharedWith = (target.sharedWith || []).concat([{ userId, displayName: name, color }]);
+            } else {
+                await api(`${grantPath}/${userId}`, { method: "DELETE", headers: headers() });
+                target.sharedWith = (target.sharedWith || []).filter(tag => !sameId(tag.userId, userId));
+            }
+            syncPills(target);
+        } catch (err) {
+            input.checked = !input.checked;
+            throw err;
+        } finally {
+            input.disabled = false;
+        }
+    }
+
+    function openFromHash() {
+        const storyMatch = /^#story=([0-9a-f-]{36})$/i.exec(location.hash || "");
+        if (storyMatch) {
+            const story = findStory(storyMatch[1]);
+            if (story && !sameId(storyOpenId, story.id)) {
+                openStory(story, null);
+            }
+            return;
+        }
+        const match = /^#file=([0-9a-f-]{36})$/i.exec(location.hash || "");
+        if (!match) {
+            return;
+        }
+        const id = match[1];
+        const holding = storyForFile(id);
+        if (holding && !sameId(holding.id, id)) {
+            if (!sameId(storyOpenId, holding.id)) {
+                openStory(holding, null);
+            }
+            return;
+        }
+        const owned = withoutStories(ownedFiles, ownedStories).find(file => sameId(file.id, id));
+        const incoming = withoutStories(incomingFiles, incomingStories).find(file => sameId(file.id, id));
+        const file = owned || incoming;
+        if (!file) {
+            return;
+        }
+        const pool = owned
+            ? withoutStories(ownedFiles, ownedStories)
+            : withoutStories(incomingFiles, incomingStories);
+        const row = document.querySelector(`[data-id="${file.id}"]`);
+        if (isImage(file.contentType)) {
+            openViewer(pool, file.id, row ? row.querySelector("[data-action='view']") : null);
+            return;
+        }
+        if (canRead(file)) {
+            openNote(file, row ? row.querySelector("[data-action='read']") : null);
+            return;
+        }
+        if (row) {
+            row.scrollIntoView({ block: "nearest" });
+        }
+    }
+
+    async function onLibraryClick(e) {
         const button = e.target.closest("button[data-action]");
         if (!button) return;
         const row = button.closest("[data-id]");
+        if (!row) return;
         const id = row.getAttribute("data-id");
+        const incoming = !!button.closest("#from-others");
+        const pool = incoming
+            ? withoutStories(incomingFiles, incomingStories)
+            : withoutStories(ownedFiles, ownedStories);
+        const file = pool.find(item => sameId(item.id, id));
         const action = button.getAttribute("data-action");
+        if (row.getAttribute("data-kind") === "story") {
+            const stories = incoming ? incomingStories : ownedStories;
+            const story = stories.find(item => sameId(item.id, id));
+            if (!story) {
+                return;
+            }
+            try {
+                if (action === "read") {
+                    await openStory(story, button);
+                } else if (action === "view") {
+                    openViewer(story.attachments || [], button.getAttribute("data-file-id"), button);
+                } else if (action === "download") {
+                    window.location.href = `/api/drops/${story.id}/archive`;
+                } else if (action === "share") {
+                    if (!incoming) {
+                        await openShareMenu(story, button);
+                    }
+                } else if (action === "delete") {
+                    if (incoming) {
+                        return;
+                    }
+                    if (!confirm("Delete this story? Its files are deleted too.")) {
+                        return;
+                    }
+                    await api(`/api/drops/${story.id}`, { method: "DELETE", headers: headers() });
+                    if (sameId(storyOpenId, story.id)) {
+                        closeStory();
+                    }
+                    await renderOwned();
+                } else if (action === "link") {
+                    if (incoming) {
+                        return;
+                    }
+                    const link = await api(`/api/drops/${story.id}/links`, {
+                        method: "POST",
+                        headers: headers({ "Content-Type": "application/json" }),
+                        body: JSON.stringify({ allowPreview: true })
+                    });
+                    await navigator.clipboard.writeText(link.url);
+                    flashButton(button, "Copied");
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+            return;
+        }
         try {
             if (action === "view") {
-                openViewer(ownedFiles, id, button);
+                openViewer(pool, id, button);
             } else if (action === "read") {
-                openNote(ownedFiles.find(file => file.id === id), button);
+                await openNote(file, button);
             } else if (action === "download") {
                 window.location.href = `/api/files/${id}/content`;
+            } else if (action === "share") {
+                if (incoming) return;
+                await openShareMenu(file, button);
             } else if (action === "delete") {
+                if (incoming) return;
                 if (!confirm("Delete this file?")) return;
                 await api(`/api/files/${id}`, { method: "DELETE", headers: headers() });
-                if (viewerPhotos[viewerIndex] && viewerPhotos[viewerIndex].id === id) {
+                if (viewerPhotos[viewerIndex] && sameId(viewerPhotos[viewerIndex].id, id)) {
                     closeViewer();
                 }
-                if (noteFileId === id) {
+                if (sameId(noteFileId, id)) {
                     closeNote();
                 }
                 await renderOwned();
             } else if (action === "link") {
+                if (incoming) return;
                 const link = await api(`/api/files/${id}/links`, {
                     method: "POST",
                     headers: headers({ "Content-Type": "application/json" }),
@@ -691,9 +1417,54 @@
         } catch (err) {
             alert(err.message);
         }
+    }
+
+    myFiles?.addEventListener("click", onLibraryClick);
+    document.getElementById("from-others")?.addEventListener("click", onLibraryClick);
+
+    document.addEventListener("click", (event) => {
+        const viewerShare = event.target.closest("[data-share]");
+        if (viewerShare) {
+            const storyId = viewerShare.getAttribute("data-story-id");
+            if (storyId) {
+                const story = ownedStories.find(item => sameId(item.id, storyId));
+                if (story) {
+                    openShareMenu(story, viewerShare).catch(err => alert(err.message));
+                }
+                return;
+            }
+            const file = ownedFiles.find(item => sameId(item.id, viewerShare.getAttribute("data-file-id")));
+            if (file) {
+                openShareMenu(file, viewerShare).catch(err => alert(err.message));
+            }
+            return;
+        }
+        if (event.target.closest("[data-action='share']") || event.target.closest("#member-menu")) {
+            return;
+        }
+        if (menuFileId) {
+            closeMenu();
+        }
     });
 
     document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && (menuIsOpen() || menuFileId)) {
+            closeMenu();
+            return;
+        }
+        const viewer = document.getElementById("photo-viewer");
+        if (viewer && !viewer.hidden) {
+            if (event.key === "Escape") {
+                closeViewer();
+            } else if (event.key === "ArrowLeft" && viewerIndex > 0) {
+                viewerIndex -= 1;
+                showViewer();
+            } else if (event.key === "ArrowRight" && viewerIndex < viewerPhotos.length - 1) {
+                viewerIndex += 1;
+                showViewer();
+            }
+            return;
+        }
         const note = document.getElementById("note-reader");
         if (note && !note.hidden) {
             if (event.key === "Escape") {
@@ -701,18 +1472,9 @@
             }
             return;
         }
-        const root = document.getElementById("photo-viewer");
-        if (!root || root.hidden) {
-            return;
-        }
-        if (event.key === "Escape") {
-            closeViewer();
-        } else if (event.key === "ArrowLeft" && viewerIndex > 0) {
-            viewerIndex -= 1;
-            showViewer();
-        } else if (event.key === "ArrowRight" && viewerIndex < viewerPhotos.length - 1) {
-            viewerIndex += 1;
-            showViewer();
+        const story = document.getElementById("story-reader");
+        if (story && !story.hidden && event.key === "Escape") {
+            closeStory();
         }
     });
 

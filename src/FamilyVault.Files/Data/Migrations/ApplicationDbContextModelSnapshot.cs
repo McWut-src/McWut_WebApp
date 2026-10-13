@@ -35,6 +35,11 @@ namespace FamilyVault.Files.Data.Migrations
                     b.Property<DateTimeOffset?>("ExpiresAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsStory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<int?>("MaxDownloads")
                         .HasColumnType("INTEGER");
 

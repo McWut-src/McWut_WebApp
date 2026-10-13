@@ -29,6 +29,23 @@
 }
 else
 {
+    @if (Model.Drop?.IsStory == true && Model.StoryBody is not null && Model.Notes.TryGetValue(Model.StoryBody.Id, out var storyNote))
+    {
+        <article class="story-lead">
+            @if (!string.IsNullOrEmpty(storyNote.Notice))
+            {
+                <p class="note-skip">@storyNote.Notice</p>
+            }
+            @if (storyNote.Body is not null && storyNote.Html)
+            {
+                <article class="md-view">@Html.Raw(storyNote.Body)</article>
+            }
+            else if (storyNote.Body is not null)
+            {
+                <pre class="note-body">@storyNote.Body</pre>
+            }
+        </article>
+    }
     <p class="text-muted">@Model.Files.Count file(s)</p>
     @if (Model.Drop is not null)
     {
