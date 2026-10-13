@@ -15,10 +15,10 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
-| Rollback | `ca-mcwut--0000016` | `ghcr.io/mcwut-src/mcwut_webapp:97a406eaae8fbaeaec862fe022bf0bf8753112b5` |
+| Live | `ca-mcwut--0000018` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+| Rollback | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
 
-Commit `31b6fc8` stops a cold start from opening or creating Azure SQL (“Stop opening Azure SQL on a cold start.”). Commits after that SHA, including handoff notes, are documentation. They are not the Azure image.
+Commit `c132343` shares a file or a story with a member and lists stories on My files. Commit `31b6fc8` stops a cold start from opening or creating Azure SQL. Commits after `c132343`, including handoff notes, are documentation. They are not the Azure image.
 
 `git push` of `main` builds `ghcr.io/mcwut-src/mcwut_webapp:<full SHA>` and moves the tag `:qa` to that commit. It does not change https://mcwut.com. Do not point Azure at `:qa` or `:latest`. Pin the full feature SHA.
 
@@ -27,8 +27,8 @@ Promote only when Vince asks to publish or promote. A docs request, including �
 Rollback of the image above:
 
 ```powershell
-az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000016
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000016=100
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000017
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000017=100
 ```
 
 ## How Vince wants changes shipped

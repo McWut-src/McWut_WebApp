@@ -204,6 +204,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 
 ## Promotion log
 
+**13 October 2026, 19:02 UTC.** Production was moved on purpose to member sharing and stories.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
+| Live | `ca-mcwut--0000018` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+
+`0000018` has 100% of the traffic and is Healthy. `0000017` is inactive, stopped, and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+
+Checked while signed out, on `0000018`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, and `/files` redirect to sign-in. The sign-in page shows McWut, email, password, and Remember me. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds the `AddStory` migration. That migration runs on the first request that needs the database, and only if `sql-mcwut` already exists. These checks did not make that request.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000017
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000017=100
+```
+
 **13 October 2026, 13:47 UTC.** Production was moved on purpose so a cold start does not open or create Azure SQL.
 
 | | Revision | Image |
@@ -211,7 +229,7 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 | Previous (rollback) | `ca-mcwut--0000016` | `ghcr.io/mcwut-src/mcwut_webapp:97a406eaae8fbaeaec862fe022bf0bf8753112b5` |
 | Live | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
 
-`0000017` has 100% of the traffic and was Healthy. `0000016` is inactive, has no replicas, and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+At that time, `0000017` had 100% of the traffic and was Healthy. `0000016` is inactive, has no replicas, and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
 
 Checked while signed out, on `0000017`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, and `/files` redirect to sign-in. The sign-in page shows McWut, email, password, and Remember me. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried.
 
@@ -241,4 +259,4 @@ Rollback, if the new site is wrong and you want the previous one:
 az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000015=100
 ```
 
-Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb`.
+Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `c1323430bef02d089f97fb594424dbb12f852e9a`.
