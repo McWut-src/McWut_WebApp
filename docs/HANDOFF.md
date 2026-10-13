@@ -14,19 +14,19 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. The live image is `ca-mcwut--0000016`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. The live revision is `ca-mcwut--0000019`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is four cards: **My files**, **Vault**, **URLs**, **Profile**. The sidebar uses the same order and can fold down to icons.
 - **My files** (`/files`): drop files, or write a **Story**, then **Save**. The file is private and kept forever. Words alone stay a text file. Words saved with one or more files become one story in the Stories section. **Options** can keep it for 1, 7, or 30 days, and can set a password that a later share link asks for. A pasted note can be named there. With no title it is saved as `note`. The link icon on a file makes a public `/s/` link of eight letters or digits. That link lasts 7 days. Older longer `/s/...` links still open.
 - **URLs** (`/urls`): **Shorten a link**. Paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it. The same page lists every public link you have made, including file shares from My files. View shows the link. Quick open follows it. Delete stops the link. A file stays in My files.
-- Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. Member tagging is hidden. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
+- Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. A people icon titled “Share with a member” shares a file or a story. The other person can open and download it only. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
 - Photos (jpeg, png, gif, webp) show as thumbnails on My files. Click one for a large view. Previous and Next move between photos. Opening that view does not count as a download. SVG and HTML stay downloads. A short note or a Markdown file can be read on My files and on the share page. Markdown is rendered on the server. A Mermaid diagram in that file, including a Gantt chart or a mindmap, is drawn in the browser. Opening that view does not count as a download.
 - **People** (`/admin/people`): turn an account off or back on. Files stay. You cannot turn yourself off, and the last admin must stay on. A turned-off person is signed out on their next click.
 - **Reset password** (`/admin/reset-password`): admin sets a new McWut sign-in password for any account. Separate from the personal Passwords vault.
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
-- **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list.
-- **Profile** (`/profile`): the name the family will see, a color kept for later, and the password you use to sign in. The color is not shown on a public link. `/account/password` opens this page. Privacy is linked from here, and only while you are signed in.
+- **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list. **Download copy** saves a JSON file named from your name, or the part of your email before `@`. The file contains the passwords. The site does not keep a second copy.
+- **Profile** (`/profile`): the name shown in the menu, a color for the bar and the menu, light or dark on this browser, and the password you use to sign in. A pale color uses dark text. A dark color uses pale text. The color is not shown on a public link. `/account/password` opens this page. Privacy is linked from here, and only while you are signed in. The signed-in header is that name. Sign-in and public pages still say McWut.
 - `/health` returns the text `ok`. Leave that alone. Azure uses it.
 
 Internal project names stay `McWutWebApp` and `FamilyVault.*`. Renaming them breaks Docker and Azure for no benefit to people using the site.
@@ -203,6 +203,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**13 October 2026, 22:45 UTC.** Production was moved on purpose so the signed-in bar uses the member’s name and color, and the password vault can download a copy.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--adminpw` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+| Live | `ca-mcwut--0000019` | `ghcr.io/mcwut-src/mcwut_webapp:5f3abb564ea61d83921c23ac6812f894bb9f9cff` |
+
+`0000019` has 100% of the traffic and is Healthy. `adminpw` is the previous revision and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+
+Checked while signed out, on `0000019`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, and `/files` redirect to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds no migration.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--adminpw
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--adminpw=100
+```
 
 **13 October 2026, 19:20 UTC.** The website admin password was replaced. Deleting `sql-mcwut` had removed the account. `vince@mcwut.com` has a new password, and the Container App secret `website-admin-password` holds that same password. The image did not change. The password is not written here.
 
