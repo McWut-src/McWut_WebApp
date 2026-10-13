@@ -1,25 +1,50 @@
+@using FamilyVault.Files.Security
 @using McWutWebApp.Hosting
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @inject Microsoft.AspNetCore.Identity.SignInManager<Microsoft.AspNetCore.Identity.IdentityUser> SignInManager
 @inject FamilyVault.Files.Contracts.IFamilyRoster Roster
 @{
     var signedIn = SignInManager.IsSignedIn(User);
+    var path = Context.Request.Path.Value ?? "";
+    var publicChrome = path.StartsWith("/s/", StringComparison.OrdinalIgnoreCase)
+        || path.Equals("/s", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/join", StringComparison.OrdinalIgnoreCase);
+    var personal = signedIn && !publicChrome;
     var bare = ViewData["Bare"] as bool? == true;
-    var shownName = User.Identity?.Name ?? "";
+    var shownName = MemberNames.Shown(null, User.Identity?.Name);
     string? accent = null;
-    if (signedIn)
+    var bar = MemberColors.Fallback;
+    var barInk = MemberLabel.PaleInk;
+    var barPale = false;
+    if (personal)
     {
         var id = User.GetVaultUserId();
         if (id is not null)
         {
             var member = await Roster.GetAsync(id.Value, Context.RequestAborted);
-            shownName = MemberNames.Shown(member?.DisplayName, User.Identity?.Name);
+            shownName = MemberNames.Shown(member?.DisplayName, member?.Email ?? User.Identity?.Name);
             accent = MemberColors.Normalize(member?.AccentColor);
         }
 
+        bar = accent ?? MemberColors.Fallback;
+        barInk = MemberLabel.Ink(bar);
+        barPale = MemberLabel.Pale(bar);
         ViewData["ShownName"] = shownName;
         ViewData["Accent"] = accent;
     }
+
+    var bodyClass = personal ? "is-auth" : "is-guest";
+    if (bare)
+    {
+        bodyClass += " is-bare";
+    }
+
+    if (personal)
+    {
+        bodyClass += barPale ? " bar-pale" : " bar-dark";
+    }
+
+    var bodyStyle = personal ? $"--bar: {bar}; --bar-ink: {barInk};" : null;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -30,10 +55,13 @@
             if (localStorage.getItem("mcwut-nav") === "icons") {
                 document.documentElement.classList.add("is-rail");
             }
+            if (localStorage.getItem("mcwut-theme") === "dark") {
+                document.documentElement.setAttribute("data-theme", "dark");
+            }
         } catch (e) { }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - McWut</title>
+    <title>@(personal ? ViewData["Title"] : $"{ViewData["Title"]} - McWut")</title>
     <link rel="icon" href="~/favicon.svg" type="image/svg+xml" asp-append-version="true" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -41,17 +69,17 @@
     <link rel="stylesheet" href="~/McWutWebApp.styles.css" asp-append-version="true" />
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
 </head>
-<body class="@(signedIn ? "is-auth" : "is-guest")@(bare ? " is-bare" : null)">
+<body class="@bodyClass" style="@bodyStyle">
     <div class="app-shell">
         <header class="topbar">
-            @if (signedIn)
+            @if (personal)
             {
                 <button class="top-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-menu" aria-controls="app-menu" aria-label="Open menu" title="Menu">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
                 </button>
             }
-            <a class="brand" asp-area="" asp-page="/Index">McWut</a>
-            @if (signedIn)
+            <a class="brand" asp-area="" asp-page="/Index">@(personal ? shownName : "McWut")</a>
+            @if (personal)
             {
                 <a class="top-icon d-lg-none" asp-page="/Vault/Index" title="My files" aria-label="My files">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
@@ -65,16 +93,9 @@
                 <a class="top-icon d-lg-none" asp-page="/Profile/Index" title="Profile" aria-label="Profile">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
                 </a>
-                <span class="top-mail">
-                    @if (accent is not null)
-                    {
-                        <span class="me-dot" style="background: @accent" aria-hidden="true"></span>
-                    }
-                    @shownName
-                </span>
             }
         </header>
-        @if (signedIn)
+        @if (personal)
         {
             <aside class="sidebar">
                 <button type="button" class="rail-toggle" id="rail-toggle" aria-pressed="false" title="Icons only" aria-label="Icons only">
@@ -84,7 +105,7 @@
             </aside>
             <div class="offcanvas offcanvas-start" tabindex="-1" id="app-menu" aria-labelledby="app-menu-label">
                 <div class="offcanvas-header">
-                    <h2 class="offcanvas-title h6 mb-0" id="app-menu-label">McWut</h2>
+                    <h2 class="offcanvas-title h6 mb-0" id="app-menu-label">@shownName</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body d-flex flex-column">

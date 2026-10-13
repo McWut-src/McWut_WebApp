@@ -1,3 +1,5 @@
+using FamilyVault.Files.Security;
+
 namespace McWutWebApp.Hosting;
 
 public static class MemberColors
@@ -31,25 +33,6 @@ public static class MemberColors
 
 public static class MemberNames
 {
-    public static string Shown(string? displayName, string? accountName)
-    {
-        var name = (displayName ?? "").Trim();
-        if (name.Length > 0 && !name.Contains('@'))
-        {
-            return name;
-        }
-
-        return (accountName ?? "").Trim();
-    }
-
-    public static string? Hello(string? displayName)
-    {
-        var name = (displayName ?? "").Trim();
-        if (name.Length == 0 || name.Contains('@'))
-        {
-            return null;
-        }
-
-        return name;
-    }
+    public static string Shown(string? displayName, string? accountName) =>
+        MemberLabel.Shown(displayName, accountName);
 }

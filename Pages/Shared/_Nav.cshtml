@@ -15,7 +15,6 @@
     var status = On("/admin/status");
     var privacy = On("/privacy");
     var shown = ViewData["ShownName"] as string ?? User.Identity?.Name;
-    var accent = ViewData["Accent"] as string;
 }
 <nav class="side-nav" aria-label="Primary">
     <a class="side-link is-primary @(files ? "active" : null)" asp-page="/Vault/Index" title="My files" aria-current="@(files ? "page" : null)">
@@ -60,10 +59,6 @@
 <div class="side-spacer"></div>
 <div class="side-account">
     <p class="side-email">
-        @if (accent is not null)
-        {
-            <span class="me-dot" style="background: @accent" aria-hidden="true"></span>
-        }
         <span class="side-who">@shown</span>
     </p>
     <form method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">

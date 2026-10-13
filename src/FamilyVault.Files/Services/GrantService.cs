@@ -1,6 +1,7 @@
 using FamilyVault.Files.Contracts;
 using FamilyVault.Files.Data;
 using FamilyVault.Files.Data.Entities;
+using FamilyVault.Files.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyVault.Files.Services;
@@ -423,36 +424,7 @@ public sealed class GrantService(
     private static MemberTag TagFor(IReadOnlyDictionary<Guid, FamilyMemberEntity> members, Guid userId)
     {
         members.TryGetValue(userId, out var member);
-        return new MemberTag(userId, ShownName(member?.DisplayName, member?.Email), ShownColor(member?.AccentColor));
-    }
-
-    private static string ShownName(string? displayName, string? email)
-    {
-        var name = (displayName ?? "").Trim();
-        if (name.Length > 0 && !name.Contains('@'))
-        {
-            return name;
-        }
-
-        var local = LocalPart(email);
-        if (local.Length == 0)
-        {
-            local = LocalPart(name);
-        }
-
-        return local.Length > 0 ? local : "Member";
-    }
-
-    private static string LocalPart(string? value)
-    {
-        var text = (value ?? "").Trim();
-        var at = text.IndexOf('@');
-        if (at <= 0)
-        {
-            return "";
-        }
-
-        return text.Substring(0, at).Trim();
+        return new MemberTag(userId, MemberLabel.Shown(member?.DisplayName, member?.Email), ShownColor(member?.AccentColor));
     }
 
     private static string ShownColor(string? value)

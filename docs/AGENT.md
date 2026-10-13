@@ -7,7 +7,7 @@
 
 `docs/archive/AGENT.md` is the old brief from before the site existed. Leave that file alone. The product below is already built.
 
-Vince owns McWut. The product name on screen is **McWut**. Keep the project names `McWutWebApp` and `FamilyVault.*`.
+Vince owns McWut. Signed-out pages, the sign-in form, public `/s/` pages, and `/join/` say **McWut**. Signed-in pages use that person’s name, or the part of the email before `@` when the name is empty or contains `@`. Keep the project names `McWutWebApp` and `FamilyVault.*`.
 
 ## What is live
 
@@ -56,7 +56,8 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 - Dev and Docker QA: `vince@mcwut.com` / `vince` (admin) and `member@mcwut.com` / `member`. Production does not seed `member@`. Production sign-in for `vince@mcwut.com` is the Azure secret `website-admin-password`.
 - Signed-out visitors get the sign-in form. `/` and `/Privacy` require a sign-in. Do not put a privacy link, an invitation sentence, or the dev passwords on that screen. Public `/s/{token}` and `/join/{token}` stay reachable without an account. `/health` stays anonymous.
 - Signed-in home (`/`) is a dashboard with four places, in this order: **My files** (`/files`), **Vault** (`/passwords`, page title “Password vault”), **URLs** (`/urls`), and **Profile** (`/profile`). Do not add a fifth Home nav item. The brand goes back to the dashboard. Do not add a Shared files nav item or a control labeled Tag a member. `/files/shared` and `/Vault/Shared` redirect to My files. A people icon titled “Share with a member” on a file row, a photo card, a story, and the photo, note, and story readers shares that file or story with another signed-in member. The owner keeps the file. The other person can open and download it only. Their name shows as a pill in their profile color (`AccentColor`, or navy `#0b1f3a`). If they have not chosen a name, the pill and the menu use the part of their email before `@`, not the full address. When someone has shared a file with you, My files shows a **From others** group, and only when that list is not empty. The URLs page lists those member shares with the same color pill, no public address, Quick open, and Remove share. The permission stored for that menu is always Download. Details are in [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
-- **Profile** stores a display name (not an email), a color they pick, and the person’s own sign-in password change. The color is any `#rrggbb` value. It marks that person on a member share. It is not shown on a public link. `/account/password` redirects to Profile. Admin reset password stays at `/admin/reset-password`. `FamilyRoster.UpsertAsync` must not replace a chosen display name, and must not clear `AccentColor`. It may fill a blank name.
+- **Profile** stores a display name (not an email), a color they pick, and the person’s own sign-in password change. Light or dark is `localStorage` key `mcwut-theme` on this browser only. It is not a database column. The color is any `#rrggbb` value. It paints the signed-in bar and menu. A pale color (luminance above 160) uses navy text `#0b1f3a`. A darker color uses white text. The same color marks that person on a member share. It is not shown on a public link or on `/join/`. `/account/password` redirects to Profile. Admin reset password stays at `/admin/reset-password`. `FamilyRoster.UpsertAsync` must not replace a chosen display name, and must not clear `AccentColor`. It may fill a blank name.
+- The signed-in brand in the header is that person’s name, and it links back to the dashboard. The desktop menu and the phone menu use the same color. Public `/s/` and `/join/` keep the navy McWut bar even when the visitor is signed in.
 - The desktop sidebar collapses to icons. The choice is `localStorage` key `mcwut-nav` (`icons` or `names`) and the class `is-rail` on `<html>`. Scope that CSS to `.sidebar` so the phone menu stays labeled.
 - Do not invent folders or vault categories.
 - **Save** on My files stores a private file and keeps it forever. It does not create a share link. **Options** can keep the file for 1, 7, or 30 days, and can set a password. That password is asked for when someone opens a share link. The signed-in owner still opens the file. The composer field is **Story**. Words on their own are still a text file, and with no title they are saved as `note`. Words saved with one or more files become one story. My files lists stories in a **Stories** section, then Photos, then Files. The files in a story are not listed again as loose photos or files. Sharing a story uses the same people icon and shares the whole story. The other person can read and download it only. The link icon still creates a public link, and that link still lasts 7 days because the request omits a keep time.
@@ -65,9 +66,9 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 - If the pasted address has no scheme, store `https://`. Accept only `http` and `https`. Reject `javascript:`, `data:`, `file:`, userinfo, `localhost`, `*.local`, and private or loopback addresses. Rules live in `ShortLinkRules`.
 - Photos are jpeg, png, gif, and webp. The thumbnail is the photo itself, scaled with CSS. Do not generate thumbnail files. The viewer uses `/api/files/{id}/content?preview=true` and that open does not count as a download. SVG and HTML stay downloads.
 - Notes, `.txt`, `.csv`, `.json`, and `.md` can be read on My files and on the file share page. Markdown is rendered on the server with Markdig. A Mermaid diagram in the note, including a Gantt chart or a mindmap, is drawn in the browser. Raw HTML in a note stays text. Links and images are kept only for http and https. That open does not count as a download.
-- Password vault fields are name, username, password, url, and information. Search is in the browser and skips the password. Values are encrypted at rest with ASP.NET Data Protection, purpose `McWut.PasswordVault.v1`.
+- Password vault fields are name, username, password, url, and information. Search is in the browser and skips the password. Values are encrypted at rest with ASP.NET Data Protection, purpose `McWut.PasswordVault.v1`. **Download copy** is `GET /api/passwords/export`. The file name is the shown name plus `.json`. The file is plaintext JSON of that person’s logins and is not stored again. There is no import.
 - UI is Bootstrap 5 plus `wwwroot/css/site.css`. Do not add a UI library. Icons are inline stroke SVGs through `window.mcwutIcon` in `wwwroot/js/icons.js`. Use `title` and `aria-label`. Do not set `textContent` on an icon button. That removes the SVG.
-- White page, navy bar (`#0b1f3a`), small blue accents. The nav label for the password vault is **Vault**.
+- Signed-out and public pages are a white page and a navy bar (`#0b1f3a`). Signed-in pages use the person’s color on the bar and menu, with ink chosen for contrast. Light or dark is optional and stays in the browser. Small blue accents. The nav label for the password vault is **Vault**.
 
 ## Where new work goes
 
@@ -76,7 +77,7 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 | Home dashboard | `Pages/Index.cshtml` at `/` |
 | My files screen | `Pages/Vault/` served at `/files` |
 | Markdown reader | `src/FamilyVault.Files/Security/MarkdownHtml.cs`, `wwwroot/js/reader.js`, Mermaid at `wwwroot/lib/mermaid/12.1.0/mermaid.min.js`. My files asks `GET /api/files/{id}/html`. |
-| Profile | `Pages/Profile/` at `/profile`. Name, color, own sign-in password. |
+| Profile | `Pages/Profile/` at `/profile`. Name, color, light or dark, own sign-in password. |
 | URLs screen | `Pages/Urls/` served at `/urls`, `wwwroot/js/urls.js` |
 | Shorten form and public-link list | `Pages/Urls/Index.cshtml`, `wwwroot/js/urls.js`, `wwwroot/css/site.css` |
 | Public `/s/{token}` | `Pages/Share/Index.cshtml.cs`. Resolve a short link before the file link. `Redirect` the stored address. |

@@ -1,3 +1,7 @@
+using System.Text;
+using System.Text.Json;
+using FamilyVault.Files.Contracts;
+using FamilyVault.Files.Security;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +13,37 @@ namespace McWutWebApp.Controllers;
 [AutoValidateAntiforgeryToken]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("api/passwords")]
-public sealed class PasswordsController(PasswordVaultService vault) : ControllerBase
+public sealed class PasswordsController(PasswordVaultService vault, IFamilyRoster roster) : ControllerBase
 {
+    private static readonly JsonSerializerOptions ExportJson = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<PasswordVaultItemView>>> List(CancellationToken cancellationToken) =>
         Ok(await vault.ListAsync(User.RequireVaultUserId(), cancellationToken));
+
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(CancellationToken cancellationToken)
+    {
+        var userId = User.RequireVaultUserId();
+        var member = await roster.GetAsync(userId, cancellationToken);
+        var rows = await vault.ListAsync(userId, cancellationToken);
+        var body = JsonSerializer.Serialize(new
+        {
+            items = rows.Select(row => new
+            {
+                row.Name,
+                row.Username,
+                row.Password,
+                row.Url,
+                row.Information
+            })
+        }, ExportJson);
+        var fileName = MemberLabel.VaultFileName(member?.DisplayName, member?.Email ?? User.Identity?.Name);
+        return File(Encoding.UTF8.GetBytes(body), "application/json", fileName);
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PasswordVaultItemView>> Get(Guid id, CancellationToken cancellationToken) =>

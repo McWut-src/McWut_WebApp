@@ -18,7 +18,7 @@ public class IndexModel(IFamilyRoster roster) : PageModel
         }
 
         var member = await roster.GetAsync(id.Value, HttpContext.RequestAborted);
-        HelloName = MemberNames.Hello(member?.DisplayName);
+        HelloName = MemberNames.Shown(member?.DisplayName, User.Identity?.Name);
         AccentColor = MemberColors.Normalize(member?.AccentColor);
     }
 }

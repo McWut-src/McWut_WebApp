@@ -20,7 +20,7 @@
     <section class="card mb-3">
         <div class="card-body">
             <h2 class="h6 mb-3">Name and color</h2>
-            <p class="field-hint mb-3">This color marks your name when a file is shared with a member. It is not shown on a public link.</p>
+            <p class="field-hint mb-3">This color is the bar and the menu. A pale color uses dark text. A dark color uses pale text. The same color marks your name on a file you share. It is not shown on a public link.</p>
             <form method="post" asp-page-handler="Profile" autocomplete="off">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="mb-3">
@@ -41,10 +41,21 @@
         </div>
     </section>
 
+    <section class="card mb-3">
+        <div class="card-body">
+            <h2 class="h6 mb-1">Appearance</h2>
+            <p class="field-hint mb-3">Light or dark. This stays on this browser. The bar keeps your color.</p>
+            <div class="theme-choice" role="group" aria-label="Appearance">
+                <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="light" aria-pressed="true">Light</button>
+                <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="dark" aria-pressed="false">Dark</button>
+            </div>
+        </div>
+    </section>
+
     <section class="card mb-3" id="password">
         <div class="card-body">
             <h2 class="h6 mb-1">Sign-in password</h2>
-            <p class="field-hint mb-3">This is the password for McWut, not a saved login. Use at least @Model.RequiredLength characters.</p>
+            <p class="field-hint mb-3">This is the password you use to sign in, not a saved login. Use at least @Model.RequiredLength characters.</p>
             <form method="post" asp-page-handler="Password" autocomplete="off">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="mb-3">

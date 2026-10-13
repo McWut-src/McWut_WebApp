@@ -1231,7 +1231,7 @@
         }
         const menu = ensureMenu();
         if (people.length === 0) {
-            menu.innerHTML = `<p class="member-menu-empty">No one else is on McWut yet.</p>`;
+            menu.innerHTML = `<p class="member-menu-empty">No one else is here yet.</p>`;
         } else {
             const shared = new Set((file.sharedWith || []).map(tag => String(tag.userId).toLowerCase()));
             menu.innerHTML = people.map(member => {

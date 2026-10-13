@@ -7,6 +7,38 @@
         });
     }
 
+    function applyTheme(dark) {
+        if (dark) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+            document.documentElement.removeAttribute("data-theme");
+        }
+        document.querySelectorAll("[data-theme-value]").forEach(function (btn) {
+            var on = (btn.getAttribute("data-theme-value") === "dark") === dark;
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+    }
+
+    var savedDark = false;
+    try {
+        savedDark = localStorage.getItem("mcwut-theme") === "dark";
+    } catch (e) { }
+    applyTheme(savedDark);
+
+    document.querySelectorAll("[data-theme-value]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var dark = btn.getAttribute("data-theme-value") === "dark";
+            applyTheme(dark);
+            try {
+                if (dark) {
+                    localStorage.setItem("mcwut-theme", "dark");
+                } else {
+                    localStorage.removeItem("mcwut-theme");
+                }
+            } catch (e) { }
+        });
+    });
+
     var button = document.getElementById("rail-toggle");
     if (!button) {
         return;

@@ -10,12 +10,63 @@
   --card: #fff;
   --danger: #b42318;
   --ok: #0f7a45;
+  --hover: #f3f6fa;
+  --fill: #f7f9fc;
+  --chip: #e8edf3;
   --radius: 10px;
   --shadow: 0 1px 2px rgba(16, 32, 51, 0.05);
 }
 
 html {
   font-size: 15px;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e7edf5;
+  --muted: #a8b4c4;
+  --line: #2c3c50;
+  --surface: #101820;
+  --card: #1a2633;
+  --blue-soft: #1c3358;
+  --hover: #243246;
+  --fill: #1c2a3c;
+  --chip: #243246;
+  --shadow: none;
+  --bs-body-color: #e7edf5;
+  --bs-body-bg: #101820;
+  --bs-emphasis-color: #e7edf5;
+  --bs-heading-color: #e7edf5;
+  --bs-secondary-color: #a8b4c4;
+  --bs-border-color: #2c3c50;
+  --bs-tertiary-bg: #1c2a3c;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+  background-color: var(--card);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .alert-success {
+  --bs-alert-color: #d5f5e3;
+  --bs-alert-bg: #143226;
+  --bs-alert-border-color: transparent;
+}
+
+html[data-theme="dark"] .alert-danger {
+  --bs-alert-color: #ffd7d3;
+  --bs-alert-bg: #3a1d1b;
+  --bs-alert-border-color: transparent;
+}
+
+html[data-theme="dark"] .btn-outline-danger {
+  --bs-btn-border-color: #6e3330;
+  --bs-btn-hover-bg: #3a2224;
+}
+
+html[data-theme="dark"] .icon-btn.danger:hover {
+  background: #3a2224;
 }
 
 body {
@@ -62,16 +113,31 @@ body {
   color: #fff;
 }
 
+.is-auth .topbar,
+.is-auth .sidebar,
+.is-auth .offcanvas {
+  background: var(--bar, var(--navy));
+  color: var(--bar-ink, #fff);
+}
+
 .brand {
-  color: #fff;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
   font-weight: 650;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   text-decoration: none;
   font-size: 1.05rem;
 }
 
+.is-guest .brand {
+  letter-spacing: 0.06em;
+}
+
 .brand:hover {
-  color: #fff;
+  color: inherit;
 }
 
 .top-icon {
@@ -86,9 +152,18 @@ body {
   color: #fff;
 }
 
-.top-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+.is-auth .top-icon {
+  color: var(--bar-ink, #fff);
+}
+
+.top-icon:hover,
+.is-auth .sidebar .side-link:hover,
+.is-auth .sidebar .side-button:hover,
+.is-auth .sidebar .rail-toggle:hover,
+.is-auth .offcanvas .side-link:hover,
+.is-auth .offcanvas .side-button:hover {
+  background: color-mix(in srgb, var(--bar-ink, #fff) 14%, transparent);
+  color: var(--bar-ink, #fff);
 }
 
 .top-mail {
@@ -124,11 +199,38 @@ body {
   height: calc(100vh - 56px);
   overflow: auto;
   background: var(--card);
-  border-right: 1px solid var(--line);
+  border-right: 1px solid transparent;
   padding: 12px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.is-auth .sidebar .side-link,
+.is-auth .sidebar .side-button,
+.is-auth .sidebar .rail-toggle,
+.is-auth .sidebar .side-label,
+.is-auth .sidebar .side-email,
+.is-auth .offcanvas .side-link,
+.is-auth .offcanvas .side-button,
+.is-auth .offcanvas .side-label,
+.is-auth .offcanvas .side-email,
+.is-auth .offcanvas-title {
+  color: var(--bar-ink, #fff);
+}
+
+.is-auth .sidebar .side-link.active,
+.is-auth .offcanvas .side-link.active {
+  background: color-mix(in srgb, var(--bar-ink, #fff) 22%, transparent);
+  color: var(--bar-ink, #fff);
+}
+
+.is-auth .side-account {
+  border-top-color: color-mix(in srgb, var(--bar-ink, #fff) 28%, transparent);
+}
+
+.is-auth.bar-dark .offcanvas .btn-close {
+  filter: invert(1) grayscale(1);
 }
 
 .rail-toggle {
@@ -145,7 +247,7 @@ body {
 }
 
 .rail-toggle:hover {
-  background: #f3f6fa;
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -183,7 +285,7 @@ body {
 
 .side-link:hover,
 .side-button:hover {
-  background: #f3f6fa;
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -331,9 +433,9 @@ body {
 .btn-outline-secondary {
   --bs-btn-color: var(--ink);
   --bs-btn-border-color: var(--line);
-  --bs-btn-hover-bg: #f3f6fa;
+  --bs-btn-hover-bg: var(--hover);
   --bs-btn-hover-color: var(--ink);
-  --bs-btn-hover-border-color: #cfd6df;
+  --bs-btn-hover-border-color: var(--line);
 }
 
 .btn-outline-danger {
@@ -403,7 +505,7 @@ body {
 }
 
 .icon-btn:hover {
-  background: #eef2f6;
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -445,7 +547,7 @@ body {
 .search-field:focus-within {
   border-color: #9db7e6;
   box-shadow: 0 0 0 3px rgba(29, 95, 208, 0.18);
-  background: #fff;
+  background: var(--card);
 }
 
 .search-field input {
@@ -471,7 +573,7 @@ body {
 }
 
 .vault-dropzone {
-  border: 1.5px dashed #c5ceda;
+  border: 1.5px dashed var(--line);
   border-radius: 12px;
   padding: 20px 16px;
   text-align: center;
@@ -597,7 +699,7 @@ body {
   border: 0;
   border-radius: 8px;
   overflow: hidden;
-  background: #e8edf3;
+  background: var(--chip);
 }
 
 .story-thumb img {
@@ -647,7 +749,7 @@ body {
   border: 0;
   border-radius: 8px;
   overflow: hidden;
-  background: #e8edf3;
+  background: var(--chip);
 }
 
 .photo-open img {
@@ -698,7 +800,7 @@ body {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #f7f9fc;
+  background: var(--fill);
 }
 
 .url-detail[hidden] {
@@ -799,7 +901,7 @@ body {
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--card);
   box-shadow: 0 8px 24px rgba(11, 31, 58, 0.12);
 }
 
@@ -826,7 +928,7 @@ body {
 }
 
 .member-menu-row:hover {
-  background: #eef2f6;
+  background: var(--hover);
 }
 
 .member-menu-name {
@@ -1181,6 +1283,7 @@ body.note-reader-open {
 
 .password-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -1209,7 +1312,7 @@ body.note-reader-open {
   text-align: left;
   border: 0;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--card);
   padding: 12px;
   color: var(--ink);
 }
@@ -1219,7 +1322,7 @@ body.note-reader-open {
 }
 
 .password-item:hover {
-  background: #f7f9fc;
+  background: var(--fill);
 }
 
 .password-item.active {
@@ -1239,7 +1342,7 @@ body.note-reader-open {
 }
 
 .password-item.active .pw-mark {
-  background: #fff;
+  background: var(--card);
 }
 
 .pw-name {
@@ -1308,7 +1411,7 @@ body.note-reader-open {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
   text-decoration: none;
   box-shadow: var(--shadow);
@@ -1350,8 +1453,19 @@ body.note-reader-open {
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
+}
+
+.theme-choice {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn[aria-pressed="true"] {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+  color: var(--blue-deep);
 }
 
 .color-pick::-webkit-color-swatch {

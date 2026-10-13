@@ -192,7 +192,7 @@
             detailEl.innerHTML = `
                 <div data-key="${esc(item.key)}">
                     <p class="url-kind">${esc(kindLabel(item))}</p>
-                    <p>On McWut for ${esc(item.person || "Member")}</p>
+                    <p>Shared with ${esc(item.person || "Member")}</p>
                     <div class="member-pills">${memberPill(item)}</div>
                     <p class="url-when">Shared ${esc(formatWhen(item.createdAt))}.</p>
                     <div class="url-detail-actions">
