@@ -204,6 +204,15 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 
 ## Promotion log
 
+**13 October 2026, 19:20 UTC.** The website admin password was replaced. Deleting `sql-mcwut` had removed the account. `vince@mcwut.com` has a new password, and the Container App secret `website-admin-password` holds that same password. The image did not change. The password is not written here.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (same image) | `ca-mcwut--0000018` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+| Live | `ca-mcwut--adminpw` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+
+`adminpw` has 100% of the traffic and is Healthy. `0000018` is inactive and is the same image. Sign-in for `vince@mcwut.com` with the new password reached the home page. The earlier code rollback is still `0000017`.
+
 **13 October 2026, 19:02 UTC.** Production was moved on purpose to member sharing and stories.
 
 | | Revision | Image |
@@ -211,7 +220,7 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 | Previous (rollback) | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
 | Live | `ca-mcwut--0000018` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
 
-`0000018` has 100% of the traffic and is Healthy. `0000017` is inactive, stopped, and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+At that time, `0000018` had 100% of the traffic and was Healthy. `0000017` is inactive, stopped, and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
 
 Checked while signed out, on `0000018`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, and `/files` redirect to sign-in. The sign-in page shows McWut, email, password, and Remember me. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds the `AddStory` migration. That migration runs on the first request that needs the database, and only if `sql-mcwut` already exists. These checks did not make that request.
 

@@ -15,8 +15,10 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000018` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
+| Live | `ca-mcwut--adminpw` | `ghcr.io/mcwut-src/mcwut_webapp:c1323430bef02d089f97fb594424dbb12f852e9a` |
 | Rollback | `ca-mcwut--0000017` | `ghcr.io/mcwut-src/mcwut_webapp:31b6fc8f1d303bcede51f5c6ee5ec5414e0313cb` |
+
+`ca-mcwut--0000018` is the same image as `adminpw`, stopped. It was replaced so the container would load a new `website-admin-password`. The password is not in git.
 
 Commit `c132343` shares a file or a story with a member and lists stories on My files. Commit `31b6fc8` stops a cold start from opening or creating Azure SQL. Commits after `c132343`, including handoff notes, are documentation. They are not the Azure image.
 
