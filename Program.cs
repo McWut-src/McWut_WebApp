@@ -128,7 +128,15 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddScoped<UpsertFamilyMemberFilter>();
 builder.Services.AddScoped<InviteService>();
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PasswordVaultService>();
+builder.Services.AddScoped<OpenRouterKeyService>();
+builder.Services.AddScoped<AiChatService>();
+builder.Services.AddHttpClient<OpenRouterClient>(client =>
+{
+    client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
+    client.Timeout = TimeSpan.FromSeconds(90);
+});
 builder.Services.AddSingleton<RetentionMapper>();
 var useSqlServer = (builder.Configuration["Database:Provider"] ?? "Sqlite")
     .Equals("SqlServer", StringComparison.OrdinalIgnoreCase);

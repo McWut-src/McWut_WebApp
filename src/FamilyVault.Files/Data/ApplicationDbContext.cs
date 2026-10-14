@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<InviteEntity> Invites => Set<InviteEntity>();
     public DbSet<PasswordVaultItemEntity> PasswordVaultItems => Set<PasswordVaultItemEntity>();
     public DbSet<ShortLinkEntity> ShortLinks => Set<ShortLinkEntity>();
+    public DbSet<OpenRouterKeyEntity> OpenRouterKeys => Set<OpenRouterKeyEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -153,6 +154,13 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.Property(x => x.TargetUrl).HasMaxLength(ShortLinkRules.UrlMax).IsRequired();
             b.HasIndex(x => x.Token).IsUnique();
             b.HasIndex(x => x.OwnerUserId);
+        });
+
+        modelBuilder.Entity<OpenRouterKeyEntity>(b =>
+        {
+            b.ToTable("OpenRouterKeys");
+            b.HasKey(x => x.UserId);
+            b.Property(x => x.KeyCipher).IsRequired();
         });
     }
 }

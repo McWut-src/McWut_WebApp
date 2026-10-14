@@ -61,6 +61,7 @@ public sealed class FilesOptions
         "image/webp",
         "text/plain",
         "text/markdown",
+        "text/x-mcwut-chat",
         "text/csv",
         "application/json",
         "video/mp4",

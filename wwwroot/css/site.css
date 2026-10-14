@@ -1437,6 +1437,192 @@ body.note-reader-open {
   font-size: 0.9rem;
 }
 
+.ai-key {
+  margin-bottom: 16px;
+}
+
+.ai-key-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.ai-key-field {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.ai-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 16px;
+  min-height: 420px;
+}
+
+.ai-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.ai-model {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.ai-alert {
+  margin: 0;
+  color: var(--danger);
+}
+
+.ai-alert:empty,
+.ai-alert[hidden] {
+  display: none;
+}
+
+.ai-log {
+  flex: 1;
+  min-height: 240px;
+  max-height: calc(100vh - 420px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-msg {
+  max-width: min(42rem, 100%);
+  padding: 10px 12px;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.ai-msg.user {
+  align-self: flex-end;
+  background: var(--blue-soft);
+}
+
+.ai-msg.assistant {
+  align-self: flex-start;
+  max-width: 100%;
+  background: var(--surface);
+}
+
+.ai-who {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.ai-msg .ai-body {
+  white-space: pre-wrap;
+}
+
+.ai-msg .ai-body.md-view {
+  margin-top: 0;
+  white-space: normal;
+  overflow-x: auto;
+}
+
+.ai-msg.is-waiting .ai-body {
+  color: var(--muted);
+}
+
+.ai-form {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+
+.ai-form textarea {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+}
+
+.ai-shell[hidden],
+.ai-setup[hidden],
+.ai-about[hidden] {
+  display: none;
+}
+
+.ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ai-key-link {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.ai-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-md {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.ai-key-link:hover {
+  color: var(--ink);
+}
+
+.ai-meta,
+.ai-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.ai-note[hidden] {
+  display: none;
+}
+
+.ai-about {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ai-about summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.ai-about p {
+  margin: 6px 0 0;
+}
+
+.ai-steps {
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+}
+
+.ai-steps li + li {
+  margin-top: 6px;
+}
+
 .profile-sheet {
   max-width: 32rem;
 }
@@ -1586,6 +1772,15 @@ html.is-rail .sidebar .side-label {
 
   .password-list {
     max-height: 16rem;
+  }
+
+  .ai-log {
+    max-height: 50vh;
+  }
+
+  .ai-form {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .top-mail {

@@ -14,6 +14,8 @@ public class ReadableFilesTests
     [InlineData("page.html", "text/html", "text/html")]
     [InlineData("pic.svg", "image/svg+xml", "image/svg+xml")]
     [InlineData("photo.png", "image/png", "image/png")]
+    [InlineData("Chat.md", "text/x-mcwut-chat", "text/x-mcwut-chat")]
+    [InlineData("notes.md", "text/markdown", "text/markdown")]
     public void Infers_text_types_and_leaves_markup_alone(string name, string declared, string expected)
     {
         Assert.Equal(expected, ReadableFiles.InferContentType(name, declared));
@@ -28,9 +30,17 @@ public class ReadableFilesTests
     [InlineData("page.html", "application/octet-stream", false, false)]
     [InlineData("pic.svg", "image/svg+xml", false, false)]
     [InlineData("photo.png", "image/png", false, false)]
+    [InlineData("Chat.md", "text/x-mcwut-chat", true, true)]
     public void Readable_means_text_not_html_or_svg(string name, string type, bool readable, bool markdown)
     {
         Assert.Equal(readable, ReadableFiles.IsReadable(type, name));
         Assert.Equal(markdown, ReadableFiles.IsMarkdown(type, name));
+    }
+
+    [Fact]
+    public void A_saved_chat_can_be_shown_in_the_browser()
+    {
+        Assert.True(ReadableFiles.IsInlineText("text/x-mcwut-chat"));
+        Assert.False(ReadableFiles.IsInlineText("text/html"));
     }
 }

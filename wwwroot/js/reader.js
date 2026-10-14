@@ -29,7 +29,7 @@
     function isMarkdown(file) {
         const type = media(file && file.contentType);
         const ext = extension(file && (file.originalFileName || file.name));
-        if (type === "text/markdown" || type === "text/x-markdown") {
+        if (type === "text/markdown" || type === "text/x-markdown" || type === "text/x-mcwut-chat") {
             return true;
         }
         return (ext === ".md" || ext === ".markdown") && (generic(type) || type === "text/plain");

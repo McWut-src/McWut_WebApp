@@ -8,6 +8,7 @@
     var files = On("/files");
     var vault = On("/passwords");
     var urls = On("/urls");
+    var ai = On("/ai");
     var profile = On("/profile");
     var invites = On("/admin/invites");
     var people = On("/admin/people");
@@ -28,6 +29,10 @@
     <a class="side-link is-primary @(urls ? "active" : null)" asp-page="/Urls/Index" title="URLs" aria-current="@(urls ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
         <span>URLs</span>
+    </a>
+    <a class="side-link is-primary @(ai ? "active" : null)" asp-page="/Ai/Index" title="AI" aria-current="@(ai ? "page" : null)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>
+        <span>AI</span>
     </a>
     <a class="side-link is-primary @(profile ? "active" : null)" asp-page="/Profile/Index" title="Profile" aria-current="@(profile ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>

@@ -204,6 +204,24 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("Invites", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.OpenRouterKeyEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("OpenRouterKeys", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.PasswordVaultItemEntity", b =>
                 {
                     b.Property<Guid>("Id")

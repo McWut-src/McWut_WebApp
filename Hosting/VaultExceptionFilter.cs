@@ -23,6 +23,11 @@ public sealed class VaultExceptionFilter : IExceptionFilter
             },
             InvalidFileNameException ex => new BadRequestObjectResult(new { error = ex.Message }),
             PasswordVaultValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            OpenRouterValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            OpenRouterRejectedException ex => new ObjectResult(new { error = ex.Message })
+            {
+                StatusCode = StatusCodes.Status502BadGateway
+            },
             ShortLinkValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidContentTypeException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidRangeException => new StatusCodeResult(StatusCodes.Status416RangeNotSatisfiable),

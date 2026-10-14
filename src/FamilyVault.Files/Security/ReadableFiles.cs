@@ -38,7 +38,7 @@ public static class ReadableFiles
     public static bool IsMarkdown(string? contentType, string? fileName)
     {
         var type = Media(contentType);
-        if (type is "text/markdown" or "text/x-markdown")
+        if (type is "text/markdown" or "text/x-markdown" or OpenRouterRules.ChatContentType)
         {
             return true;
         }
@@ -72,7 +72,7 @@ public static class ReadableFiles
     public static bool IsInlineText(string? contentType)
     {
         var type = Media(contentType);
-        return type is "text/plain" or "text/markdown" or "text/x-markdown" or "text/csv" or "application/json" or "text/json";
+        return type is "text/plain" or "text/markdown" or "text/x-markdown" or OpenRouterRules.ChatContentType or "text/csv" or "application/json" or "text/json";
     }
 
     private static bool IsGeneric(string type) =>

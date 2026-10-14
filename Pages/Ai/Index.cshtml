@@ -1,0 +1,72 @@
+@page "/ai"
+@model McWutWebApp.Pages.Ai.IndexModel
+@{
+    ViewData["Title"] = "AI";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">AI</h1>
+        <p class="page-kicker">A free model, in this browser. Save a chat when you want to keep it.</p>
+    </div>
+</div>
+
+<p id="ai-wait" class="field-hint">Loading…</p>
+
+<section id="ai-setup" class="card ai-setup" hidden>
+    <div class="card-body">
+        <h2 class="h6 mb-2">Chat needs a key</h2>
+        <p id="ai-setup-lead" class="mb-3">Save your own OpenRouter key on Profile. The chat stays off until that key works.</p>
+        <ol class="ai-steps">
+            <li>Create an account at <a href="https://openrouter.ai/" target="_blank" rel="noopener">openrouter.ai</a>.</li>
+            <li>Open <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">Keys</a>, choose Create Key, and copy it. It is shown once.</li>
+            <li>Paste that key on <a asp-page="/Profile/Index" asp-fragment="ai-key">Profile</a>, then come back here.</li>
+        </ol>
+        <p class="field-hint">The chat uses free models. The key is encrypted on your account and is not shared with other members.</p>
+        <a id="ai-setup-go" class="btn btn-primary" asp-page="/Profile/Index" asp-fragment="ai-key">Add a key</a>
+    </div>
+</section>
+
+<section id="ai-chat" class="ai-shell" aria-label="Chat" hidden>
+    <div class="ai-bar">
+        <div class="ai-model">
+            <label class="form-label" for="ai-model">Model</label>
+            <select id="ai-model" class="form-select" disabled>
+                <option value="">Loading models…</option>
+            </select>
+        </div>
+        <div class="ai-actions">
+            <button type="button" class="btn btn-outline-secondary" id="ai-save" disabled>Save</button>
+            <button type="button" class="btn btn-outline-secondary" id="ai-link" disabled>Copy link</button>
+            <button type="button" class="btn btn-outline-secondary" id="ai-new">New chat</button>
+            <a class="ai-key-link" asp-page="/Profile/Index" asp-fragment="ai-key" title="OpenRouter key">Key</a>
+        </div>
+    </div>
+    <p id="ai-meta" class="ai-meta"></p>
+    <details id="ai-about" class="ai-about" hidden>
+        <summary>About this model</summary>
+        <p id="ai-about-text"></p>
+    </details>
+    <p id="ai-alert" class="ai-alert" role="alert" hidden></p>
+    <p id="ai-note" class="ai-note" role="status" hidden></p>
+    <div id="ai-log" class="ai-log" aria-live="polite">
+        <p id="ai-empty" class="empty">Write a message. Save keeps this chat in Chats.</p>
+    </div>
+    <form id="ai-form" class="ai-form">
+        <label class="visually-hidden" for="ai-text">Message</label>
+        <textarea id="ai-text" class="form-control" rows="3" maxlength="8000" placeholder="Write a message" disabled></textarea>
+        <button type="submit" class="btn btn-primary" id="ai-send" disabled>Send</button>
+    </form>
+    <p class="field-hint ai-hint mb-0">
+        <span>Enter adds a line. Ctrl+Enter sends.</span>
+        <label class="ai-md" for="ai-md" title="Force a Markdown reply">
+            <input type="checkbox" id="ai-md" checked>
+            Markdown
+        </label>
+    </p>
+</section>
+
+@section Scripts {
+    <script src="~/js/reader.js" asp-append-version="true"></script>
+    <script src="~/js/ai.js" asp-append-version="true"></script>
+}

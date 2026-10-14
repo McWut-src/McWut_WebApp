@@ -61,6 +61,10 @@
         return type === "image/jpeg" || type === "image/png" || type === "image/gif" || type === "image/webp";
     }
 
+    function isChat(contentType) {
+        return String(contentType || "").split(";")[0].trim().toLowerCase() === "text/x-mcwut-chat";
+    }
+
     function previewSrc(file) {
         return `/api/files/${esc(file.id)}/content?preview=true`;
     }
@@ -218,7 +222,7 @@
     }
 
     function fileGlyph(file) {
-        const name = isImage(file.contentType) ? "image" : (canRead(file) ? "note" : "files");
+        const name = isChat(file.contentType) ? "spark" : (isImage(file.contentType) ? "image" : (canRead(file) ? "note" : "files"));
         return `<div class="file-glyph" aria-hidden="true">${icon(name)}</div>`;
     }
 
@@ -541,11 +545,15 @@
             target.innerHTML = `<p class="empty">No matches.</p>`;
             return;
         }
+        const chats = shownFiles.filter(f => isChat(f.contentType));
         const photos = shownFiles.filter(f => isImage(f.contentType));
-        const others = shownFiles.filter(f => !isImage(f.contentType));
+        const others = shownFiles.filter(f => !isImage(f.contentType) && !isChat(f.contentType));
         const storyHtml = shownStories.length === 0 ? "" : `
             <div class="section-label">Stories</div>
             ${shownStories.map(story => storyCard(story, Array.isArray(story.sharedWith))).join("")}`;
+        const chatHtml = chats.length === 0 ? "" : `
+            <div class="section-label">Chats</div>
+            ${chats.map(rowBuilder).join("")}`;
         const grid = photos.length === 0 ? "" : `
             <div class="section-label">Photos</div>
             <div class="photo-grid" aria-label="Photos">
@@ -554,7 +562,7 @@
         const rows = others.length === 0 ? "" : `
             <div class="section-label">Files</div>
             ${others.map(rowBuilder).join("")}`;
-        target.innerHTML = storyHtml + grid + rows;
+        target.innerHTML = storyHtml + chatHtml + grid + rows;
     }
 
     function paintOwned() {

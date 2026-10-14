@@ -7,7 +7,7 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">Profile</h1>
-        <p class="page-kicker">Your name, a color, and the password you use to sign in.</p>
+        <p class="page-kicker">Your name, a color, the password you use to sign in, and an AI key.</p>
     </div>
 </div>
 
@@ -52,6 +52,22 @@
         </div>
     </section>
 
+    <section class="card mb-3" id="ai-key">
+        <div class="card-body">
+            <h2 class="h6 mb-1">AI key</h2>
+            <p class="field-hint mb-3">Your own key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">OpenRouter</a>. It is encrypted and not shared. The full key is not shown again. <a href="https://openrouter.ai/" target="_blank" rel="noopener">Create an account</a> if you need one.</p>
+            <form id="ai-key-form" class="ai-key-form" method="post" autocomplete="off">
+                <div class="ai-key-field">
+                    <label class="form-label" for="ai-key-input">OpenRouter key</label>
+                    <input id="ai-key-input" name="openrouter-key" class="form-control" type="password" maxlength="200" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…" />
+                </div>
+                <button type="submit" class="btn btn-primary" id="ai-key-save">Save key</button>
+                <button type="button" class="btn btn-outline-secondary" id="ai-key-remove" hidden>Remove</button>
+            </form>
+            <p id="ai-key-status" class="field-hint mb-0">Loading…</p>
+        </div>
+    </section>
+
     <section class="card mb-3" id="password">
         <div class="card-body">
             <h2 class="h6 mb-1">Sign-in password</h2>
@@ -81,4 +97,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/ai-key.js" asp-append-version="true"></script>
 }
