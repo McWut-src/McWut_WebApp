@@ -8,6 +8,7 @@
     var files = On("/files");
     var vault = On("/passwords");
     var urls = On("/urls");
+    var messages = On("/messages");
     var ai = On("/ai");
     var profile = On("/profile");
     var invites = On("/admin/invites");
@@ -16,6 +17,7 @@
     var status = On("/admin/status");
     var privacy = On("/privacy");
     var shown = ViewData["ShownName"] as string ?? User.Identity?.Name;
+    var messageUnread = ViewData["MessageUnread"] as int? ?? 0;
 }
 <nav class="side-nav" aria-label="Primary">
     <a class="side-link is-primary @(files ? "active" : null)" asp-page="/Vault/Index" title="My files" aria-current="@(files ? "page" : null)">
@@ -29,6 +31,14 @@
     <a class="side-link is-primary @(urls ? "active" : null)" asp-page="/Urls/Index" title="URLs" aria-current="@(urls ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
         <span>URLs</span>
+    </a>
+    <a class="side-link is-primary @(messages ? "active" : null)" asp-page="/Messages/Index" title="Messages" aria-current="@(messages ? "page" : null)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>
+        <span>Messages</span>
+        @if (messageUnread > 0)
+        {
+            <span class="side-count">@(messageUnread > 99 ? "99+" : messageUnread.ToString())</span>
+        }
     </a>
     <a class="side-link is-primary @(ai ? "active" : null)" asp-page="/Ai/Index" title="AI" aria-current="@(ai ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>

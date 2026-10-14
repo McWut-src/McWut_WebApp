@@ -1,0 +1,43 @@
+@page "/messages"
+@model McWutWebApp.Pages.Messages.IndexModel
+@{
+    ViewData["Title"] = "Messages";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Messages</h1>
+        <p class="page-kicker">A note to another member. Only the two of you can read it.</p>
+    </div>
+</div>
+
+<div class="message-shell" id="message-shell">
+    <div class="message-side">
+        <div class="message-toolbar">
+            <button type="button" class="btn btn-primary" id="message-new">New</button>
+        </div>
+        <div id="message-list" class="message-list" role="listbox" aria-label="Conversations">
+            <p class="empty">Loading…</p>
+        </div>
+    </div>
+    <section id="message-thread" class="message-thread" aria-label="Conversation">
+        <div class="message-thread-bar">
+            <button type="button" class="btn btn-outline-secondary message-back" id="message-back">Back</button>
+            <h2 class="message-who" id="message-who">Choose a person</h2>
+        </div>
+        <div id="message-people" class="message-people" hidden>
+            <p class="empty">Loading…</p>
+        </div>
+        <div id="message-log" class="message-log" aria-live="polite"></div>
+        <p id="message-error" class="ai-alert" hidden></p>
+        <form id="message-form" class="message-form" hidden>
+            <label class="visually-hidden" for="message-box">Message</label>
+            <textarea id="message-box" rows="2" maxlength="2000" placeholder="Write a message" autocomplete="off"></textarea>
+            <button type="submit" class="btn btn-primary" id="message-send">Send</button>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/messages.js" asp-append-version="true"></script>
+}

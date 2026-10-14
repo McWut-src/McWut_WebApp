@@ -17,7 +17,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI is there too. The live revision is `ca-mcwut--0000020`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
-- After sign-in, home is five cards: **My files**, **Vault**, **URLs**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons.
+- After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
 - **My files** (`/files`): drop files, or write a **Story**, then **Save**. The file is private and kept forever. Words alone stay a text file. Words saved with one or more files become one story in the Stories section. A chat saved from AI appears under **Chats**, and only when there is one. **Options** can keep it for 1, 7, or 30 days, and can set a password that a later share link asks for. A pasted note can be named there. With no title it is saved as `note`. The link icon on a file makes a public `/s/` link of eight letters or digits. That link lasts 7 days. Older longer `/s/...` links still open.
 - **URLs** (`/urls`): **Shorten a link**. Paste a long address, including one that starts with `www`. You get another `/s/` link. Opening it sends the person to that address. It stays until you delete it. The same page lists every public link you have made, including file shares from My files. View shows the link. Quick open follows it. Delete stops the link. A file stays in My files.
 - Old `/Vault`, `/Vault/Shared`, and `/files/shared` redirect to My files. A people icon titled “Share with a member” shares a file or a story. The other person can open and download it only. See [LATER-MEMBER-SHARING.md](LATER-MEMBER-SHARING.md).
@@ -27,6 +27,7 @@ A private family file drop. Home is the dashboard. Profile, the color picker, th
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
 - **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list. **Download copy** saves a JSON file named from your name, or the part of your email before `@`. The file contains the passwords. The site does not keep a second copy.
 - **Profile** (`/profile`): the name shown in the menu, a color for the bar and the menu, light or dark on this browser, the password you use to sign in, and the OpenRouter key for AI. A pale color uses dark text. A dark color uses pale text. The color is not shown on a public link. `/account/password` opens this page. Privacy is linked from here, and only while you are signed in. The signed-in header is that name. Sign-in and public pages still say McWut.
+- **Messages** (`/messages`): write to another member. **New** lists the other people. Only the two of you can read the thread. The menu shows how many are unread. Opening the thread clears that count. This is in the working copy. The live site stays on the revision in the promotion log until you promote.
 - **AI** (`/ai`): with no key, or a key OpenRouter rejects, the page tells you how to make an account and a key, and the chat stays off. The key itself is on **Profile**. It is stored encrypted, and the page never shows the whole key again. A working key shows free models, including context length when OpenRouter sends it. Sending a message streams the reply. The rest of the page stays usable, and Send becomes Stop. **Markdown** is on unless you turn it off. A Markdown reply is drawn like a note, including a Mermaid diagram when the reply has one. The chat stays in this browser until you choose **Save**, which puts it in **Chats** on My files, or **New chat**. **Copy link** makes a public `/s/` link and lists it on URLs.
 - `/health` returns the text `ok`. Leave that alone. Azure uses it.
 
@@ -95,7 +96,7 @@ docker compose down
 ## Click-through (Dev and QA)
 
 1. Header says **McWut**.
-2. After sign-in, home shows **My files**, **Vault**, **URLs**, **AI**, and **Profile**. The sidebar matches. It can fold to icons. For admin: **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no control labeled Tag a member. A people icon on a file shares it with a member. `/files/shared` redirects to My files. Signed out, `/` and `/Privacy` are the sign-in form, with no privacy link and no toy passwords.
+2. After sign-in, home shows **My files**, **Vault**, **URLs**, **Messages**, **AI**, and **Profile**. The sidebar matches. It can fold to icons. For admin: **Invites**, **People**, **Reset password**, **Status**. There is no Shared files item and no control labeled Tag a member. A people icon on a file shares it with a member. `/files/shared` redirects to My files. Signed out, `/` and `/Privacy` are the sign-in form, with no privacy link and no toy passwords.
 3. https://localhost:7047/Identity/Account/Register (or :8080) is **404**.
 4. Paste a sentence and **Save**. The status is Saved, and there is no share box. The file is in the list with no removal date. Open **Options**, set Keep to 1 day and a password, name the note, and Save again. That row shows a date and the word password. You can still read it while signed in. The link icon copies a short `/s/` link (eight letters after `/s/`). That link lasts 7 days. Open it in a private window: it asks for the password, then the sentence is visible. Download works. Upload a `.md` file and read it on My files and on its share link. A Mermaid block in that file, including a Gantt chart or a mindmap, is drawn. On **URLs**, shorten `www.example.com/page?id=3` and open that short link: it goes to that address. The same page lists that link and the file share link. Delete removes the link.
 5. Drop a real photo. A thumbnail shows in My files. Click it. The large view opens. The share page shows the photo too. Add a photo and write a story, then Save. It appears under Stories, not as a loose photo. Open it: the words and the photo are both there. Share it with the other member. They can read the whole story and cannot delete it.
@@ -106,7 +107,8 @@ docker compose down
 10. **Passwords**: create a login, copy the username and password, open the URL, edit, and save. Sign in as the other toy user and confirm that list does not show the first user's login.
 11. **Profile** sets a name and a color, and changes the sign-in password. Change the toy password back to `vince` or `member` when you are done. `/account/password` opens Profile.
 12. As `vince@`, share a file with `member@` from the people icon. The row shows that member’s color. **URLs** lists the share with the same color and no public address. Sign in as `member@`: **From others** shows the file, open and download work, and there is no delete. As `vince@`, **Remove share** on URLs. The other member no longer sees the file.
-13. **AI** with no key shows the short OpenRouter steps and no chat box. On **Profile**, a bad key is refused. A key OpenRouter accepts shows only the last four characters. Removing it clears it. The page does not show the whole key. With a working key, the chat is available. Sending a message shows Waiting… and the rest of the page still works. Send becomes Stop. With Markdown on, the reply is drawn like a note. **Save** puts that chat under **Chats** on My files. **Copy link** copies a 7-day `/s/` link, and URLs lists it.
+13. **Messages**: as `vince@`, choose **New**, pick `member@`, and send a sentence. Sign in as `member@`. The Messages item shows a count. Open the thread, see the sentence, and reply. Sign back in as `vince@` and see the reply. The Privacy page says only the two of you can read it.
+14. **AI** with no key shows the short OpenRouter steps and no chat box. On **Profile**, a bad key is refused. A key OpenRouter accepts shows only the last four characters. Removing it clears it. The page does not show the whole key. With a working key, the chat is available. Sending a message shows Waiting… and the rest of the page still works. Send becomes Stop. With Markdown on, the reply is drawn like a note. **Save** puts that chat under **Chats** on My files. **Copy link** copies a 7-day `/s/` link, and URLs lists it.
 
 Tests:
 
@@ -184,6 +186,7 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | `Pages/Urls/` | URLs at `/urls`. Shorten a web address, and list, open, or delete public links. |
 | `Pages/Passwords/` | Saved logins at `/passwords`. API is `Controllers/PasswordsController.cs` |
 | `Pages/Profile/` | Name, color, your own sign-in password, and the OpenRouter key, at `/profile` |
+| `Pages/Messages/` | Messages at `/messages`. A private thread with another member. API is `Controllers/MessagesController.cs` |
 | `Pages/Ai/` | AI at `/ai`. A chat when the key works. Save stores it in Chats. |
 | `Pages/Account/Password.cshtml` | Old address. Opening it goes to Profile |
 | `wwwroot/js/passwords.js` | Search, list, edit, copy, open |
@@ -191,6 +194,7 @@ Secrets live in the Azure Container App, not in git. An old example of the *name
 | `Pages/Join/` | `/join/{token}` |
 | `Pages/Share/` | `/s/{token}`. A file link shows the file. A shortened address redirects. |
 | `Controllers/ShortLinksController.cs` | Create, list, and delete a shortened address |
+| `wwwroot/js/messages.js` | Conversation list, thread, and send |
 | `wwwroot/js/urls.js` | Shorten a link, and view, open, copy, or delete public links |
 | `wwwroot/js/vault.js` | Upload, paste, list, share link, reader |
 | `wwwroot/js/reader.js` | Plain text reading, and Mermaid diagrams in a Markdown note |

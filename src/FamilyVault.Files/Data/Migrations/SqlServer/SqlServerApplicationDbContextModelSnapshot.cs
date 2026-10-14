@@ -22,6 +22,81 @@ namespace FamilyVault.Files.Data.Migrations.SqlServer
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectConversationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("HighUnread")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HighUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastPreview")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid?>("LastSenderUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("LastSentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("LowUnread")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("LowUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("NextSequence")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HighUserId");
+
+                    b.HasIndex("LowUserId", "HighUserId")
+                        .IsUnique();
+
+                    b.ToTable("DirectConversations", (string)null);
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectMessageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Sequence")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("DirectMessages", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.DropEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -658,6 +733,30 @@ namespace FamilyVault.Files.Data.Migrations.SqlServer
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectConversationEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("HighUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("LowUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectMessageEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.DirectConversationEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.DropEntity", b =>

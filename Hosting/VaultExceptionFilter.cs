@@ -23,6 +23,7 @@ public sealed class VaultExceptionFilter : IExceptionFilter
             },
             InvalidFileNameException ex => new BadRequestObjectResult(new { error = ex.Message }),
             PasswordVaultValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            DirectMessageValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             OpenRouterValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             OpenRouterRejectedException ex => new ObjectResult(new { error = ex.Message })
             {
