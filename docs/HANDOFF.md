@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000021`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000022`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -57,7 +57,7 @@ Database migration `AddShortLinks` (SQLite `20261007004423`, SQL Server `2026100
 
 Already on the site before this build: photo gallery, password vault, paste, People, Reset password, Status, lockout, filename escaping.
 
-Still not built, on purpose: separate small thumbnail files, video previews, email, public Register, renaming `FamilyVault`.
+Still not built, on purpose: separate small thumbnail files, email, public Register, renaming `FamilyVault`.
 
 ---
 
@@ -211,6 +211,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 
 ## Promotion log
 
+**16 October 2026, 17:51 UTC.** Production was moved on purpose to password vault import, in-place note/story editing, inline audio/video playback, message search & clickable links, and the AI paid models toggle.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000021` | `ghcr.io/mcwut-src/mcwut_webapp:b8093471aea98fc6aed6910afb1a71528cc9fd6b` |
+| Live | `ca-mcwut--0000022` | `ghcr.io/mcwut-src/mcwut_webapp:2912aa3ca2baf08a86201465d5f904d9cac24d3e` |
+
+`0000022` has 100% of the traffic and is Healthy. `0000021` is the previous revision and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+
+Checked while signed out, on `0000022`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, `/files`, `/messages`, `/passwords`, and `/ai` redirect to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds no database migration.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000021
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000021=100
+```
+
 **16 October 2026, 16:09 UTC.** Production was moved on purpose to private member-to-member Messages.
 
 | | Revision | Image |
@@ -329,4 +347,4 @@ Rollback, if the new site is wrong and you want the previous one:
 az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000015=100
 ```
 
-Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `b8093471aea98fc6aed6910afb1a71528cc9fd6b`.
+Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `2912aa3ca2baf08a86201465d5f904d9cac24d3e`.
