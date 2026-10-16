@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI is there too. The live revision is `ca-mcwut--0000020`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000021`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -27,7 +27,7 @@ A private family file drop. Home is the dashboard. Profile, the color picker, th
 - **Status** (`/admin/status`): database reachable, storage kind, counts. No passwords on this page.
 - **Passwords** (`/passwords`): your own saved logins. Search on top, list on the left, details on the right. Another member cannot open your list. **Download copy** saves a JSON file named from your name, or the part of your email before `@`. The file contains the passwords. The site does not keep a second copy.
 - **Profile** (`/profile`): the name shown in the menu, a color for the bar and the menu, light or dark on this browser, the password you use to sign in, and the OpenRouter key for AI. A pale color uses dark text. A dark color uses pale text. The color is not shown on a public link. `/account/password` opens this page. Privacy is linked from here, and only while you are signed in. The signed-in header is that name. Sign-in and public pages still say McWut.
-- **Messages** (`/messages`): write to another member. **New** lists the other people. Only the two of you can read the thread. The menu shows how many are unread. Opening the thread clears that count. This is in the working copy. The live site stays on the revision in the promotion log until you promote.
+- **Messages** (`/messages`): write to another member. **New** lists the other people. Only the two of you can read the thread. The menu shows how many are unread. Opening the thread clears that count.
 - **AI** (`/ai`): with no key, or a key OpenRouter rejects, the page tells you how to make an account and a key, and the chat stays off. The key itself is on **Profile**. It is stored encrypted, and the page never shows the whole key again. A working key shows free models, including context length when OpenRouter sends it. Sending a message streams the reply. The rest of the page stays usable, and Send becomes Stop. **Markdown** is on unless you turn it off. A Markdown reply is drawn like a note, including a Mermaid diagram when the reply has one. The chat stays in this browser until you choose **Save**, which puts it in **Chats** on My files, or **New chat**. **Copy link** makes a public `/s/` link and lists it on URLs.
 - `/health` returns the text `ok`. Leave that alone. Azure uses it.
 
@@ -211,6 +211,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 
 ## Promotion log
 
+**16 October 2026, 16:09 UTC.** Production was moved on purpose to private member-to-member Messages.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000020` | `ghcr.io/mcwut-src/mcwut_webapp:5223a861b89ecff785f1e34d4a02520ce73ef788` |
+| Live | `ca-mcwut--0000021` | `ghcr.io/mcwut-src/mcwut_webapp:b8093471aea98fc6aed6910afb1a71528cc9fd6b` |
+
+`0000021` has 100% of the traffic and is Healthy. `0000020` is the previous revision and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+
+Checked while signed out, on `0000021`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, `/files`, and `/messages` redirect to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds the `AddDirectMessages` migration. Startup did not apply it. The first request that needs the database will.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000020
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000020=100
+```
+
 **14 October 2026, 02:47 UTC.** Production was moved on purpose to the AI chat. Replies stream, Send can stop them, and Markdown is on unless the person turns it off.
 
 | | Revision | Image |
@@ -311,4 +329,4 @@ Rollback, if the new site is wrong and you want the previous one:
 az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000015=100
 ```
 
-Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `c1323430bef02d089f97fb594424dbb12f852e9a`.
+Do not delete the SQL server or the storage account. A later docs-only commit does not change the live image. Azure is pinned to `b8093471aea98fc6aed6910afb1a71528cc9fd6b`.

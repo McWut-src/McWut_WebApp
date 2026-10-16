@@ -1,6 +1,6 @@
 # McWut — current cycle
 
-**Updated:** 7 October 2026  
+**Updated:** 16 October 2026  
 **Live:** https://mcwut.com · https://www.mcwut.com  
 **Handoff:** [HANDOFF.md](HANDOFF.md)  
 **Agent guide:** [AGENT.md](AGENT.md)  
