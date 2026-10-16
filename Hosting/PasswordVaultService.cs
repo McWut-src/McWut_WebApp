@@ -18,6 +18,8 @@ public sealed record PasswordVaultItemView(
     bool Unreadable,
     DateTimeOffset UpdatedAt);
 
+public sealed record PasswordVaultImportResult(int Added, int Skipped, Guid? FirstAddedId);
+
 public sealed class PasswordVaultService(
     ApplicationDbContext db,
     IDataProtectionProvider protection,
@@ -96,6 +98,52 @@ public sealed class PasswordVaultService(
         var row = await FindOwnedAsync(ownerUserId, id, tracking: true, cancellationToken);
         db.PasswordVaultItems.Remove(row);
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<PasswordVaultImportResult> ImportAsync(Guid ownerUserId, string? json, CancellationToken cancellationToken)
+    {
+        var parsed = PasswordVaultRules.ParseExportJson(json);
+        var existing = await ListAsync(ownerUserId, cancellationToken);
+        var existingKeys = new HashSet<(string Name, string Username, string Password, string Url, string Info)>(
+            existing.Select(x => (x.Name, x.Username, x.Password, x.Url ?? "", x.Information)));
+
+        var now = time.GetUtcNow();
+        var added = 0;
+        var skipped = 0;
+        Guid? firstAddedId = null;
+
+        foreach (var fields in parsed)
+        {
+            var key = (fields.Name, fields.Username, fields.Password, fields.Url ?? "", fields.Notes);
+            if (!existingKeys.Add(key))
+            {
+                skipped++;
+                continue;
+            }
+
+            var row = new PasswordVaultItemEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = ownerUserId,
+                Name = fields.Name,
+                UsernameCipher = Protect(fields.Username),
+                PasswordCipher = Protect(fields.Password),
+                UrlCipher = Protect(fields.Url ?? ""),
+                NotesCipher = Protect(fields.Notes),
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+            db.PasswordVaultItems.Add(row);
+            firstAddedId ??= row.Id;
+            added++;
+        }
+
+        if (added > 0)
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        return new PasswordVaultImportResult(added, skipped, firstAddedId);
     }
 
     private async Task<PasswordVaultItemEntity> FindOwnedAsync(

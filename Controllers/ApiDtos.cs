@@ -27,6 +27,18 @@ public sealed class PatchFileBody
     public bool ClearPassword { get; set; }
 }
 
+public sealed class UpdateTextFileBody
+{
+    public string? FileName { get; set; }
+    public string? Text { get; set; }
+}
+
+public sealed class UpdateStoryBody
+{
+    public string? Title { get; set; }
+    public string? Text { get; set; }
+}
+
 public sealed class BeginUploadBody
 {
     public string FileName { get; set; } = "";

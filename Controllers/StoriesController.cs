@@ -36,6 +36,18 @@ public sealed class StoriesController(IDropService drops, IGrantService grants) 
         }).ToList());
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<StoryResponse>> Update(Guid id, [FromBody] UpdateStoryBody body, CancellationToken cancellationToken)
+    {
+        var userId = User.RequireVaultUserId();
+        var updated = await drops.UpdateStoryAsync(id, userId, body.Title, body.Text, cancellationToken);
+        var tags = await grants.ListTagsAsync(ShareTargetKind.Drop, [updated.Id], cancellationToken);
+        return Ok(ToResponse(updated) with
+        {
+            SharedWith = tags.TryGetValue(updated.Id, out var shared) ? shared : []
+        });
+    }
+
     private static StoryResponse ToResponse(Story story) => new(
         story.Id,
         story.OwnerUserId,

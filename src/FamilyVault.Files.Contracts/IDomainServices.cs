@@ -5,6 +5,7 @@ public interface IFileLibrary
     Task<IReadOnlyList<StoredFile>> ListOwnedAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
     Task<StoredFile?> GetAsync(Guid fileId, CancellationToken cancellationToken = default);
     Task<StoredFile> UpdateAsync(Guid fileId, UpdateStoredFileRequest request, CancellationToken cancellationToken = default);
+    Task<StoredFile> UpdateTextAsync(Guid fileId, string? fileName, string? text, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default);
 }
 
@@ -15,6 +16,7 @@ public interface IDropService
     Task<Drop?> GetAsync(Guid dropId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<StoredFile>> ListFilesAsync(Guid dropId, CancellationToken cancellationToken = default);
     Task<Drop> UpdateAsync(Guid dropId, UpdateDropRequest request, CancellationToken cancellationToken = default);
+    Task<Story> UpdateStoryAsync(Guid dropId, Guid ownerUserId, string? title, string? text, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid dropId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Story>> ListOwnedStoriesAsync(Guid ownerUserId, CancellationToken cancellationToken = default);
 }

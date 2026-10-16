@@ -219,6 +219,53 @@
         document.getElementById("pw-name")?.focus();
     });
 
+    const importBtn = document.getElementById("password-import");
+    const importFile = document.getElementById("password-import-file");
+    const statusEl = document.getElementById("password-status");
+
+    function setStatus(message) {
+        if (!statusEl) {
+            return;
+        }
+        statusEl.textContent = message || "";
+        statusEl.hidden = !message;
+    }
+
+    importBtn?.addEventListener("click", () => {
+        if (importFile) {
+            importFile.value = "";
+            importFile.click();
+        }
+    });
+
+    importFile?.addEventListener("change", async () => {
+        const file = importFile.files && importFile.files[0];
+        if (!file) {
+            return;
+        }
+        try {
+            const text = await file.text();
+            const result = await api("/api/passwords/import", {
+                method: "POST",
+                headers: headers({ "Content-Type": "application/json" }),
+                body: text
+            });
+            editing = false;
+            await load(result && result.firstAddedId ? result.firstAddedId : selectedId);
+            const added = result ? result.added : 0;
+            const skipped = result ? result.skipped : 0;
+            const parts = [`Imported ${added} ${added === 1 ? "login" : "logins"}.`];
+            if (skipped > 0) {
+                parts.push(`${skipped} already in your vault.`);
+            }
+            setStatus(parts.join(" "));
+        } catch (err) {
+            setStatus(err.message);
+        } finally {
+            importFile.value = "";
+        }
+    });
+
     detailEl.addEventListener("click", async (event) => {
         const button = event.target.closest("button");
         if (!button) {

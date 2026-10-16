@@ -61,6 +61,20 @@
         return type === "image/jpeg" || type === "image/png" || type === "image/gif" || type === "image/webp";
     }
 
+    function isVideo(contentType) {
+        const type = String(contentType || "").split(";")[0].trim().toLowerCase();
+        return type === "video/mp4" || type === "video/webm" || type === "video/quicktime" || type === "video/ogg";
+    }
+
+    function isAudio(contentType) {
+        const type = String(contentType || "").split(";")[0].trim().toLowerCase();
+        return type === "audio/mpeg" || type === "audio/mp3" || type === "audio/mp4" || type === "audio/x-m4a" || type === "audio/wav" || type === "audio/x-wav" || type === "audio/ogg" || type === "audio/webm";
+    }
+
+    function isMedia(contentType) {
+        return isVideo(contentType) || isAudio(contentType);
+    }
+
     function isChat(contentType) {
         return String(contentType || "").split(";")[0].trim().toLowerCase() === "text/x-mcwut-chat";
     }
@@ -222,15 +236,25 @@
     }
 
     function fileGlyph(file) {
-        const name = isChat(file.contentType) ? "spark" : (isImage(file.contentType) ? "image" : (canRead(file) ? "note" : "files"));
+        const name = isChat(file.contentType)
+            ? "spark"
+            : (isImage(file.contentType)
+                ? "image"
+                : (isMedia(file.contentType)
+                    ? "play"
+                    : (canRead(file) ? "note" : "files")));
         return `<div class="file-glyph" aria-hidden="true">${icon(name)}</div>`;
     }
 
     function ownedRow(file) {
-        const title = canRead(file)
+        const playable = isMedia(file.contentType);
+        const readable = canRead(file);
+        const title = readable
             ? `<button type="button" class="file-title file-title-btn" data-action="read" title="Read ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
-            : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`;
-        const read = canRead(file) ? iconButton("read", "eye", "Read") : "";
+            : (playable
+                ? `<button type="button" class="file-title file-title-btn" data-action="play" title="Play ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
+                : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`);
+        const read = readable ? iconButton("read", "eye", "Read") : (playable ? iconButton("play", "play", "Play") : "");
         const share = Array.isArray(file.sharedWith) ? shareButton() : "";
         return `
             <div class="file-row" data-id="${esc(file.id)}">
@@ -251,10 +275,14 @@
     }
 
     function incomingRow(file) {
-        const title = canRead(file)
+        const playable = isMedia(file.contentType);
+        const readable = canRead(file);
+        const title = readable
             ? `<button type="button" class="file-title file-title-btn" data-action="read" title="Read ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
-            : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`;
-        const read = canRead(file) ? iconButton("read", "eye", "Read") : "";
+            : (playable
+                ? `<button type="button" class="file-title file-title-btn" data-action="play" title="Play ${esc(file.originalFileName)}">${esc(file.originalFileName)}</button>`
+                : `<div class="file-title" title="${esc(file.originalFileName)}">${esc(file.originalFileName)}</div>`);
+        const read = readable ? iconButton("read", "eye", "Read") : (playable ? iconButton("play", "play", "Play") : "");
         return `
             <div class="file-row" data-id="${esc(file.id)}">
                 ${fileGlyph(file)}
@@ -288,6 +316,27 @@
         }
         if (name.endsWith(".json")) {
             return "application/json";
+        }
+        if (name.endsWith(".mp4") || name.endsWith(".m4v")) {
+            return "video/mp4";
+        }
+        if (name.endsWith(".webm")) {
+            return "video/webm";
+        }
+        if (name.endsWith(".mov")) {
+            return "video/quicktime";
+        }
+        if (name.endsWith(".mp3")) {
+            return "audio/mpeg";
+        }
+        if (name.endsWith(".m4a")) {
+            return "audio/mp4";
+        }
+        if (name.endsWith(".wav")) {
+            return "audio/wav";
+        }
+        if (name.endsWith(".ogg")) {
+            return "audio/ogg";
         }
         return "application/octet-stream";
     }
@@ -742,6 +791,7 @@
                 <div class="note-reader-bar">
                     <div class="note-reader-name" data-note-name></div>
                     <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-note-edit hidden title="Edit" aria-label="Edit">${icon("pencil")}</button>
                         <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-note-download title="Download" aria-label="Download">${icon("download")}</a>
                         <button type="button" class="icon-btn" data-note-close title="Close" aria-label="Close">${icon("close")}</button>
@@ -753,6 +803,10 @@
         root.addEventListener("click", (event) => {
             if (event.target.closest("[data-note-close]")) {
                 closeNote();
+                return;
+            }
+            if (event.target.closest("[data-note-edit]")) {
+                editCurrentNote().catch(err => alert(err.message));
             }
         });
     }
@@ -787,6 +841,102 @@
         return "Could not open this note.";
     }
 
+    async function editCurrentNote() {
+        const file = ownedFiles.find(f => sameId(f.id, noteFileId));
+        const root = document.getElementById("note-reader");
+        if (!file || !root || !canRead(file)) {
+            return;
+        }
+        const body = root.querySelector("[data-note-body]");
+        const response = await fetch(`/api/files/${file.id}/content?preview=true`, { headers: { "Accept": "text/plain, text/markdown, */*" } });
+        if (!response.ok) {
+            throw new Error("Could not load note for editing.");
+        }
+        const currentText = await response.text();
+        body.innerHTML = `
+            <div class="p-3">
+                <div id="note-edit-error" class="alert alert-danger" hidden></div>
+                <div class="mb-3">
+                    <label class="form-label" for="note-edit-name">Name</label>
+                    <input id="note-edit-name" class="form-control" value="${esc(file.originalFileName || "note.txt")}" maxlength="200" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="note-edit-text">Text</label>
+                    <textarea id="note-edit-text" class="form-control" rows="10">${esc(currentText)}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary" id="note-edit-save">Save</button>
+                    <button type="button" class="btn btn-outline-secondary" id="note-edit-cancel">Cancel</button>
+                </div>
+            </div>`;
+        body.querySelector("#note-edit-text")?.focus();
+        body.querySelector("#note-edit-cancel")?.addEventListener("click", () => {
+            openNote(file, noteReturn);
+        });
+        body.querySelector("#note-edit-save")?.addEventListener("click", async () => {
+            const nameInput = body.querySelector("#note-edit-name");
+            const textInput = body.querySelector("#note-edit-text");
+            const errorEl = body.querySelector("#note-edit-error");
+            const saveBtn = body.querySelector("#note-edit-save");
+            if (saveBtn) saveBtn.disabled = true;
+            try {
+                const updated = await api(`/api/files/${file.id}/text`, {
+                    method: "PUT",
+                    headers: headers({ "Content-Type": "application/json" }),
+                    body: JSON.stringify({
+                        fileName: nameInput ? nameInput.value : file.originalFileName,
+                        text: textInput ? textInput.value : ""
+                    })
+                });
+                await renderOwned();
+                const refreshed = ownedFiles.find(f => sameId(f.id, updated.id)) || updated;
+                await openNote(refreshed, noteReturn);
+            } catch (err) {
+                if (errorEl) {
+                    errorEl.hidden = false;
+                    errorEl.textContent = err.message;
+                }
+                if (saveBtn) saveBtn.disabled = false;
+            }
+        });
+    }
+
+    async function openMedia(file, button) {
+        if (!file || !isMedia(file.contentType)) {
+            return;
+        }
+        closeMenu();
+        closeViewer();
+        ensureNoteReader();
+        noteReturn = button;
+        noteFileId = file.id;
+        const root = document.getElementById("note-reader");
+        document.body.appendChild(root);
+        root.querySelector("[data-note-name]").textContent = file.originalFileName || "Media";
+        const download = root.querySelector("[data-note-download]");
+        download.href = `/api/files/${file.id}/content`;
+        const editBtn = root.querySelector("[data-note-edit]");
+        if (editBtn) editBtn.hidden = true;
+        syncShareButton(root, file);
+        const body = root.querySelector("[data-note-body]");
+        body.replaceChildren();
+        const wrap = document.createElement("div");
+        wrap.className = "p-3 d-flex justify-content-center align-items-center";
+        const player = document.createElement(isVideo(file.contentType) ? "video" : "audio");
+        player.controls = true;
+        player.preload = "metadata";
+        player.src = `/api/files/${file.id}/content?preview=true`;
+        player.className = isVideo(file.contentType) ? "w-100 rounded" : "w-100";
+        if (isVideo(file.contentType)) {
+            player.style.maxHeight = "70vh";
+        }
+        wrap.appendChild(player);
+        body.appendChild(wrap);
+        root.hidden = false;
+        document.body.classList.add("note-reader-open");
+        root.querySelector(".note-reader-buttons [data-note-close]")?.focus();
+    }
+
     async function openNote(file, button) {
         if (!file || !canRead(file)) {
             return;
@@ -801,6 +951,10 @@
         root.querySelector("[data-note-name]").textContent = file.originalFileName || "Note";
         const download = root.querySelector("[data-note-download]");
         download.href = `/api/files/${file.id}/content`;
+        const editBtn = root.querySelector("[data-note-edit]");
+        if (editBtn) {
+            editBtn.hidden = !(Array.isArray(file.sharedWith) && !isChat(file.contentType) && (file.sizeBytes || 0) <= (window.mcwutRead.maxBytes || 200000));
+        }
         syncShareButton(root, file);
         const body = root.querySelector("[data-note-body]");
         body.replaceChildren();
@@ -881,6 +1035,7 @@
                 <div class="note-reader-bar">
                     <div class="note-reader-name" data-story-name></div>
                     <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-story-edit hidden title="Edit" aria-label="Edit">${icon("pencil")}</button>
                         <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-story-download title="Download" aria-label="Download">${icon("download")}</a>
                         <button type="button" class="icon-btn" data-story-close title="Close" aria-label="Close">${icon("close")}</button>
@@ -892,6 +1047,10 @@
         root.addEventListener("click", (event) => {
             if (event.target.closest("[data-story-close]")) {
                 closeStory();
+                return;
+            }
+            if (event.target.closest("[data-story-edit]")) {
+                editCurrentStory().catch(err => alert(err.message));
                 return;
             }
             const button = event.target.closest("[data-story-action]");
@@ -909,8 +1068,70 @@
                 openViewer(story.attachments || [], file.id, button);
             } else if (action === "read") {
                 openNote(file, button).catch(err => alert(err.message));
+            } else if (action === "play") {
+                openMedia(file, button).catch(err => alert(err.message));
             } else if (action === "download") {
                 window.location.href = `/api/files/${file.id}/content`;
+            }
+        });
+    }
+
+    async function editCurrentStory() {
+        const story = ownedStories.find(s => sameId(s.id, storyOpenId));
+        const root = document.getElementById("story-reader");
+        if (!story || !story.body || !root) {
+            return;
+        }
+        const response = await fetch(`/api/files/${story.body.id}/content?preview=true`, { headers: { "Accept": "text/plain, */*" } });
+        if (!response.ok) {
+            throw new Error("Could not load story for editing.");
+        }
+        const currentText = await response.text();
+        const body = root.querySelector("[data-story-body]");
+        body.innerHTML = `
+            <div class="p-3">
+                <div id="story-edit-error" class="alert alert-danger" hidden></div>
+                <div class="mb-3">
+                    <label class="form-label" for="story-edit-title">Title</label>
+                    <input id="story-edit-title" class="form-control" value="${esc(story.title || "Story")}" maxlength="200" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="story-edit-text">Story</label>
+                    <textarea id="story-edit-text" class="form-control" rows="8">${esc(currentText)}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary" id="story-edit-save">Save</button>
+                    <button type="button" class="btn btn-outline-secondary" id="story-edit-cancel">Cancel</button>
+                </div>
+            </div>`;
+        body.querySelector("#story-edit-text")?.focus();
+        body.querySelector("#story-edit-cancel")?.addEventListener("click", () => {
+            openStory(story, storyReturn);
+        });
+        body.querySelector("#story-edit-save")?.addEventListener("click", async () => {
+            const titleInput = body.querySelector("#story-edit-title");
+            const textInput = body.querySelector("#story-edit-text");
+            const errorEl = body.querySelector("#story-edit-error");
+            const saveBtn = body.querySelector("#story-edit-save");
+            if (saveBtn) saveBtn.disabled = true;
+            try {
+                const updated = await api(`/api/stories/${story.id}`, {
+                    method: "PUT",
+                    headers: headers({ "Content-Type": "application/json" }),
+                    body: JSON.stringify({
+                        title: titleInput ? titleInput.value : story.title,
+                        text: textInput ? textInput.value : ""
+                    })
+                });
+                await renderOwned();
+                const refreshed = ownedStories.find(s => sameId(s.id, updated.id)) || updated;
+                await openStory(refreshed, storyReturn);
+            } catch (err) {
+                if (errorEl) {
+                    errorEl.hidden = false;
+                    errorEl.textContent = err.message;
+                }
+                if (saveBtn) saveBtn.disabled = false;
             }
         });
     }
@@ -951,12 +1172,18 @@
                     </article>`).join("")}
             </div>`;
         const rows = others.map(file => {
-            const read = canRead(file)
+            const readable = canRead(file);
+            const playable = isMedia(file.contentType);
+            const read = readable
                 ? `<button type="button" class="icon-btn" data-story-action="read" data-file-id="${esc(file.id)}" title="Read" aria-label="Read">${icon("eye")}</button>`
-                : "";
-            const title = canRead(file)
+                : (playable
+                    ? `<button type="button" class="icon-btn" data-story-action="play" data-file-id="${esc(file.id)}" title="Play" aria-label="Play">${icon("play")}</button>`
+                    : "");
+            const title = readable
                 ? `<button type="button" class="file-title file-title-btn" data-story-action="read" data-file-id="${esc(file.id)}">${esc(file.originalFileName)}</button>`
-                : `<div class="file-title">${esc(file.originalFileName)}</div>`;
+                : (playable
+                    ? `<button type="button" class="file-title file-title-btn" data-story-action="play" data-file-id="${esc(file.id)}">${esc(file.originalFileName)}</button>`
+                    : `<div class="file-title">${esc(file.originalFileName)}</div>`);
             return `
                 <div class="file-row">
                     ${fileGlyph(file)}
@@ -991,6 +1218,10 @@
         const share = root.querySelector("[data-share]");
         const canShare = Array.isArray(story.sharedWith);
         share.hidden = !canShare;
+        const editBtn = root.querySelector("[data-story-edit]");
+        if (editBtn) {
+            editBtn.hidden = !(canShare && story.body);
+        }
         if (canShare) {
             share.setAttribute("data-story-id", story.id);
         } else {
@@ -1328,6 +1559,10 @@
             openNote(file, row ? row.querySelector("[data-action='read']") : null);
             return;
         }
+        if (isMedia(file.contentType)) {
+            openMedia(file, row ? row.querySelector("[data-action='play']") : null);
+            return;
+        }
         if (row) {
             row.scrollIntoView({ block: "nearest" });
         }
@@ -1396,6 +1631,8 @@
                 openViewer(pool, id, button);
             } else if (action === "read") {
                 await openNote(file, button);
+            } else if (action === "play") {
+                await openMedia(file, button);
             } else if (action === "download") {
                 window.location.href = `/api/files/${id}/content`;
             } else if (action === "share") {

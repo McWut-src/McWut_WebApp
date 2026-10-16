@@ -13,7 +13,11 @@
 
 <div class="message-shell" id="message-shell">
     <div class="message-side">
-        <div class="message-toolbar">
+        <div class="message-toolbar d-flex gap-2 align-items-center">
+            <label class="search-field flex-grow-1 mb-0">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+                <input id="message-search" type="search" placeholder="Search messages" autocomplete="off" aria-label="Search messages" />
+            </label>
             <button type="button" class="btn btn-primary" id="message-new">New</button>
         </div>
         <div id="message-list" class="message-list" role="listbox" aria-label="Conversations">

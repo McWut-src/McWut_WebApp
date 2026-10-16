@@ -106,7 +106,7 @@ public class StoryListTests
         null);
 
     private static DropService CreateDrops(SqliteFixture fx) =>
-        new(fx.Db, new TestTimeProvider(Now), new PasswordHasher<object>());
+        new(fx.Db, null!, new TestTimeProvider(Now), new PasswordHasher<object>());
 
     private static GrantService CreateGrants(SqliteFixture fx)
     {

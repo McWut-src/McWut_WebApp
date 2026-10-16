@@ -16,6 +16,8 @@ public class ReadableFilesTests
     [InlineData("photo.png", "image/png", "image/png")]
     [InlineData("Chat.md", "text/x-mcwut-chat", "text/x-mcwut-chat")]
     [InlineData("notes.md", "text/markdown", "text/markdown")]
+    [InlineData("clip.mp4", "application/octet-stream", "video/mp4")]
+    [InlineData("voice.mp3", "application/octet-stream", "audio/mpeg")]
     public void Infers_text_types_and_leaves_markup_alone(string name, string declared, string expected)
     {
         Assert.Equal(expected, ReadableFiles.InferContentType(name, declared));

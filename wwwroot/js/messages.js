@@ -12,6 +12,7 @@
     const newBtn = document.getElementById("message-new");
     const backBtn = document.getElementById("message-back");
     const sendBtn = document.getElementById("message-send");
+    const searchEl = document.getElementById("message-search");
     if (!listEl || !shellEl || !logEl || !formEl || !boxEl) {
         return;
     }
@@ -166,7 +167,15 @@
             listEl.innerHTML = '<p class="empty">No messages yet. Choose New to write to someone.</p>';
             return;
         }
-        listEl.innerHTML = conversations.map(item => {
+        const query = (searchEl?.value || "").trim().toLowerCase();
+        const visible = query
+            ? conversations.filter(item => [item.name || "", item.preview || ""].join(" ").toLowerCase().includes(query))
+            : conversations;
+        if (visible.length === 0) {
+            listEl.innerHTML = '<p class="empty">No matches.</p>';
+            return;
+        }
+        listEl.innerHTML = visible.map(item => {
             const color = safeColor(item.color);
             const active = item.id === selectedId ? " active" : "";
             const unread = item.unread > 0
@@ -220,6 +229,39 @@
         return logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight < 80;
     }
 
+    function fillMessageBody(el, text) {
+        const raw = String(text || "");
+        const pattern = /(https?:\/\/[^\s<>"]+|\/s\/[A-Za-z0-9_-]{8,64}|\/files#(file|story)=[0-9a-fA-F-]{36})/g;
+        let lastIndex = 0;
+        let match;
+        while ((match = pattern.exec(raw)) !== null) {
+            if (match.index > lastIndex) {
+                el.append(document.createTextNode(raw.slice(lastIndex, match.index)));
+            }
+            let url = match[0];
+            let trailing = "";
+            while (url.length > 0 && /[.,!?;:)]$/.test(url)) {
+                trailing = url.slice(-1) + trailing;
+                url = url.slice(0, -1);
+            }
+            if (url) {
+                const a = document.createElement("a");
+                a.href = url;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                a.textContent = url;
+                el.append(a);
+            }
+            if (trailing) {
+                el.append(document.createTextNode(trailing));
+            }
+            lastIndex = pattern.lastIndex;
+        }
+        if (lastIndex < raw.length) {
+            el.append(document.createTextNode(raw.slice(lastIndex)));
+        }
+    }
+
     function appendMessage(row, stick) {
         if (!row || seen.has(row.id)) {
             return false;
@@ -235,7 +277,7 @@
         item.dataset.id = row.id;
         const body = document.createElement("p");
         body.className = "message-body";
-        body.textContent = row.body || "";
+        fillMessageBody(body, row.body || "");
         const when = document.createElement("time");
         when.className = "message-when";
         when.dateTime = row.sentAt || "";
@@ -264,7 +306,7 @@
             item.dataset.id = row.id;
             const body = document.createElement("p");
             body.className = "message-body";
-            body.textContent = row.body || "";
+            fillMessageBody(body, row.body || "");
             const when = document.createElement("time");
             when.className = "message-when";
             when.dateTime = row.sentAt || "";
@@ -503,6 +545,8 @@
         }
         openThread(button.getAttribute("data-id")).catch(err => showError(err.message));
     });
+
+    searchEl?.addEventListener("input", renderList);
 
     if (peopleEl) {
         peopleEl.addEventListener("click", (event) => {

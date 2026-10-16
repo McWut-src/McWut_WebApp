@@ -21,6 +21,7 @@
     const linkButton = document.getElementById("ai-link");
     const newButton = document.getElementById("ai-new");
     const mdBox = document.getElementById("ai-md");
+    const paidBox = document.getElementById("ai-paid");
     if (!modelSelect || !logEl || !chatForm || !textEl || !setupEl || !chatEl) {
         return;
     }
@@ -37,6 +38,7 @@
     let streaming = false;
     let abort = null;
     const mdStore = "mcwut-ai-md";
+    const paidStore = "mcwut-ai-paid";
 
     function headers(extra) {
         return Object.assign({
@@ -218,7 +220,7 @@
         if (model.maxOutput) {
             bits.push("up to " + formatCount(model.maxOutput));
         }
-        bits.push(model.expires ? "Free through " + formatWhen(model.expires) : "Free");
+        bits.push(model.paid ? "Paid" : (model.expires ? "Free through " + formatWhen(model.expires) : "Free"));
         if (model.inputs) {
             bits.push("Also " + model.inputs);
         }
@@ -273,6 +275,10 @@
 
     function markdownOn() {
         return !mdBox || mdBox.checked;
+    }
+
+    function paidOn() {
+        return !!(paidBox && paidBox.checked);
     }
 
     function redact(text) {
@@ -397,7 +403,8 @@
         const previous = modelSelect.value || chosenId;
         setAlert("");
         try {
-            const listed = await api("/api/ai/models", { headers: headers() });
+            const url = paidOn() ? "/api/ai/models?paid=true" : "/api/ai/models";
+            const listed = await api(url, { headers: headers() });
             showChat();
             fillModels(listed, previous);
         } catch (error) {
@@ -545,6 +552,7 @@
                 body: JSON.stringify({
                     model: modelSelect.value,
                     markdown: markdownOn(),
+                    paid: paidOn(),
                     messages
                 }),
                 signal: abort.signal
@@ -625,6 +633,9 @@
         if (mdBox && localStorage.getItem(mdStore) === "0") {
             mdBox.checked = false;
         }
+        if (paidBox && localStorage.getItem(paidStore) === "1") {
+            paidBox.checked = true;
+        }
     } catch (error) {
         /* This browser is not storing the choice. The box stays on. */
     }
@@ -634,6 +645,18 @@
                 localStorage.setItem(mdStore, mdBox.checked ? "1" : "0");
             } catch (error) {
                 /* The choice still applies to this page. */
+            }
+        });
+    }
+    if (paidBox) {
+        paidBox.addEventListener("change", () => {
+            try {
+                localStorage.setItem(paidStore, paidBox.checked ? "1" : "0");
+            } catch (error) {
+                /* The choice still applies to this page. */
+            }
+            if (chatReady && !busy) {
+                loadModels();
             }
         });
     }

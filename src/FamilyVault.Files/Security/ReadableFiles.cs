@@ -31,6 +31,13 @@ public static class ReadableFiles
             ".txt" or ".text" or ".log" => "text/plain",
             ".csv" => "text/csv",
             ".json" => "application/json",
+            ".mp4" or ".m4v" => "video/mp4",
+            ".webm" => "video/webm",
+            ".mov" => "video/quicktime",
+            ".mp3" => "audio/mpeg",
+            ".m4a" => "audio/mp4",
+            ".wav" => "audio/wav",
+            ".ogg" => "audio/ogg",
             _ => type
         };
     }

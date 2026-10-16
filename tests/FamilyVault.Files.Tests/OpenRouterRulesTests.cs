@@ -57,9 +57,16 @@ public class OpenRouterRulesTests
         var model = Assert.Single(page.Models);
         Assert.Equal("free/one:free", model.Id);
         Assert.Equal("Free One", model.Name);
+        Assert.False(model.Paid);
         Assert.Null(model.ContextLength);
         Assert.Null(model.About);
         Assert.Equal("/api/v1/models?offset=2", page.Next);
+
+        var withPaid = OpenRouterRules.ParseModelPage(json, includePaid: true);
+        Assert.Equal(3, withPaid.Models.Count);
+        Assert.True(withPaid.Models[0].Paid);
+        Assert.False(withPaid.Models[1].Paid);
+        Assert.True(withPaid.Models[2].Paid);
     }
 
     [Fact]

@@ -31,8 +31,8 @@ public sealed class AiController(AiChatService ai) : ControllerBase
     }
 
     [HttpGet("models")]
-    public async Task<ActionResult<IReadOnlyList<OpenRouterListedModel>>> Models(CancellationToken cancellationToken) =>
-        Ok(await ai.ListModelsAsync(User.RequireVaultUserId(), cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<OpenRouterListedModel>>> Models([FromQuery] bool paid = false, CancellationToken cancellationToken = default) =>
+        Ok(await ai.ListModelsAsync(User.RequireVaultUserId(), paid, cancellationToken));
 
     [HttpPost("chat")]
     public async Task Chat([FromBody] AiChatBody body, CancellationToken cancellationToken)
@@ -42,6 +42,7 @@ public sealed class AiController(AiChatService ai) : ControllerBase
             body.Model,
             body.Messages?.Select(message => new OpenRouterTurnInput(message.Role, message.Content)).ToList(),
             body.Markdown,
+            body.Paid,
             cancellationToken);
 
         // Flush each line. A buffered body would leave the page waiting on the whole reply.
@@ -111,6 +112,7 @@ public sealed class AiChatBody
     public string? Model { get; set; }
     public string? ModelName { get; set; }
     public bool Markdown { get; set; }
+    public bool Paid { get; set; }
     public List<AiChatMessageBody>? Messages { get; set; }
 }
 

@@ -45,6 +45,14 @@ public sealed class PasswordsController(PasswordVaultService vault, IFamilyRoste
         return File(Encoding.UTF8.GetBytes(body), "application/json", fileName);
     }
 
+    [HttpPost("import")]
+    public async Task<ActionResult<PasswordVaultImportResult>> Import(CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var json = await reader.ReadToEndAsync(cancellationToken);
+        return Ok(await vault.ImportAsync(User.RequireVaultUserId(), json, cancellationToken));
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PasswordVaultItemView>> Get(Guid id, CancellationToken cancellationToken) =>
         Ok(await vault.GetAsync(User.RequireVaultUserId(), id, cancellationToken));

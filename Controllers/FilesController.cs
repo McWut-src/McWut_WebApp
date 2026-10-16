@@ -63,6 +63,14 @@ public sealed class FilesController(
         return Ok(updated);
     }
 
+    [HttpPut("{id:guid}/text")]
+    public async Task<ActionResult<StoredFile>> UpdateText(Guid id, [FromBody] UpdateTextFileBody body, CancellationToken cancellationToken)
+    {
+        await EnsureAsync(id, AccessIntent.Manage, cancellationToken);
+        var updated = await library.UpdateTextAsync(id, body.FileName, body.Text, cancellationToken);
+        return Ok(updated);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

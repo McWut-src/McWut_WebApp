@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using FamilyVault.Files.Contracts;
 using FamilyVault.Files.Data;
 using FamilyVault.Files.Security;
@@ -8,6 +10,8 @@ namespace FamilyVault.Files.Services;
 
 public sealed class FileLibrary(
     ApplicationDbContext db,
+    IObjectStore store,
+    IQuotaService quota,
     TimeProvider time,
     IPasswordHasher<object> passwordHasher) : IFileLibrary
 {
@@ -55,6 +59,58 @@ public sealed class FileLibrary(
             file.PasswordHash = PasswordHashing.Hash(passwordHasher, request.Password);
         }
 
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return file.ToRecord();
+    }
+
+    public async Task<StoredFile> UpdateTextAsync(Guid fileId, string? fileName, string? text, CancellationToken cancellationToken = default)
+    {
+        var file = await db.StoredFiles.FirstOrDefaultAsync(f => f.Id == fileId && f.DeletedAt == null && f.Status == FileStatus.Ready, cancellationToken).ConfigureAwait(false)
+            ?? throw new VaultNotFoundException();
+
+        if (!ReadableFiles.IsReadable(file.ContentType, file.OriginalFileName))
+        {
+            throw new InvalidFileNameException("Only text and Markdown notes can be edited.");
+        }
+
+        var body = text ?? "";
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            throw new InvalidFileNameException("Write something before saving.");
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(body);
+        if (bytes.Length > ReadableFiles.MaxPreviewBytes)
+        {
+            throw new FileTooLargeException(bytes.Length, ReadableFiles.MaxPreviewBytes);
+        }
+
+        var delta = bytes.Length - file.SizeBytes;
+        if (delta > 0)
+        {
+            await quota.EnsureCanAcceptAsync(file.OwnerUserId, delta, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            var currentExt = Path.GetExtension(file.OriginalFileName);
+            var trimmed = fileName.Trim();
+            if (!string.IsNullOrEmpty(currentExt) && string.IsNullOrEmpty(Path.GetExtension(trimmed)))
+            {
+                trimmed += currentExt;
+            }
+
+            file.OriginalFileName = FileNameSanitizer.Sanitize(trimmed);
+            if (file.ContentType != OpenRouterRules.ChatContentType)
+            {
+                file.ContentType = ReadableFiles.InferContentType(file.OriginalFileName, file.ContentType);
+            }
+        }
+
+        await using var stream = new MemoryStream(bytes);
+        await store.PutAsync(file.StorageKey, stream, bytes.Length, cancellationToken).ConfigureAwait(false);
+        file.SizeBytes = bytes.Length;
+        file.ChecksumSha256 = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return file.ToRecord();
     }

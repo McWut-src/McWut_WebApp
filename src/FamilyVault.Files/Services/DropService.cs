@@ -9,6 +9,7 @@ namespace FamilyVault.Files.Services;
 
 public sealed class DropService(
     ApplicationDbContext db,
+    IFileLibrary files,
     TimeProvider time,
     IPasswordHasher<object> passwordHasher) : IDropService
 {
@@ -94,6 +95,41 @@ public sealed class DropService(
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return drop.ToRecord();
+    }
+
+    public async Task<Story> UpdateStoryAsync(Guid dropId, Guid ownerUserId, string? title, string? text, CancellationToken cancellationToken = default)
+    {
+        var drop = await db.Drops.FirstOrDefaultAsync(d => d.Id == dropId && d.OwnerUserId == ownerUserId && d.DeletedAt == null && d.IsStory, cancellationToken).ConfigureAwait(false)
+            ?? throw new VaultNotFoundException();
+
+        var now = time.GetUtcNow();
+        var dropFiles = await db.StoredFiles.AsNoTracking()
+            .Where(f => f.DropId == dropId && f.DeletedAt == null && f.Status == FileStatus.Ready)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var currentStory = StoryComposer.Compose(drop, dropFiles, now) ?? throw new VaultNotFoundException();
+        var bodyFile = currentStory.Body ?? throw new VaultNotFoundException();
+
+        var cleanTitle = string.IsNullOrWhiteSpace(title) ? drop.Title : title.Trim();
+        if (cleanTitle.Length > 200)
+        {
+            cleanTitle = cleanTitle[..200].Trim();
+        }
+
+        if (cleanTitle.Length == 0)
+        {
+            cleanTitle = "Story";
+        }
+
+        drop.Title = cleanTitle;
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await files.UpdateTextAsync(bodyFile.Id, StoryFiles.BodyFileName(cleanTitle), text, cancellationToken).ConfigureAwait(false);
+
+        var updatedFiles = await db.StoredFiles.AsNoTracking()
+            .Where(f => f.DropId == dropId && f.DeletedAt == null && f.Status == FileStatus.Ready)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return StoryComposer.Compose(drop, updatedFiles, now) ?? throw new VaultNotFoundException();
     }
 
     public async Task DeleteAsync(Guid dropId, CancellationToken cancellationToken = default)

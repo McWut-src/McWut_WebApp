@@ -24,34 +24,37 @@ public sealed class AiChatService(
         var clean = OpenRouterRules.NormalizeKey(key);
         await openRouter.EnsureKeyAsync(clean, cancellationToken);
         var status = await keys.SaveAsync(userId, clean, cancellationToken);
-        cache.Remove(ModelsCacheKey(userId));
+        cache.Remove(ModelsCacheKey(userId, includePaid: false));
+        cache.Remove(ModelsCacheKey(userId, includePaid: true));
         return status;
     }
 
     public async Task DeleteAsync(Guid userId, CancellationToken cancellationToken)
     {
         await keys.DeleteAsync(userId, cancellationToken);
-        cache.Remove(ModelsCacheKey(userId));
+        cache.Remove(ModelsCacheKey(userId, includePaid: false));
+        cache.Remove(ModelsCacheKey(userId, includePaid: true));
     }
 
-    public Task<IReadOnlyList<OpenRouterListedModel>> ListModelsAsync(Guid userId, CancellationToken cancellationToken) =>
-        LoadModelsAsync(userId, refresh: false, cancellationToken);
+    public Task<IReadOnlyList<OpenRouterListedModel>> ListModelsAsync(Guid userId, bool includePaid, CancellationToken cancellationToken) =>
+        LoadModelsAsync(userId, includePaid, refresh: false, cancellationToken);
 
     public async Task<PreparedChat> PrepareChatAsync(
         Guid userId,
         string? model,
         IReadOnlyList<OpenRouterTurnInput>? messages,
         bool markdown,
+        bool includePaid,
         CancellationToken cancellationToken)
     {
         var chat = OpenRouterRules.NormalizeChat(model, messages);
-        var models = await LoadModelsAsync(userId, refresh: false, cancellationToken);
+        var models = await LoadModelsAsync(userId, includePaid, refresh: false, cancellationToken);
         if (!models.Any(item => item.Id == chat.Model))
         {
-            models = await LoadModelsAsync(userId, refresh: true, cancellationToken);
+            models = await LoadModelsAsync(userId, includePaid, refresh: true, cancellationToken);
             if (!models.Any(item => item.Id == chat.Model))
             {
-                throw new OpenRouterValidationException("That model is not on the free list.");
+                throw new OpenRouterValidationException(includePaid ? "That model is not on the list." : "That model is not on the free list.");
             }
         }
 
@@ -100,17 +103,20 @@ public sealed class AiChatService(
 
     private async Task<IReadOnlyList<OpenRouterListedModel>> LoadModelsAsync(
         Guid userId,
+        bool includePaid,
         bool refresh,
         CancellationToken cancellationToken)
     {
-        var cacheKey = ModelsCacheKey(userId);
+        var cacheKey = ModelsCacheKey(userId, includePaid);
         if (!refresh && cache.TryGetValue(cacheKey, out IReadOnlyList<OpenRouterListedModel>? cached) && cached is not null)
         {
             return cached;
         }
 
         var apiKey = await keys.RequireKeyAsync(userId, cancellationToken);
-        var models = await openRouter.ListFreeAsync(apiKey, cancellationToken);
+        var models = includePaid
+            ? await openRouter.ListAllAsync(apiKey, cancellationToken)
+            : await openRouter.ListFreeAsync(apiKey, cancellationToken);
         IReadOnlyList<OpenRouterListedModel> sorted = models
             .GroupBy(item => item.Id, StringComparer.Ordinal)
             .Select(group => group.First())
@@ -121,5 +127,6 @@ public sealed class AiChatService(
         return sorted;
     }
 
-    private static string ModelsCacheKey(Guid userId) => "openrouter-models:" + userId.ToString("N");
+    private static string ModelsCacheKey(Guid userId, bool includePaid) =>
+        (includePaid ? "openrouter-models-all:" : "openrouter-models:") + userId.ToString("N");
 }

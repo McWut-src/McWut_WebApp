@@ -34,6 +34,7 @@ public static class HttpFileResults
         {
             var response = context.HttpContext.Response;
             response.Headers[HeaderNames.ContentDisposition] = disposition;
+            response.Headers[HeaderNames.AcceptRanges] = "bytes";
             response.ContentType = content.ContentType;
             response.ContentLength = content.ContentLength;
             if (content.IsPartial && content.RangeStart is long start && content.RangeEnd is long end)

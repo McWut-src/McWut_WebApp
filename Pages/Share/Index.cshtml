@@ -63,6 +63,14 @@ else
                         {
                             <img class="share-preview mb-2" alt="" src="/api/files/@file.Id/content?preview=true&token=@Model.Token" />
                         }
+                        else if (McWutWebApp.Hosting.PreviewTypes.IsVideo(file.ContentType) && Model.Link?.AllowPreview == true)
+                        {
+                            <video class="share-preview mb-2 d-block" controls preload="metadata" src="/api/files/@file.Id/content?preview=true&token=@Model.Token"></video>
+                        }
+                        else if (McWutWebApp.Hosting.PreviewTypes.IsAudio(file.ContentType) && Model.Link?.AllowPreview == true)
+                        {
+                            <audio class="w-100 mb-2 d-block" controls preload="metadata" src="/api/files/@file.Id/content?preview=true&token=@Model.Token"></audio>
+                        }
                         <div>@file.OriginalFileName <span class="text-muted small">(@file.ContentType)</span></div>
                         @if (Model.Notes.TryGetValue(file.Id, out var note))
                         {

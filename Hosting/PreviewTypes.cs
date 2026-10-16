@@ -6,13 +6,28 @@ namespace McWutWebApp.Hosting;
 public static class PreviewTypes
 {
     public static bool IsInline(string? contentType) =>
-        IsImage(contentType) || FamilyVault.Files.Security.ReadableFiles.IsInlineText(contentType);
+        IsImage(contentType) || IsMedia(contentType) || FamilyVault.Files.Security.ReadableFiles.IsInlineText(contentType);
 
     public static bool IsImage(string? contentType)
     {
         var type = Normalize(contentType);
         return type is "image/jpeg" or "image/png" or "image/gif" or "image/webp";
     }
+
+    public static bool IsVideo(string? contentType)
+    {
+        var type = Normalize(contentType);
+        return type is "video/mp4" or "video/webm" or "video/quicktime" or "video/ogg";
+    }
+
+    public static bool IsAudio(string? contentType)
+    {
+        var type = Normalize(contentType);
+        return type is "audio/mpeg" or "audio/mp3" or "audio/mp4" or "audio/x-m4a" or "audio/wav" or "audio/x-wav" or "audio/ogg" or "audio/webm";
+    }
+
+    public static bool IsMedia(string? contentType) =>
+        IsVideo(contentType) || IsAudio(contentType);
 
     public static bool IsPlainText(string? contentType) =>
         Normalize(contentType) == "text/plain";

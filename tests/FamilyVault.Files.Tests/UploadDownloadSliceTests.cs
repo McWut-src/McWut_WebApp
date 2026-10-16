@@ -72,6 +72,14 @@ public class UploadDownloadSliceTests
                 file.Id,
                 AccessIntent.Download);
             Assert.Equal(AccessDecision.Deny, denied);
+
+            var library = new FileLibrary(fx.Db, store, quota, time, hasher);
+            var updated = await library.UpdateTextAsync(file.Id, "renamed", "updated family note");
+            Assert.Equal(file.Id, updated.Id);
+            Assert.Equal("renamed.txt", updated.OriginalFileName);
+            await using var reopened = await content.OpenDownloadAsync(new AccessContext(null, link.Token, null), file.Id, range: null);
+            using var updatedReader = new StreamReader(reopened.Stream);
+            Assert.Equal("updated family note", await updatedReader.ReadToEndAsync());
         }
         finally
         {

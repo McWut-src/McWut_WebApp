@@ -20,7 +20,8 @@ public sealed record OpenRouterListedModel(
     int? MaxOutput = null,
     string? About = null,
     string? Expires = null,
-    string? Inputs = null);
+    string? Inputs = null,
+    bool Paid = false);
 
 public sealed record OpenRouterChatFile(string Title, string FileName, string Markdown);
 
@@ -197,7 +198,7 @@ public static partial class OpenRouterRules
         return new OpenRouterChatFile(title, title + ".md", body.ToString());
     }
 
-    public static OpenRouterModelPage ParseModelPage(string json)
+    public static OpenRouterModelPage ParseModelPage(string json, bool includePaid = false)
     {
         try
         {
@@ -217,7 +218,13 @@ public static partial class OpenRouterRules
                 }
 
                 var id = item.TryGetProperty("id", out var idValue) ? idValue.GetString() : null;
-                if (!IsModelId(id) || !item.TryGetProperty("pricing", out var pricing) || !IsFreePricing(pricing))
+                if (!IsModelId(id) || !item.TryGetProperty("pricing", out var pricing))
+                {
+                    continue;
+                }
+
+                var free = IsFreePricing(pricing);
+                if (!free && !includePaid)
                 {
                     continue;
                 }
@@ -231,7 +238,8 @@ public static partial class OpenRouterRules
                     ReadMaxOutput(item),
                     ReadAbout(item),
                     ReadExpires(item),
-                    ReadInputs(item)));
+                    ReadInputs(item),
+                    Paid: !free));
             }
 
             string? next = null;

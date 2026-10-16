@@ -18,14 +18,23 @@ public sealed class OpenRouterClient(HttpClient http)
         await SendAsync(HttpMethod.Get, new Uri(http.BaseAddress!, "key"), apiKey, content: null, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<OpenRouterListedModel>> ListFreeAsync(string apiKey, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<OpenRouterListedModel>> ListFreeAsync(string apiKey, CancellationToken cancellationToken) =>
+        ListModelsAsync(apiKey, includePaid: false, cancellationToken);
+
+    public Task<IReadOnlyList<OpenRouterListedModel>> ListAllAsync(string apiKey, CancellationToken cancellationToken) =>
+        ListModelsAsync(apiKey, includePaid: true, cancellationToken);
+
+    private async Task<IReadOnlyList<OpenRouterListedModel>> ListModelsAsync(string apiKey, bool includePaid, CancellationToken cancellationToken)
     {
-        var current = new Uri(http.BaseAddress!, "models?max_price=0&max_output_price=0&output_modalities=text");
+        var query = includePaid
+            ? "models?output_modalities=text"
+            : "models?max_price=0&max_output_price=0&output_modalities=text";
+        var current = new Uri(http.BaseAddress!, query);
         var models = new List<OpenRouterListedModel>();
         for (var page = 0; page < 5; page++)
         {
             var body = await SendAsync(HttpMethod.Get, current, apiKey, content: null, cancellationToken);
-            var parsed = OpenRouterRules.ParseModelPage(body);
+            var parsed = OpenRouterRules.ParseModelPage(body, includePaid);
             models.AddRange(parsed.Models);
             var next = NextUri(current, parsed.Next);
             if (next is null || next == current)
