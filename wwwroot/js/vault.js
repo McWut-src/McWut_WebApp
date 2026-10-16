@@ -432,7 +432,7 @@
 
     if (dropzone && fileInput) {
         dropzone.addEventListener("click", (e) => {
-            if (e.target.id !== "pick-files") {
+            if (e.target.id !== "pick-files" && e.target.id !== "record-voice") {
                 fileInput.click();
             }
         });
@@ -453,10 +453,76 @@
         });
     }
 
+    let voiceRecorder = null;
+    let voiceChunks = [];
+    let voiceTimer = 0;
+    let voiceStartedAt = 0;
+    const recordVoiceBtn = document.getElementById("record-voice");
+    if (recordVoiceBtn) {
+        if (!navigator.mediaDevices || typeof MediaRecorder === "undefined") {
+            recordVoiceBtn.hidden = true;
+        } else {
+            recordVoiceBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                if (voiceRecorder && voiceRecorder.state !== "inactive") {
+                    voiceRecorder.stop();
+                    return;
+                }
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+                    const mime = candidates.find(m => typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(m)) || "";
+                    voiceChunks = [];
+                    voiceRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+                    voiceRecorder.addEventListener("dataavailable", (ev) => {
+                        if (ev.data && ev.data.size > 0) {
+                            voiceChunks.push(ev.data);
+                        }
+                    });
+                    voiceRecorder.addEventListener("stop", () => {
+                        clearInterval(voiceTimer);
+                        stream.getTracks().forEach(t => t.stop());
+                        recordVoiceBtn.classList.remove("btn-danger");
+                        recordVoiceBtn.classList.add("btn-outline-secondary");
+                        recordVoiceBtn.textContent = "Record voice";
+                        const actualType = (voiceRecorder && voiceRecorder.mimeType) || mime || "audio/webm";
+                        const ext = actualType.includes("mp4") ? ".m4a" : (actualType.includes("ogg") ? ".ogg" : ".webm");
+                        const blob = new Blob(voiceChunks, { type: actualType.split(";")[0] || "audio/webm" });
+                        if (blob.size > 0) {
+                            const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+                            const file = new File([blob], `voice-${stamp}${ext}`, { type: blob.type });
+                            addFiles([file]);
+                        }
+                        voiceRecorder = null;
+                    });
+                    voiceStartedAt = Date.now();
+                    recordVoiceBtn.classList.remove("btn-outline-secondary");
+                    recordVoiceBtn.classList.add("btn-danger");
+                    recordVoiceBtn.textContent = "Stop (0:00)";
+                    voiceTimer = setInterval(() => {
+                        const sec = Math.floor((Date.now() - voiceStartedAt) / 1000);
+                        const m = Math.floor(sec / 60);
+                        const s = String(sec % 60).padStart(2, "0");
+                        recordVoiceBtn.textContent = `Stop (${m}:${s})`;
+                    }, 500);
+                    voiceRecorder.start();
+                } catch (err) {
+                    alert("Microphone access was denied or is unavailable.");
+                }
+            });
+        }
+    }
+
     function optionSummary() {
         const ttl = document.getElementById("ttl")?.value || "0";
         const labels = { "0": "Kept forever", "1": "Kept 1 day", "7": "Kept 7 days", "30": "Kept 30 days" };
         let text = labels[ttl] || "Kept forever";
+        const maxDl = Number(document.getElementById("max-downloads")?.value || 0);
+        if (maxDl === 1) {
+            text += " · 1 download";
+        } else if (maxDl > 1) {
+            text += ` · ${maxDl} downloads`;
+        }
         if ((document.getElementById("password")?.value || "").length > 0) {
             text += " · password";
         }
@@ -477,11 +543,15 @@
 
     function resetOptions() {
         const ttl = document.getElementById("ttl");
+        const maxDl = document.getElementById("max-downloads");
         const password = document.getElementById("password");
         const name = document.getElementById("note-name");
         const options = document.getElementById("composer-options");
         if (ttl) {
             ttl.value = "0";
+        }
+        if (maxDl) {
+            maxDl.value = "0";
         }
         if (password) {
             password.value = "";
@@ -501,6 +571,7 @@
     });
     document.getElementById("note-name")?.addEventListener("input", renderQueue);
     document.getElementById("ttl")?.addEventListener("change", syncOptions);
+    document.getElementById("max-downloads")?.addEventListener("change", syncOptions);
     document.getElementById("password")?.addEventListener("input", syncOptions);
 
     function storyDropIds(stories) {
@@ -791,6 +862,7 @@
                 <div class="note-reader-bar">
                     <div class="note-reader-name" data-note-name></div>
                     <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-note-ai hidden title="Ask AI" aria-label="Ask AI">${icon("spark")}</button>
                         <button type="button" class="icon-btn" data-note-edit hidden title="Edit" aria-label="Edit">${icon("pencil")}</button>
                         <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-note-download title="Download" aria-label="Download">${icon("download")}</a>
@@ -807,8 +879,31 @@
             }
             if (event.target.closest("[data-note-edit]")) {
                 editCurrentNote().catch(err => alert(err.message));
+                return;
+            }
+            if (event.target.closest("[data-note-ai]")) {
+                askAiAboutCurrentNote().catch(err => alert(err.message));
             }
         });
+    }
+
+    async function askAiAboutCurrentNote() {
+        const file = ownedFiles.concat(incomingFiles).find(f => sameId(f.id, noteFileId));
+        if (!file || !canRead(file)) {
+            return;
+        }
+        const response = await fetch(`/api/files/${file.id}/content?preview=true`, { headers: { "Accept": "text/plain, text/markdown, */*" } });
+        if (!response.ok) {
+            throw new Error("Could not load note for AI.");
+        }
+        const text = await response.text();
+        try {
+            sessionStorage.setItem("mcwut-ai-context", JSON.stringify({
+                title: file.originalFileName || "Note",
+                text: text.slice(0, 12000)
+            }));
+        } catch { }
+        window.location.href = "/ai";
     }
 
     function closeNote() {
@@ -917,6 +1012,8 @@
         download.href = `/api/files/${file.id}/content`;
         const editBtn = root.querySelector("[data-note-edit]");
         if (editBtn) editBtn.hidden = true;
+        const aiBtn = root.querySelector("[data-note-ai]");
+        if (aiBtn) aiBtn.hidden = true;
         syncShareButton(root, file);
         const body = root.querySelector("[data-note-body]");
         body.replaceChildren();
@@ -951,9 +1048,14 @@
         root.querySelector("[data-note-name]").textContent = file.originalFileName || "Note";
         const download = root.querySelector("[data-note-download]");
         download.href = `/api/files/${file.id}/content`;
+        const withinLimit = (file.sizeBytes || 0) <= (window.mcwutRead.maxBytes || 200000);
         const editBtn = root.querySelector("[data-note-edit]");
         if (editBtn) {
-            editBtn.hidden = !(Array.isArray(file.sharedWith) && !isChat(file.contentType) && (file.sizeBytes || 0) <= (window.mcwutRead.maxBytes || 200000));
+            editBtn.hidden = !(Array.isArray(file.sharedWith) && !isChat(file.contentType) && withinLimit);
+        }
+        const aiBtn = root.querySelector("[data-note-ai]");
+        if (aiBtn) {
+            aiBtn.hidden = !withinLimit;
         }
         syncShareButton(root, file);
         const body = root.querySelector("[data-note-body]");
@@ -1035,6 +1137,7 @@
                 <div class="note-reader-bar">
                     <div class="note-reader-name" data-story-name></div>
                     <div class="note-reader-buttons">
+                        <button type="button" class="icon-btn" data-story-ai hidden title="Ask AI" aria-label="Ask AI">${icon("spark")}</button>
                         <button type="button" class="icon-btn" data-story-edit hidden title="Edit" aria-label="Edit">${icon("pencil")}</button>
                         <button type="button" class="icon-btn" data-share hidden title="Share with a member" aria-label="Share with a member">${icon("users")}</button>
                         <a class="icon-btn" data-story-download title="Download" aria-label="Download">${icon("download")}</a>
@@ -1051,6 +1154,10 @@
             }
             if (event.target.closest("[data-story-edit]")) {
                 editCurrentStory().catch(err => alert(err.message));
+                return;
+            }
+            if (event.target.closest("[data-story-ai]")) {
+                askAiAboutCurrentStory().catch(err => alert(err.message));
                 return;
             }
             const button = event.target.closest("[data-story-action]");
@@ -1074,6 +1181,25 @@
                 window.location.href = `/api/files/${file.id}/content`;
             }
         });
+    }
+
+    async function askAiAboutCurrentStory() {
+        const story = findStory(storyOpenId);
+        if (!story || !story.body) {
+            return;
+        }
+        const response = await fetch(`/api/files/${story.body.id}/content?preview=true`, { headers: { "Accept": "text/plain, */*" } });
+        if (!response.ok) {
+            throw new Error("Could not load story for AI.");
+        }
+        const text = await response.text();
+        try {
+            sessionStorage.setItem("mcwut-ai-context", JSON.stringify({
+                title: story.title || "Story",
+                text: text.slice(0, 12000)
+            }));
+        } catch { }
+        window.location.href = "/ai";
     }
 
     async function editCurrentStory() {
@@ -1222,6 +1348,10 @@
         if (editBtn) {
             editBtn.hidden = !(canShare && story.body);
         }
+        const aiBtn = root.querySelector("[data-story-ai]");
+        if (aiBtn) {
+            aiBtn.hidden = !story.body;
+        }
         if (canShare) {
             share.setAttribute("data-story-id", story.id);
         } else {
@@ -1285,7 +1415,8 @@
         }
         try {
             const ttl = Number(document.getElementById("ttl").value);
-            const retention = { days: ttl === 0 ? null : ttl };
+            const maxDl = Number(document.getElementById("max-downloads")?.value || 0);
+            const retention = { days: ttl === 0 ? null : ttl, maxDownloads: maxDl > 0 ? maxDl : null };
             const password = document.getElementById("password").value || null;
             const text = storyText();
             const hasText = !!text.trim();

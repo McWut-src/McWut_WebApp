@@ -2071,3 +2071,41 @@ html.is-rail .sidebar .side-label {
     flex-direction: column;
   }
 }
+
+.pw-warning {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.pw-health {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border-left: 3px solid var(--danger);
+}
+
+.ai-context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  font-size: 0.85rem;
+}
+
+.ai-context-bar[hidden] {
+  display: none !important;
+}
+
+#message-notify {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#message-notify[hidden] {
+  display: none !important;
+}
+

@@ -13,15 +13,19 @@
     const backBtn = document.getElementById("message-back");
     const sendBtn = document.getElementById("message-send");
     const searchEl = document.getElementById("message-search");
+    const notifyBtn = document.getElementById("message-notify");
     if (!listEl || !shellEl || !logEl || !formEl || !boxEl) {
         return;
     }
 
+    const NOTIFY_KEY = "mcwut-msg-notify";
     let conversations = [];
     let members = [];
     let selectedId = null;
     let seen = new Set();
     let pollTimer = 0;
+    let inboxTimer = 0;
+    let unreadByThread = null;
     let sending = false;
     let picking = false;
 
@@ -464,9 +468,64 @@
         boxEl.focus();
     }
 
+    function notificationsActive() {
+        try {
+            return "Notification" in window
+                && Notification.permission === "granted"
+                && localStorage.getItem(NOTIFY_KEY) === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    function paintNotifyButton() {
+        if (!notifyBtn) {
+            return;
+        }
+        if (!("Notification" in window)) {
+            notifyBtn.hidden = true;
+            return;
+        }
+        notifyBtn.hidden = false;
+        const active = notificationsActive();
+        notifyBtn.setAttribute("aria-pressed", active ? "true" : "false");
+        notifyBtn.classList.toggle("active", active);
+        const bellIcon = window.mcwutIcon ? window.mcwutIcon("bell", "icon") : "";
+        notifyBtn.innerHTML = `${bellIcon}<span>${active ? "Notifications on" : "Enable notifications"}</span>`;
+    }
+
+    function maybeNotify(nextList) {
+        if (!unreadByThread) {
+            unreadByThread = new Map();
+            nextList.forEach(item => unreadByThread.set(item.id, Number(item.unread) || 0));
+            return;
+        }
+        const canNotify = notificationsActive();
+        nextList.forEach(item => {
+            const prev = unreadByThread.get(item.id) || 0;
+            const curr = Number(item.unread) || 0;
+            unreadByThread.set(item.id, curr);
+            if (canNotify && curr > prev && !item.fromMe && (document.hidden || item.id !== selectedId)) {
+                try {
+                    const n = new Notification(item.name || "New message", {
+                        body: item.preview || "Sent you a message",
+                        tag: "mcwut-msg-" + item.id
+                    });
+                    n.onclick = () => {
+                        window.focus();
+                        openThread(item.id).catch(err => showError(err.message));
+                    };
+                } catch {
+                    /* Ignore notification errors in restricted contexts */
+                }
+            }
+        });
+    }
+
     async function loadList() {
         const data = await api("/api/messages");
         conversations = Array.isArray(data) ? data : [];
+        maybeNotify(conversations);
         renderList();
     }
 
@@ -616,16 +675,48 @@
         send();
     });
 
+    notifyBtn?.addEventListener("click", async () => {
+        if (!("Notification" in window)) {
+            return;
+        }
+        if (notificationsActive()) {
+            try { localStorage.setItem(NOTIFY_KEY, "0"); } catch {}
+            paintNotifyButton();
+            return;
+        }
+        try {
+            const permission = Notification.permission === "granted"
+                ? "granted"
+                : await Notification.requestPermission();
+            if (permission === "granted") {
+                try { localStorage.setItem(NOTIFY_KEY, "1"); } catch {}
+            } else {
+                showError("Browser notifications are blocked in your browser settings.");
+            }
+        } catch {
+            showError("Could not enable browser notifications.");
+        }
+        paintNotifyButton();
+    });
+
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             stopPoll();
             return;
         }
+        loadList().catch(() => {});
         if (selectedId && !picking) {
             poll();
             startPoll();
         }
     });
+
+    paintNotifyButton();
+    inboxTimer = window.setInterval(() => {
+        if (!document.hidden || notificationsActive()) {
+            loadList().catch(() => {});
+        }
+    }, 12000);
 
     loadList()
         .then(loadMembers)

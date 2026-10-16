@@ -20,7 +20,10 @@
                 <p class="mb-1 fw-semibold">Drop files</p>
                 <p class="small text-muted mb-2">or choose from this device</p>
                 <input id="file-input" type="file" multiple class="d-none" />
-                <button type="button" class="btn btn-sm btn-primary" id="pick-files">Choose files</button>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-primary" id="pick-files">Choose files</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="record-voice">Record voice</button>
+                </div>
                 <ul id="file-list" class="small mt-3 mb-0"></ul>
             </div>
             <div class="mb-3">
@@ -41,6 +44,15 @@
                             <option value="30">30 days</option>
                             <option value="7">7 days</option>
                             <option value="1">1 day</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="max-downloads">Download limit</label>
+                        <select id="max-downloads" class="form-select">
+                            <option value="0" selected>Unlimited</option>
+                            <option value="1">1 download (burn after reading)</option>
+                            <option value="5">5 downloads</option>
+                            <option value="10">10 downloads</option>
                         </select>
                     </div>
                     <div class="mb-3">

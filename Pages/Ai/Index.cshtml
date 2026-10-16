@@ -52,6 +52,10 @@
     <div id="ai-log" class="ai-log" aria-live="polite">
         <p id="ai-empty" class="empty">Write a message. Save keeps this chat in Chats.</p>
     </div>
+    <div id="ai-context-bar" class="d-flex justify-content-between align-items-center alert alert-secondary py-2 px-3 mb-2" hidden>
+        <span class="small text-truncate me-2">Attached: <strong id="ai-context-title"></strong></span>
+        <button type="button" class="btn-close btn-sm" id="ai-context-clear" aria-label="Remove attached note"></button>
+    </div>
     <form id="ai-form" class="ai-form">
         <label class="visually-hidden" for="ai-text">Message</label>
         <textarea id="ai-text" class="form-control" rows="3" maxlength="8000" placeholder="Write a message" disabled></textarea>

@@ -523,14 +523,19 @@
             }
             return;
         }
-        const text = textEl.value.trim();
-        if (!text || busy) {
+        const rawText = textEl.value.trim();
+        if (!rawText || busy) {
             return;
         }
         rememberModel();
         if (!modelSelect.value) {
             setAlert("Choose a free model.");
             return;
+        }
+        let text = rawText;
+        if (attachedContext && attachedContext.text) {
+            text = `Context from "${attachedContext.title || "Note"}":\n\n${attachedContext.text}\n\n---\n\n${rawText}`;
+            setContext(null);
         }
         const pending = addMessage("user", text);
         const draft = textEl.value;
@@ -628,6 +633,38 @@
             }
         }
     });
+
+    const contextBar = document.getElementById("ai-context-bar");
+    const contextTitle = document.getElementById("ai-context-title");
+    const contextClear = document.getElementById("ai-context-clear");
+    let attachedContext = null;
+
+    function setContext(ctx) {
+        attachedContext = ctx;
+        if (!contextBar || !contextTitle) {
+            return;
+        }
+        if (ctx && ctx.text) {
+            contextTitle.textContent = ctx.title || "Note";
+            contextBar.hidden = false;
+        } else {
+            contextTitle.textContent = "";
+            contextBar.hidden = true;
+        }
+    }
+
+    contextClear?.addEventListener("click", () => setContext(null));
+
+    try {
+        const rawCtx = sessionStorage.getItem("mcwut-ai-context");
+        if (rawCtx) {
+            sessionStorage.removeItem("mcwut-ai-context");
+            const parsed = JSON.parse(rawCtx);
+            if (parsed && typeof parsed.text === "string" && parsed.text.trim()) {
+                setContext({ title: parsed.title || "Note", text: parsed.text.trim() });
+            }
+        }
+    } catch { }
 
     try {
         if (mdBox && localStorage.getItem(mdStore) === "0") {

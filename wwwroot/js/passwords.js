@@ -11,6 +11,8 @@
     let items = [];
     let selectedId = null;
     let editing = false;
+    let weakOnly = false;
+    const weakBtn = document.getElementById("password-weak-only");
 
     function headers(extra) {
         return Object.assign({
@@ -63,6 +65,43 @@
         return window.mcwutIcon ? window.mcwutIcon(name, extra) : "";
     }
 
+    function passwordCounts() {
+        const counts = new Map();
+        for (const item of items) {
+            const pw = String(item.password || "");
+            if (pw) {
+                counts.set(pw, (counts.get(pw) || 0) + 1);
+            }
+        }
+        return counts;
+    }
+
+    function itemWarnings(item, counts) {
+        const flags = [];
+        const pw = String(item.password || "");
+        if (!pw) {
+            return flags;
+        }
+        if ((counts.get(pw) || 0) > 1) {
+            flags.push("Reused");
+        }
+        if (pw.length < 10) {
+            flags.push("Short");
+        }
+        return flags;
+    }
+
+    function generateStrongPassword(length = 20) {
+        const chars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*()-_=+";
+        const bytes = new Uint32Array(length);
+        crypto.getRandomValues(bytes);
+        let out = "";
+        for (let i = 0; i < length; i++) {
+            out += chars[bytes[i] % chars.length];
+        }
+        return out;
+    }
+
     function matches(item, query) {
         if (!query) {
             return true;
@@ -94,20 +133,38 @@
     }
 
     function renderList() {
+        const counts = passwordCounts();
+        const weakCount = items.filter(item => itemWarnings(item, counts).length > 0).length;
+        if (weakBtn) {
+            weakBtn.hidden = weakCount === 0 && !weakOnly;
+            weakBtn.textContent = weakCount > 0 ? `Weak / reused (${weakCount})` : "Weak / reused";
+            weakBtn.setAttribute("aria-pressed", weakOnly ? "true" : "false");
+            weakBtn.classList.toggle("btn-warning", weakOnly);
+            weakBtn.classList.toggle("btn-outline-secondary", !weakOnly);
+        }
         const query = (searchEl?.value || "").trim().toLowerCase();
-        const visible = items.filter(item => matches(item, query));
+        const visible = items.filter(item => {
+            if (weakOnly && itemWarnings(item, counts).length === 0) {
+                return false;
+            }
+            return matches(item, query);
+        });
         if (visible.length === 0) {
             listEl.innerHTML = `<p class="empty">${items.length === 0 ? "No logins yet." : "No matches."}</p>`;
             return;
         }
-        listEl.innerHTML = visible.map(item => `
+        listEl.innerHTML = visible.map(item => {
+            const flags = itemWarnings(item, counts);
+            const flagText = flags.length > 0 ? ` · ${flags.join(", ")}` : "";
+            return `
             <button type="button" class="password-item${item.id === selectedId ? " active" : ""}" data-id="${esc(item.id)}" role="option" aria-selected="${item.id === selectedId ? "true" : "false"}">
                 <span class="pw-mark">${icon("lock")}</span>
                 <span>
                     <span class="pw-name">${esc(item.name)}</span>
-                    <span class="pw-sub">${esc(item.username || item.url || "No username")}</span>
+                    <span class="pw-sub">${esc((item.username || item.url || "No username") + flagText)}</span>
                 </span>
-            </button>`).join("");
+            </button>`;
+        }).join("");
     }
 
     function fieldRow(label, value, actions) {
@@ -145,7 +202,10 @@
                     <div class="mb-3">
                         <label class="form-label" for="pw-password">Password</label>
                         <input id="pw-password" class="form-control" type="password" value="${esc(current.password)}" autocomplete="new-password" />
-                        <button type="button" class="btn btn-link btn-sm px-0" id="pw-show-edit">Show</button>
+                        <div class="d-flex gap-3">
+                            <button type="button" class="btn btn-link btn-sm px-0" id="pw-show-edit">Show</button>
+                            <button type="button" class="btn btn-link btn-sm px-0" id="pw-generate">Generate strong password</button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="pw-url">URL</label>
@@ -165,9 +225,14 @@
 
         const href = safeUrl(item.url);
         const passwordShown = false;
+        const warnings = itemWarnings(item, passwordCounts());
+        const warningBanner = warnings.length > 0
+            ? `<div class="alert alert-warning py-2 small">Password check: <strong>${esc(warnings.join(", "))}</strong>. Consider editing this login and generating a unique password.</div>`
+            : "";
         detailEl.innerHTML = `
             <div class="card-body">
                 ${item.unreadable ? `<div class="alert alert-warning">This login could not be read. Saving a new copy replaces it.</div>` : ""}
+                ${warningBanner}
                 <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                     <h2 class="h5 mb-0">${esc(item.name)}</h2>
                     <div class="field-tools">
@@ -210,6 +275,11 @@
     });
 
     searchEl?.addEventListener("input", renderList);
+
+    weakBtn?.addEventListener("click", () => {
+        weakOnly = !weakOnly;
+        renderList();
+    });
 
     document.getElementById("password-new")?.addEventListener("click", () => {
         selectedId = null;
@@ -290,6 +360,19 @@
             const hidden = input.type === "password";
             input.type = hidden ? "text" : "password";
             button.textContent = hidden ? "Hide" : "Show";
+            return;
+        }
+        if (button.id === "pw-generate") {
+            const input = document.getElementById("pw-password");
+            if (!input) {
+                return;
+            }
+            input.value = generateStrongPassword();
+            input.type = "text";
+            const showEdit = document.getElementById("pw-show-edit");
+            if (showEdit) {
+                showEdit.textContent = "Hide";
+            }
             return;
         }
         if (button.id === "pw-show" && item) {
