@@ -28,6 +28,19 @@ public class ReadableFilesTests
     [InlineData("note.txt", "text/plain", true, false)]
     [InlineData("data.csv", "text/csv", true, false)]
     [InlineData("data.json", "application/json", true, false)]
+    [InlineData("app.py", "application/octet-stream", true, false)]
+    [InlineData("script.js", "application/javascript", true, false)]
+    [InlineData("index.ts", "application/octet-stream", true, false)]
+    [InlineData("Program.cs", "application/octet-stream", true, false)]
+    [InlineData("styles.css", "text/css", true, false)]
+    [InlineData("config.yaml", "application/octet-stream", true, false)]
+    [InlineData("config.yml", "text/yaml", true, false)]
+    [InlineData("setup.sh", "application/octet-stream", true, false)]
+    [InlineData("query.sql", "application/octet-stream", true, false)]
+    [InlineData("pom.xml", "application/octet-stream", true, false)]
+    [InlineData(".env", "application/octet-stream", true, false)]
+    [InlineData(".gitignore", "application/octet-stream", true, false)]
+    [InlineData("Dockerfile", "application/octet-stream", true, false)]
     [InlineData("page.html", "text/html", false, false)]
     [InlineData("page.html", "application/octet-stream", false, false)]
     [InlineData("pic.svg", "image/svg+xml", false, false)]
@@ -44,5 +57,9 @@ public class ReadableFilesTests
     {
         Assert.True(ReadableFiles.IsInlineText("text/x-mcwut-chat"));
         Assert.False(ReadableFiles.IsInlineText("text/html"));
+        Assert.True(ReadableFiles.IsInlineText("text/x-python"));
+        Assert.True(ReadableFiles.IsInlineText("application/json"));
+        Assert.True(ReadableFiles.IsInlineText("application/xml"));
+        Assert.True(ReadableFiles.IsInlineText("text/yaml"));
     }
 }

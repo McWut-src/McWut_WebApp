@@ -1114,6 +1114,11 @@ body.photo-viewer-open {
   line-height: 1.55;
 }
 
+.note-body.is-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  tab-size: 4;
+}
+
 .note-skip {
   margin: 12px 0 0;
   color: var(--muted);

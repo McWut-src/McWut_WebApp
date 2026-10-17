@@ -235,6 +235,12 @@
         return window.mcwutRead ? window.mcwutRead.isReadable(file) : false;
     }
 
+    function isCode(file) {
+        return window.mcwutRead && typeof window.mcwutRead.isCode === "function"
+            ? window.mcwutRead.isCode(file)
+            : false;
+    }
+
     function fileGlyph(file) {
         const name = isChat(file.contentType)
             ? "spark"
@@ -242,7 +248,9 @@
                 ? "image"
                 : (isMedia(file.contentType)
                     ? "play"
-                    : (canRead(file) ? "note" : "files")));
+                    : (isCode(file)
+                        ? "code"
+                        : (canRead(file) ? "note" : "files"))));
         return `<div class="file-glyph" aria-hidden="true">${icon(name)}</div>`;
     }
 
@@ -948,6 +956,7 @@
             throw new Error("Could not load note for editing.");
         }
         const currentText = await response.text();
+        const isCodeFile = isCode(file);
         body.innerHTML = `
             <div class="p-3">
                 <div id="note-edit-error" class="alert alert-danger" hidden></div>
@@ -957,7 +966,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="note-edit-text">Text</label>
-                    <textarea id="note-edit-text" class="form-control" rows="10">${esc(currentText)}</textarea>
+                    <textarea id="note-edit-text" class="form-control${isCodeFile ? " font-monospace" : ""}" rows="12">${esc(currentText)}</textarea>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-primary" id="note-edit-save">Save</button>
@@ -1095,7 +1104,7 @@
                     throw new Error("Could not open this note.");
                 }
                 const pre = document.createElement("pre");
-                pre.className = "note-body";
+                pre.className = isCode(file) ? "note-body is-code" : "note-body";
                 pre.textContent = await response.text();
                 body.replaceChildren(pre);
             }

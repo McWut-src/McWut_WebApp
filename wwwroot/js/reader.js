@@ -11,19 +11,58 @@
         return String(type || "").split(";")[0].trim().toLowerCase();
     }
 
-    function extension(name) {
-        const value = String(name || "").trim().toLowerCase();
+    function cleanName(name) {
+        const value = String(name || "").trim();
         const slash = Math.max(value.lastIndexOf("/"), value.lastIndexOf("\\"));
-        const base = slash >= 0 ? value.slice(slash + 1) : value;
+        return (slash >= 0 ? value.slice(slash + 1) : value).trim();
+    }
+
+    function extension(name) {
+        const base = cleanName(name);
         const dot = base.lastIndexOf(".");
-        if (dot <= 0 || dot === base.length - 1) {
+        if (dot < 0 || dot === base.length - 1) {
             return "";
         }
-        return base.slice(dot);
+        return base.slice(dot).toLowerCase();
     }
 
     function generic(type) {
         return type === "" || type === "application/octet-stream" || type === "binary/octet-stream";
+    }
+
+    const codeExtensions = new Set([
+        ".py", ".pyw",
+        ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
+        ".cs", ".csx", ".csproj", ".sln", ".props", ".targets",
+        ".c", ".h", ".cpp", ".hpp", ".cc", ".cxx",
+        ".rs", ".go", ".java", ".kt", ".kts", ".scala",
+        ".rb", ".php", ".swift",
+        ".sql",
+        ".sh", ".bash", ".zsh", ".ps1", ".psm1", ".bat", ".cmd",
+        ".css", ".scss", ".sass", ".less",
+        ".xml", ".xaml",
+        ".yaml", ".yml",
+        ".toml", ".ini", ".env", ".conf", ".config", ".properties", ".cfg",
+        ".editorconfig", ".gitattributes", ".gitignore", ".dockerfile"
+    ]);
+
+    function isCode(file) {
+        const name = cleanName(file && (file.originalFileName || file.name)).toLowerCase();
+        if (name === "dockerfile" || name === "makefile") {
+            return true;
+        }
+        const ext = extension(name);
+        if (codeExtensions.has(ext)) {
+            return true;
+        }
+        const type = media(file && file.contentType);
+        return type === "application/xml" || type === "text/xml" ||
+            type === "text/yaml" || type === "application/x-yaml" ||
+            type === "application/javascript" || type === "text/javascript" ||
+            type === "application/x-javascript" || type === "text/css" ||
+            type === "text/x-python" || type === "text/x-csharp" ||
+            type === "text/x-shellscript" || type === "text/x-powershell" ||
+            type === "text/sql";
     }
 
     function isMarkdown(file) {
@@ -40,14 +79,24 @@
             return true;
         }
         const type = media(file && file.contentType);
-        if (type === "text/plain" || type === "text/csv" || type === "application/json" || type === "text/json") {
+        if (type === "text/html" || type === "image/svg+xml") {
+            return false;
+        }
+        if (type === "text/plain" || type === "text/csv" || type === "text/tab-separated-values" || type === "application/json" || type === "text/json") {
+            return true;
+        }
+        if (isCode(file)) {
+            return true;
+        }
+        if (type.startsWith("text/")) {
             return true;
         }
         if (!generic(type)) {
             return false;
         }
-        const ext = extension(file && (file.originalFileName || file.name));
-        return ext === ".txt" || ext === ".text" || ext === ".log" || ext === ".csv" || ext === ".json";
+        const name = cleanName(file && (file.originalFileName || file.name)).toLowerCase();
+        const ext = extension(name);
+        return ext === ".txt" || ext === ".text" || ext === ".log" || ext === ".csv" || ext === ".tsv" || ext === ".json";
     }
 
     function loadMermaid() {
@@ -108,6 +157,7 @@
         maxBytes,
         isReadable,
         isMarkdown,
+        isCode,
         mountDiagrams
     };
 
