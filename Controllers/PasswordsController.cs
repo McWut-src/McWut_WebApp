@@ -29,7 +29,7 @@ public sealed class PasswordsController(PasswordVaultService vault, IFamilyRoste
     {
         var userId = User.RequireVaultUserId();
         var member = await roster.GetAsync(userId, cancellationToken);
-        var rows = await vault.ListAsync(userId, cancellationToken);
+        var rows = await vault.ListOwnedAsync(userId, cancellationToken);
         var body = JsonSerializer.Serialize(new
         {
             items = rows.Select(row => new
@@ -89,6 +89,14 @@ public sealed class PasswordsController(PasswordVaultService vault, IFamilyRoste
         await vault.DeleteAsync(User.RequireVaultUserId(), id, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/grants")]
+    public async Task<ActionResult<IReadOnlyList<MemberTag>>> Share(Guid id, [FromBody] GrantBody body, CancellationToken cancellationToken) =>
+        Ok(await vault.ShareAsync(User.RequireVaultUserId(), id, body.UserId, cancellationToken));
+
+    [HttpDelete("{id:guid}/grants/{userId:guid}")]
+    public async Task<ActionResult<IReadOnlyList<MemberTag>>> Unshare(Guid id, Guid userId, CancellationToken cancellationToken) =>
+        Ok(await vault.UnshareAsync(User.RequireVaultUserId(), id, userId, cancellationToken));
 }
 
 public sealed class PasswordVaultBody

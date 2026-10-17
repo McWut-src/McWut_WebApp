@@ -10,7 +10,8 @@ public enum FileStatus
 public enum ShareTargetKind
 {
     File = 0,
-    Drop = 1
+    Drop = 1,
+    Password = 2
 }
 
 public enum FilePermission

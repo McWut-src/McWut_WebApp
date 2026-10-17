@@ -377,6 +377,12 @@ public sealed class GrantService(
             return file.OwnerUserId;
         }
 
+        if (kind != ShareTargetKind.Drop)
+        {
+            // Password vault shares go through PasswordVaultService, not this API.
+            throw new VaultNotFoundException();
+        }
+
         var drop = await db.Drops.AsNoTracking()
             .FirstOrDefaultAsync(d => d.Id == targetId && d.DeletedAt == null, cancellationToken)
             .ConfigureAwait(false)

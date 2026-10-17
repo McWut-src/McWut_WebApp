@@ -1323,11 +1323,18 @@ body.note-reader-open {
   min-height: 420px;
 }
 
+.password-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
 .password-list {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
-  max-height: calc(100vh - 220px);
+  max-height: calc(100vh - 280px);
   overflow: auto;
 }
 
@@ -1370,6 +1377,19 @@ body.note-reader-open {
 
 .password-item.active .pw-mark {
   background: var(--card);
+}
+
+.pw-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.pw-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pw-name {

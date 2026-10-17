@@ -56,16 +56,50 @@ public static class PasswordVaultRules
                 throw new PasswordVaultValidationException($"URL must be {UrlMax} characters or fewer.");
             }
 
-            if (!Uri.TryCreate(cleanUrl, UriKind.Absolute, out var parsed)
-                || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps))
+            if (cleanUrl.StartsWith("//", StringComparison.Ordinal))
             {
-                throw new PasswordVaultValidationException("URL must start with http:// or https://.");
+                cleanUrl = "https:" + cleanUrl;
+            }
+            else if (!cleanUrl.Contains("://", StringComparison.Ordinal))
+            {
+                cleanUrl = "https://" + cleanUrl;
+            }
+
+            if (!Uri.TryCreate(cleanUrl, UriKind.Absolute, out var parsed)
+                || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps)
+                || !IsValidHost(parsed))
+            {
+                throw new PasswordVaultValidationException("Enter a web address like facebook.com or https://facebook.com.");
             }
 
             cleanUrl = parsed.AbsoluteUri;
         }
 
         return new PasswordVaultFields(cleanName, cleanUsername, cleanPassword, cleanUrl, cleanNotes);
+    }
+
+    private static bool IsValidHost(Uri parsed)
+    {
+        var host = parsed.IdnHost;
+        if (string.IsNullOrWhiteSpace(host) || !string.IsNullOrEmpty(parsed.UserInfo))
+        {
+            return false;
+        }
+
+        if (parsed.HostNameType is UriHostNameType.IPv4 or UriHostNameType.IPv6)
+        {
+            return true;
+        }
+
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return host.Contains('.', StringComparison.Ordinal)
+            && !host.StartsWith('.')
+            && !host.EndsWith('.')
+            && !host.Contains("..", StringComparison.Ordinal);
     }
 
     public const int MaxImportItems = 500;

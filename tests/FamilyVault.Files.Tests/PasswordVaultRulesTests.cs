@@ -34,9 +34,22 @@ public class PasswordVaultRulesTests
     }
 
     [Theory]
+    [InlineData("facebook.com", "https://facebook.com/")]
+    [InlineData("www.facebook.com/login", "https://www.facebook.com/login")]
+    [InlineData("192.168.1.1", "https://192.168.1.1/")]
+    public void Prepends_https_to_bare_domain(string input, string expected)
+    {
+        var fields = PasswordVaultRules.Normalize("Social", "user", "pw", input, "");
+
+        Assert.Equal(expected, fields.Url);
+    }
+
+    [Theory]
     [InlineData("javascript:alert(1)")]
+    [InlineData("javascript:80")]
     [InlineData("ftp://files.example")]
     [InlineData("not a url")]
+    [InlineData("justaword")]
     public void Rejects_unsafe_url(string url)
     {
         Assert.Throws<PasswordVaultValidationException>(() => PasswordVaultRules.Normalize("Site", "", "", url, ""));
