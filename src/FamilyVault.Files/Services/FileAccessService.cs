@@ -43,6 +43,12 @@ public sealed class FileAccessService(
             {
                 return AccessDecision.Allow;
             }
+
+            if (intent is AccessIntent.Preview or AccessIntent.Download or AccessIntent.List
+                && await HasChatAttachmentAccessAsync(userId, fileId, cancellationToken).ConfigureAwait(false))
+            {
+                return AccessDecision.Allow;
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(context.ShareToken))
@@ -153,6 +159,42 @@ public sealed class FileAccessService(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
         return grants.OrderByDescending(g => g.Permission).FirstOrDefault();
+    }
+
+    private async Task<bool> HasChatAttachmentAccessAsync(Guid userId, Guid fileId, CancellationToken cancellationToken)
+    {
+        var now = time.GetUtcNow();
+        var attached = await db.DirectMessages.AsNoTracking()
+            .Where(m => m.AttachmentFileId == fileId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var conversationIds = attached
+            .Where(m => m.ExpiresAt is null || m.ExpiresAt > now)
+            .Select(m => m.ConversationId)
+            .Distinct()
+            .ToList();
+        if (conversationIds.Count == 0)
+        {
+            return false;
+        }
+
+        var inDirect = await db.DirectConversations.AsNoTracking()
+            .AnyAsync(
+                c => conversationIds.Contains(c.Id)
+                     && !c.IsGroup
+                     && (c.LowUserId == userId || c.HighUserId == userId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (inDirect)
+        {
+            return true;
+        }
+
+        return await db.DirectConversationMembers.AsNoTracking()
+            .AnyAsync(
+                m => conversationIds.Contains(m.ConversationId) && m.UserId == userId,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<AccessDecision> AuthorizeTokenAsync(

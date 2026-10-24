@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <g transform="rotate(-5 50 48)">
+    <circle cx="50" cy="48" r="35" fill="#facc15" stroke="#111827" stroke-width="4"/>
+    <!-- Squinting >< Eyes -->
+    <path d="M28 36 L40 43 L28 50" fill="none" stroke="#111827" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M72 36 L60 43 L72 50" fill="none" stroke="#111827" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Big Open Cackling Mouth -->
+    <path d="M28 54 C28 76 72 76 72 54 Z" fill="#111827" stroke="#111827" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M31 54 H69 L67 60 H33 Z" fill="#ffffff"/>
+    <path d="M38 66 Q50 58 62 66 Q50 75 38 66 Z" fill="#ec4899"/>
+    <!-- Joy Tears Flying Out Sideways -->
+    <path d="M22 44 C10 42 6 52 12 58 C18 62 24 52 22 44 Z" fill="#06b6d4" stroke="#111827" stroke-width="3"/>
+    <path d="M78 44 C90 42 94 52 88 58 C82 62 76 52 78 44 Z" fill="#06b6d4" stroke="#111827" stroke-width="3"/>
+  </g>
+  <!-- Bold LOL Stamp Pill -->
+  <rect x="24" y="74" width="52" height="20" rx="6" fill="#ec4899" stroke="#111827" stroke-width="3.5" transform="rotate(3 50 84)"/>
+  <text x="50" y="88" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="15" font-weight="900" fill="#ffffff" letter-spacing="1" transform="rotate(3 50 84)">LOL</text>
+
+  </g>
+</svg>

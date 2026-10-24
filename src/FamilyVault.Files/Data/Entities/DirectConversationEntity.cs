@@ -5,11 +5,15 @@ public sealed class DirectConversationEntity
     public Guid Id { get; set; }
     public Guid LowUserId { get; set; }
     public Guid HighUserId { get; set; }
+    public bool IsGroup { get; set; }
+    public string? Title { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public string? LastPreview { get; set; }
     public Guid? LastSenderUserId { get; set; }
     public DateTimeOffset? LastSentAt { get; set; }
     public int LowUnread { get; set; }
     public int HighUnread { get; set; }
+    public long LowReadSequence { get; set; }
+    public long HighReadSequence { get; set; }
     public long NextSequence { get; set; }
 }

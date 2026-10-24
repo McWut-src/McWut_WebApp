@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <path d="M50 12 C32 12 22 26 22 44 C22 60 34 76 50 88 C66 76 78 60 78 44 C78 26 68 12 50 12 Z"
+        fill="#a3e635" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="38" cy="46" rx="9" ry="13" fill="#111827" transform="rotate(-18 38 46)"/>
+  <ellipse cx="62" cy="46" rx="9" ry="13" fill="#111827" transform="rotate(18 62 46)"/>
+  <ellipse cx="35" cy="41" rx="2.6" ry="4" fill="#ffffff" opacity="0.9" transform="rotate(-18 35 41)"/>
+  <ellipse cx="59" cy="41" rx="2.6" ry="4" fill="#ffffff" opacity="0.9" transform="rotate(18 59 41)"/>
+  <path d="M46 68 Q50 72 54 68" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+  <path d="M30 24 C35 18 42 15 48 15" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  <path d="M14 20 Q14 25 19 25 Q14 25 14 30 Q14 25 9 25 Q14 25 14 20 Z"
+        fill="#facc15" stroke="#111827" stroke-width="2.5" stroke-linejoin="round"/>
+
+  </g>
+</svg>

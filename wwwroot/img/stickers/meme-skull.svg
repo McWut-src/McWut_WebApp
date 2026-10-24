@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- Die cut white border -->
+    <path d="M50 12 C28 12 20 28 20 48 C20 62 28 70 34 74 L34 84 C34 88 38 90 42 90 L58 90 C62 90 66 88 66 84 L66 74 C72 70 80 62 80 48 C80 28 72 12 50 12 Z" fill="#ffffff"/>
+    <!-- Main Skull Body -->
+    <path d="M50 16 C31 16 24 30 24 49 C24 61 31 68 37 72 L37 82 C37 85 40 86 44 86 L56 86 C60 86 63 85 63 82 L63 72 C69 68 76 61 76 49 C76 30 69 16 50 16 Z" fill="#f1f5f9" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Head highlight -->
+    <path d="M34 24 C40 20 50 20 58 22" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <!-- Eye Sockets (Deep Navy) -->
+    <ellipse cx="38" cy="48" rx="8" ry="11" fill="#0f172a"/>
+    <ellipse cx="62" cy="48" rx="8" ry="11" fill="#0f172a"/>
+    <!-- Eye Glint (Funny / expressive) -->
+    <circle cx="36" cy="45" r="2.5" fill="#38bdf8"/>
+    <circle cx="60" cy="45" r="2.5" fill="#38bdf8"/>
+    <!-- Nose (Upside down heart) -->
+    <path d="M50 58 L46 66 L54 66 Z" fill="#0f172a"/>
+    <!-- Teeth slits -->
+    <line x1="43" y1="76" x2="43" y2="84" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+    <line x1="50" y1="76" x2="50" y2="84" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+    <line x1="57" y1="76" x2="57" y2="84" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+    <!-- Drip of laughter tears -->
+    <path d="M26 56 C26 64 21 68 21 72 C21 75 23 77 26 77 C29 77 31 75 31 72 C31 68 26 64 26 56 Z" fill="#38bdf8" stroke="#1e293b" stroke-width="2"/>
+  </g>
+</svg>

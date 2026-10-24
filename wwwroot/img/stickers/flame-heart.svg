@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <path d="M50 10 Q58 26 50 36 Q64 22 72 35 Q80 22 84 42 Q96 46 88 66 C80 84 56 94 50 96 C44 94 20 84 12 66 Q4 46 16 42 Q20 22 28 35 Q36 22 50 10 Z" fill="#ec4899" stroke="#111827" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M50 24 Q55 35 48 44 Q59 34 65 44 Q72 36 74 50 C76 66 56 86 50 88 C44 86 24 66 26 50 Q28 36 35 44 Q41 34 52 44 Z" fill="#facc15"/>
+  <path d="M50 42 C45 34 35 34 30 40 C22 50 32 64 50 78 C68 64 78 50 70 40 C65 34 55 34 50 42 Z" fill="#111827"/>
+
+  </g>
+</svg>

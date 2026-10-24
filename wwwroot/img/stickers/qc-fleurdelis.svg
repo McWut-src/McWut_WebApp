@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <circle cx="50" cy="50" r="44" fill="#ffffff"/>
+    <circle cx="50" cy="50" r="38" fill="#1d4ed8" stroke="#1e293b" stroke-width="4"/>
+    <!-- Modern Stylized Quebec Fleur-de-lis (Crisp White) -->
+    <!-- Center Petal -->
+    <path d="M50 18 C56 30 60 42 50 62 C40 42 44 30 50 18 Z" fill="#ffffff" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Left Petal -->
+    <path d="M46 60 C32 60 22 48 24 38 C28 32 38 34 42 44 C44 48 46 54 46 60 Z" fill="#ffffff" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Right Petal -->
+    <path d="M54 60 C68 60 78 48 76 38 C72 32 62 34 58 44 C56 48 54 54 54 60 Z" fill="#ffffff" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Crossbar -->
+    <rect x="30" y="58" width="40" height="6" rx="2" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <!-- Bottom Base -->
+    <path d="M44 64 L50 78 L56 64 Z" fill="#ffffff" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+</svg>

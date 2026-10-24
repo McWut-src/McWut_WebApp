@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M52 26 L66 8" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+    <path d="M24 34 C24 18 76 18 76 34 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8"/>
+    <path d="M26 38 L32 86 C33 92 42 94 50 94 C58 94 67 92 68 86 L74 38 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Fat Straw -->
+    <line x1="52" y1="26" x2="66" y2="8" stroke="#a855f7" stroke-width="8" stroke-linecap="round"/>
+    <!-- Dome Lid -->
+    <path d="M26 34 C26 18 74 18 74 34 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="4"/>
+    <rect x="22" y="32" width="56" height="6" rx="3" fill="#e2e8f0" stroke="#1e293b" stroke-width="3"/>
+    <!-- Cup Body (Iced Matcha Green) -->
+    <path d="M28 38 L34 84 C35 89 42 92 50 92 C58 92 65 89 66 84 L72 38 Z" fill="#86efac" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Liquid Gradient shadow -->
+    <path d="M30 50 L34 84 C35 89 42 92 50 92 C58 92 65 89 66 84 L70 50 Q50 56 30 50 Z" fill="#22c55e" opacity="0.4"/>
+    <!-- Tapioca Pearls -->
+    <circle cx="40" cy="78" r="4.5" fill="#0f172a"/>
+    <circle cx="51" cy="82" r="4.5" fill="#0f172a"/>
+    <circle cx="60" cy="76" r="4.5" fill="#0f172a"/>
+    <circle cx="46" cy="69" r="4" fill="#0f172a"/>
+    <circle cx="56" cy="71" r="4" fill="#0f172a"/>
+    <!-- Cute Star Badge on cup -->
+    <polygon points="50,48 52,53 57,53 53,56 55,61 50,58 45,61 47,56 43,53 48,53" fill="#facc15" stroke="#1e293b" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- Die cut white border -->
+    <path d="M12 50 C12 30 30 20 50 20 C70 20 88 30 88 50 C88 70 70 80 50 80 C30 80 12 70 12 50 Z" fill="#ffffff"/>
+    <!-- Yellow Face Base -->
+    <path d="M16 50 C16 34 32 24 50 24 C68 24 84 34 84 50 C84 66 68 76 50 76 C32 76 16 66 16 50 Z" fill="#facc15" stroke="#1e293b" stroke-width="4"/>
+    <!-- Raised judging eyebrows -->
+    <path d="M26 34 Q36 30 46 36" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M54 36 Q64 30 74 34" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <!-- Left Eye Sclera (White) -->
+    <ellipse cx="36" cy="48" rx="11" ry="12" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <!-- Left Pupil looking far right -->
+    <circle cx="42" cy="48" r="6" fill="#0f172a"/>
+    <circle cx="44" cy="46" r="2" fill="#ffffff"/>
+    <!-- Right Eye Sclera (White) -->
+    <ellipse cx="64" cy="48" rx="11" ry="12" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <!-- Right Pupil looking far right -->
+    <circle cx="70" cy="48" r="6" fill="#0f172a"/>
+    <circle cx="72" cy="46" r="2" fill="#ffffff"/>
+    <!-- Smirk mouth -->
+    <path d="M40 66 Q52 68 64 63" fill="none" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>

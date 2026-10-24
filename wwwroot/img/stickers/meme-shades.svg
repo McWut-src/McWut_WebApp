@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M8 44 H46 V50 H54 V44 H92 V68 H74 V74 H58 V68 H54 V64 H46 V68 H42 V74 H26 V68 H8 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- 8-Bit Pixel Shades Body -->
+    <path d="M10 46 H44 V52 H56 V46 H90 V66 H74 V72 H58 V66 H54 V62 H46 V66 H42 V72 H26 V66 H10 Z" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+    <!-- Pixel White Glare 1 -->
+    <rect x="14" y="48" width="6" height="4" fill="#ffffff"/>
+    <rect x="20" y="52" width="6" height="4" fill="#ffffff"/>
+    <rect x="26" y="56" width="6" height="4" fill="#ffffff"/>
+    <!-- Pixel White Glare 2 -->
+    <rect x="60" y="48" width="6" height="4" fill="#ffffff"/>
+    <rect x="66" y="52" width="6" height="4" fill="#ffffff"/>
+    <rect x="72" y="56" width="6" height="4" fill="#ffffff"/>
+    <!-- Little text "DEAL WITH IT" in white pixel vibe -->
+    <rect x="36" y="80" width="28" height="8" rx="2" fill="#ef4444" stroke="#1e293b" stroke-width="2"/>
+    <text x="50" y="86" text-anchor="middle" font-size="6" font-family="monospace" font-weight="900" fill="#ffffff">DEAL WITH IT</text>
+  </g>
+</svg>

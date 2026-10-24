@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <polygon points="44,22 56,22 76,78 24,78" fill="#ffffff" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+    <rect x="14" y="76" width="72" height="14" rx="4" fill="#ffffff" stroke="#ffffff" stroke-width="6"/>
+    <!-- Shiny Gold Crown on Top (King of Montreal) -->
+    <polygon points="40,24 43,14 50,18 57,14 60,24" fill="#facc15" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Orange Cone Body -->
+    <polygon points="44,24 56,24 74,78 26,78" fill="#ea580c" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- White Reflective Stripes with street smirk -->
+    <polygon points="41,38 59,38 64,52 36,52" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <polygon points="33,60 67,60 72,72 28,72" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+    <!-- Swag Sunglasses on Cone -->
+    <rect x="38" y="42" width="10" height="6" rx="1" fill="#0f172a"/>
+    <rect x="52" y="42" width="10" height="6" rx="1" fill="#0f172a"/>
+    <line x1="48" y1="44" x2="52" y2="44" stroke="#0f172a" stroke-width="2"/>
+    <!-- Heavy Rubber Base -->
+    <rect x="18" y="78" width="64" height="10" rx="3" fill="#1e293b" stroke="#1e293b" stroke-width="3"/>
+  </g>
+</svg>

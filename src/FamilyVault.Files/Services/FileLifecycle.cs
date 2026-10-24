@@ -43,6 +43,18 @@ public sealed class FileLifecycle(
             drop.DeletedAt = now;
         }
 
+        var messageCandidates = await db.DirectMessages
+            .Where(m => m.ExpiresAt != null)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var expiredMessages = messageCandidates
+            .Where(m => m.ExpiresAt is DateTimeOffset msgExpiry && msgExpiry <= now)
+            .ToList();
+        if (expiredMessages.Count > 0)
+        {
+            db.DirectMessages.RemoveRange(expiredMessages);
+        }
+
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 

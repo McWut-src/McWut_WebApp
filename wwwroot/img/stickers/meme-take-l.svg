@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <!-- Tilted Bruised Shield / Badge -->
+  <g transform="rotate(8 50 50)">
+    <rect x="20" y="18" width="60" height="64" rx="14" fill="#a855f7" stroke="#111827" stroke-width="4"/>
+    <rect x="26" y="24" width="48" height="52" rx="10" fill="#1e1b4b" stroke="#111827" stroke-width="2.5"/>
+    <!-- Big Block "L" -->
+    <path d="M39 32 V64 H63" fill="none" stroke="#ec4899" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M37 30 V62 H61" fill="none" stroke="#facc15" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Sad Teardrops Dripping -->
+  <path d="M16 42 C16 52 10 56 16 62 C22 56 16 52 16 42 Z" fill="#06b6d4" stroke="#111827" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M84 54 C84 64 78 68 84 74 C90 68 84 64 84 54 Z" fill="#06b6d4" stroke="#111827" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M48 82 C48 90 43 94 48 98 C53 94 48 90 48 82 Z" fill="#06b6d4" stroke="#111827" stroke-width="2.5" stroke-linejoin="round"/>
+
+  </g>
+</svg>

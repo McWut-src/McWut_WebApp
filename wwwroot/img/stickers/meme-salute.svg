@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White border -->
+    <circle cx="46" cy="54" r="38" fill="#ffffff"/>
+    <path d="M46 22 L78 20 L86 36 L70 42 Z" fill="#ffffff" stroke="#ffffff" stroke-width="6"/>
+    <!-- Yellow Face Base -->
+    <circle cx="46" cy="54" r="34" fill="#facc15" stroke="#1e293b" stroke-width="4"/>
+    <!-- Respectful closed eyes (curved lines) -->
+    <path d="M30 50 Q36 44 42 50" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M54 50 Q60 44 66 50" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <!-- Subtle firm smile -->
+    <path d="M38 68 Q46 72 54 68" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <!-- Saluting Hand / Arm -->
+    <path d="M58 24 L82 22 C86 22 88 26 86 30 L74 42 L66 36 Z" fill="#facc15" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+    <line x1="62" y1="28" x2="78" y2="26" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

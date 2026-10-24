@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <rect x="8" y="14" width="84" height="72" rx="12" fill="#ffffff" stroke="#ffffff" stroke-width="6"/>
+    <!-- Midnight Sky Billboard -->
+    <rect x="12" y="18" width="76" height="64" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="4"/>
+    <!-- Industrial Rooftop Truss Metal Legs -->
+    <line x1="22" y1="82" x2="22" y2="70" stroke="#64748b" stroke-width="3"/>
+    <line x1="78" y1="82" x2="78" y2="70" stroke="#64748b" stroke-width="3"/>
+    <line x1="22" y1="72" x2="78" y2="78" stroke="#475569" stroke-width="1.5"/>
+    <!-- Glowing Neon Red Sign Text -->
+    <text x="50" y="34" text-anchor="middle" font-size="10" font-family="sans-serif" font-weight="900" fill="#ef4444" letter-spacing="2">FARINE</text>
+    <text x="50" y="48" text-anchor="middle" font-size="10" font-family="sans-serif" font-weight="900" fill="#ef4444" letter-spacing="2">FIVE</text>
+    <text x="50" y="62" text-anchor="middle" font-size="10" font-family="sans-serif" font-weight="900" fill="#ef4444" letter-spacing="2">ROSES</text>
+    <!-- Little Neon Rose Icon -->
+    <circle cx="50" cy="72" r="3" fill="#f43f5e"/>
+  </g>
+</svg>

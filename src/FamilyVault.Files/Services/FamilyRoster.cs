@@ -24,16 +24,30 @@ public sealed class FamilyRoster(ApplicationDbContext db, TimeProvider time) : I
         }
         else
         {
-            existing.Email = member.Email ?? existing.Email;
+            var dirty = false;
+            if (member.Email is not null && member.Email != existing.Email)
+            {
+                existing.Email = member.Email;
+                dirty = true;
+            }
+
             if (string.IsNullOrWhiteSpace(existing.DisplayName))
             {
                 existing.DisplayName = string.IsNullOrWhiteSpace(member.DisplayName) ? "Member" : member.DisplayName.Trim();
+                dirty = true;
             }
 
-            existing.LastSeenAt = now;
-        }
+            if (existing.LastSeenAt == default || now - existing.LastSeenAt >= TimeSpan.FromMinutes(5))
+            {
+                existing.LastSeenAt = now;
+                dirty = true;
+            }
 
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            if (dirty)
+            {
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     public async Task UpdateProfileAsync(Guid userId, string? email, string displayName, string? accentColor, CancellationToken cancellationToken = default)

@@ -47,6 +47,7 @@ public sealed class BeginUploadBody
     public Guid? DropId { get; set; }
     public RetentionInput? Retention { get; set; }
     public string? Password { get; set; }
+    public bool IsChatOnly { get; set; }
 }
 
 public sealed class CreateLinkBody

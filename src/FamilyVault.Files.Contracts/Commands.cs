@@ -13,7 +13,8 @@ public sealed record BeginUploadRequest(
     long SizeBytes,
     Guid? DropId,
     Retention Retention,
-    string? Password);
+    string? Password,
+    bool IsChatOnly = false);
 
 public sealed record CreateShareLinkRequest(Retention Retention, string? Password, bool AllowPreview);
 

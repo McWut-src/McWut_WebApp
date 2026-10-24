@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M22 28 H78 V50 C78 64 64 72 50 72 C36 72 22 64 22 50 Z" fill="#ffffff" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+    <rect x="34" y="76" width="32" height="16" rx="3" fill="#ffffff" stroke="#ffffff" stroke-width="8"/>
+    <!-- Gold Trophy Cup Body -->
+    <path d="M26 30 H74 V48 C74 62 62 70 50 70 C38 70 26 62 26 48 Z" fill="#facc15" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Handles Left & Right -->
+    <path d="M26 36 C14 36 14 52 26 54" fill="none" stroke="#facc15" stroke-width="8" stroke-linecap="round"/>
+    <path d="M26 36 C14 36 14 52 26 54" fill="none" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M74 36 C86 36 86 52 74 54" fill="none" stroke="#facc15" stroke-width="8" stroke-linecap="round"/>
+    <path d="M74 36 C86 36 86 52 74 54" fill="none" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Trophy Stem & Base -->
+    <path d="M44 70 L42 78 H58 L56 70 Z" fill="#eab308" stroke="#1e293b" stroke-width="3"/>
+    <rect x="36" y="78" width="28" height="14" rx="2" fill="#1e293b" stroke="#1e293b" stroke-width="3"/>
+    <!-- Gold plate on pedestal -->
+    <rect x="40" y="82" width="20" height="6" rx="1" fill="#fef08a"/>
+    <!-- Karateka martial artist emblem on cup -->
+    <path d="M50 38 L54 44 L50 48 L46 44 Z" fill="#dc2626"/>
+    <circle cx="50" cy="36" r="3" fill="#1e293b"/>
+    <!-- Sparkles -->
+    <polygon points="68,22 70,28 76,30 70,32 68,38 66,32 60,30 66,28" fill="#ffffff"/>
+  </g>
+</svg>

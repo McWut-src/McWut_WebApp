@@ -37,5 +37,7 @@ public sealed class RejectLockedOutUsersMiddleware(RequestDelegate next)
         || path.StartsWithSegments("/css")
         || path.StartsWithSegments("/js")
         || path.StartsWithSegments("/lib")
+        || path.StartsWithSegments("/img")
+        || path.StartsWithSegments("/api/messages/typing")
         || path.StartsWithSegments("/favicon.ico");
 }

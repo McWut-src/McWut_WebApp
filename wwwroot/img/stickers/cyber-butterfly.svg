@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <path d="M50 38 Q30 12 16 28 Q10 46 28 58 Q42 62 50 54 Z" fill="#06b6d4" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M50 38 Q70 12 84 28 Q90 46 72 58 Q58 62 50 54 Z" fill="#06b6d4" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M50 54 Q34 62 26 76 Q34 88 44 80 Q48 72 50 64 Z" fill="#ec4899" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M50 54 Q66 62 74 76 Q66 88 56 80 Q52 72 50 64 Z" fill="#ec4899" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="30" cy="38" r="4" fill="#facc15"/>
+  <circle cx="70" cy="38" r="4" fill="#facc15"/>
+  <path d="M50 30 V72" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+  <path d="M47 30 Q40 20 34 22 M53 30 Q60 20 66 22" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+
+  </g>
+</svg>

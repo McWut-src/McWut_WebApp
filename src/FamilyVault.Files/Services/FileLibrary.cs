@@ -20,6 +20,7 @@ public sealed class FileLibrary(
         var now = time.GetUtcNow();
         var rows = await db.StoredFiles.AsNoTracking()
             .Where(f => f.OwnerUserId == ownerUserId
+                        && !f.IsChatOnly
                         && f.DeletedAt == null
                         && f.Status != FileStatus.Failed)
             .ToListAsync(cancellationToken)

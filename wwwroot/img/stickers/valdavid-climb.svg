@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut outline -->
+    <circle cx="50" cy="50" r="44" fill="#ffffff"/>
+    <!-- Granite Rock Cliff (Dufresne Crag) -->
+    <path d="M12 16 L62 14 L88 32 L78 88 L14 88 Z" fill="#64748b" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M28 15 L44 48 L22 88" fill="none" stroke="#475569" stroke-width="3"/>
+    <path d="M62 14 L52 60 L78 88" fill="none" stroke="#475569" stroke-width="3"/>
+    <!-- Chalk marks on granite holds -->
+    <ellipse cx="44" cy="36" rx="6" ry="3" fill="#ffffff" opacity="0.85"/>
+    <ellipse cx="64" cy="52" rx="5" ry="3" fill="#ffffff" opacity="0.85"/>
+    <!-- Climber's Chalk Bag & Carabiner -->
+    <rect x="42" y="60" width="16" height="18" rx="5" fill="#ec4899" stroke="#1e293b" stroke-width="3"/>
+    <circle cx="50" cy="62" r="3" fill="#ffffff"/>
+    <!-- Dynamic Red Climbing Rope & Quickdraw -->
+    <path d="M50 20 L58 40 L46 64 L54 88" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Gold Carabiner -->
+    <rect x="54" y="36" width="6" height="10" rx="3" fill="none" stroke="#facc15" stroke-width="2.5"/>
+    <!-- Val-David Mountain Pine Stamp -->
+    <polygon points="76,68 84,82 68,82" fill="#15803d"/>
+    <text x="50" y="93" text-anchor="middle" font-size="6" font-family="sans-serif" font-weight="900" fill="#0f172a" letter-spacing="1">VAL-DAVID</text>
+  </g>
+</svg>

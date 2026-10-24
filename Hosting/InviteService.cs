@@ -30,12 +30,12 @@ public sealed class InviteService(ApplicationDbContext db, TimeProvider time)
         return rows.OrderByDescending(i => i.CreatedAt).Take(50).ToList();
     }
 
-    public Task<InviteEntity?> FindUsableAsync(string token, CancellationToken cancellationToken)
+    public async Task<InviteEntity?> FindUsableAsync(string token, CancellationToken cancellationToken)
     {
-        var now = time.GetUtcNow();
-        return db.Invites.FirstOrDefaultAsync(
-            i => i.Token == token && i.UsedAt == null && i.ExpiresAt > now,
-            cancellationToken);
+        var row = await db.Invites
+            .FirstOrDefaultAsync(i => i.Token == token && i.UsedAt == null, cancellationToken)
+            .ConfigureAwait(false);
+        return row is not null && row.ExpiresAt > time.GetUtcNow() ? row : null;
     }
 
     public async Task MarkUsedAsync(InviteEntity invite, Guid userId, CancellationToken cancellationToken)

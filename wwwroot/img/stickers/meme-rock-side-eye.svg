@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <filter id="ds" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3.5" flood-color="#0f172a" flood-opacity="0.38"/>
+    </filter>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e09f67"/>
+      <stop offset="55%" stop-color="#c67d43"/>
+      <stop offset="100%" stop-color="#9c5928"/>
+    </linearGradient>
+    <linearGradient id="bgBurst" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#ds)">
+    <!-- Die-cut sticker backing -->
+    <circle cx="60" cy="58" r="46" fill="url(#bgBurst)" stroke="#ffffff" stroke-width="7"/>
+    <circle cx="60" cy="58" r="46" fill="none" stroke="#111827" stroke-width="3.5"/>
+
+    <!-- Vine boom shockwave rings -->
+    <path d="M18 36 Q10 58 18 80" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+    <path d="M102 36 Q110 58 102 80" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+
+    <!-- Ears -->
+    <ellipse cx="25" cy="60" rx="6" ry="10" fill="url(#skin)" stroke="#111827" stroke-width="3.2"/>
+    <ellipse cx="95" cy="60" rx="6" ry="10" fill="url(#skin)" stroke="#111827" stroke-width="3.2"/>
+
+    <!-- Sculpted bald head + strong chiseled jawline -->
+    <path d="M28 48 C28 20, 92 20, 92 48 L90 70 C89 84, 76 96, 60 96 C44 96, 31 84, 30 70 Z" fill="url(#skin)" stroke="#111827" stroke-width="3.8" stroke-linejoin="round"/>
+
+    <!-- Bald head shine highlight -->
+    <path d="M42 30 Q58 23 74 30" fill="none" stroke="#fde68a" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="80" cy="34" r="2.2" fill="#fde68a" opacity="0.7"/>
+
+    <!-- Chiseled cheekbones & chin cleft -->
+    <path d="M35 68 Q40 76 45 78" fill="none" stroke="#7c3f16" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M85 68 Q80 76 75 78" fill="none" stroke="#7c3f16" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M56 90 Q60 87 64 90" fill="none" stroke="#7c3f16" stroke-width="2.4" stroke-linecap="round"/>
+
+    <!-- Left eye (squinted, intense) -->
+    <path d="M35 55 Q46 51 55 55 Q46 62 35 55 Z" fill="#ffffff" stroke="#111827" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Left pupil Bombastic Side-Eye (hard right) -->
+    <circle cx="50" cy="55.5" r="4.2" fill="#111827"/>
+    <circle cx="51.2" cy="54" r="1.3" fill="#ffffff"/>
+
+    <!-- Right eye (wide open under the sky-high eyebrow) -->
+    <ellipse cx="75" cy="54" rx="11" ry="7.5" fill="#ffffff" stroke="#111827" stroke-width="3"/>
+    <!-- Right pupil Bombastic Side-Eye (hard right) -->
+    <circle cx="81" cy="54" r="5" fill="#111827"/>
+    <circle cx="82.5" cy="52.2" r="1.6" fill="#ffffff"/>
+
+    <!-- Left Eyebrow: Low, flat, furrowed down -->
+    <path d="M33 48 L56 51" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Right Eyebrow: THE ROCK SKY-HIGH ARCH -->
+    <path d="M63 44 Q75 27 89 41" fill="none" stroke="#111827" stroke-width="6.5" stroke-linecap="round"/>
+    <!-- Forehead wrinkle above raised brow -->
+    <path d="M66 33 Q75 24 85 33" fill="none" stroke="#7c3f16" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Nose -->
+    <path d="M60 52 L57 67 Q60 70 65 67" fill="none" stroke="#111827" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Knowingly smirk (tilted up on the right side) -->
+    <path d="M46 79 Q62 81 76 73" fill="none" stroke="#111827" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M75 70 Q79 73 77 77" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Bottom comic caption badge: BOMBASTIC -->
+    <rect x="14" y="92" width="92" height="20" rx="7" fill="#111827" stroke="#ffffff" stroke-width="4"/>
+    <rect x="14" y="92" width="92" height="20" rx="7" fill="#111827" stroke="#facc15" stroke-width="2"/>
+    <text x="60" y="106" font-family="Impact, 'Arial Black', sans-serif" font-size="13.5" font-weight="900" text-anchor="middle" fill="#facc15" letter-spacing="1.2">BOMBASTIC</text>
+  </g>
+</svg>

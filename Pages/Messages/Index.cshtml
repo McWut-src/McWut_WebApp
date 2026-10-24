@@ -7,10 +7,11 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">Messages</h1>
-        <p class="page-kicker">A note to another member. Only the two of you can read it.</p>
+        <p class="page-kicker">Private chat with a member or a group you choose. Only people in the chat can read it.</p>
     </div>
-    <div class="page-actions">
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="message-notify" aria-pressed="false" hidden>Enable notifications</button>
+    <div class="page-actions d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-secondary btn-sm msg-top-btn" id="message-sound" aria-pressed="true" title="Toggle chat sounds" aria-label="Toggle chat sounds">Sound on</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm msg-top-btn" id="message-notify" aria-pressed="false" hidden>Enable notifications</button>
     </div>
 </div>
 
@@ -19,7 +20,7 @@
         <div class="message-toolbar d-flex gap-2 align-items-center">
             <label class="search-field flex-grow-1 mb-0">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
-                <input id="message-search" type="search" placeholder="Search messages" autocomplete="off" aria-label="Search messages" />
+                <input id="message-search" type="search" placeholder="Search chats" autocomplete="off" aria-label="Search chats" />
             </label>
             <button type="button" class="btn btn-primary" id="message-new">New</button>
         </div>
@@ -27,22 +28,176 @@
             <p class="empty">Loading…</p>
         </div>
     </div>
+
     <section id="message-thread" class="message-thread" aria-label="Conversation">
         <div class="message-thread-bar">
-            <button type="button" class="btn btn-outline-secondary message-back" id="message-back">Back</button>
-            <h2 class="message-who" id="message-who">Choose a person</h2>
+            <button type="button" class="btn btn-outline-secondary btn-sm message-back" id="message-back">Back</button>
+            <div class="message-who" id="message-who">Choose a chat</div>
+            <button type="button" class="icon-btn ms-auto" id="message-group-edit-btn" title="Group settings" aria-label="Group settings" hidden></button>
         </div>
+
+        <div id="message-group-panel" class="message-group-panel" hidden>
+            <div class="mb-2">
+                <label class="form-label small fw-semibold mb-1" for="message-group-rename">Group name</label>
+                <input id="message-group-rename" type="text" class="form-control form-control-sm" maxlength="80" placeholder="Group name (optional)" autocomplete="off" />
+            </div>
+            <div id="message-group-add-wrap" class="mb-2" hidden>
+                <div class="small fw-semibold mb-1">Add people</div>
+                <div id="message-group-add-list" class="message-add-chips"></div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="message-group-cancel">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="message-group-save">Save group</button>
+            </div>
+        </div>
+
         <div id="message-people" class="message-people" hidden>
-            <p class="empty">Loading…</p>
+            <div class="message-people-head">
+                <p class="small text-muted mb-2">Tap 1 person for a direct chat, or pick 2 or more to start a private group chat.</p>
+                <div id="message-group-title-wrap" class="mb-2" hidden>
+                    <label class="visually-hidden" for="message-group-title">Group name</label>
+                    <input id="message-group-title" type="text" class="form-control" maxlength="80" placeholder="Group name (optional, e.g. Kids Club)" autocomplete="off" />
+                </div>
+            </div>
+            <div id="message-people-list" class="message-people-list">
+                <p class="empty">Loading…</p>
+            </div>
+            <div class="message-people-foot">
+                <button type="button" class="btn btn-primary w-100" id="message-start-chat" disabled>Choose someone</button>
+            </div>
         </div>
+
         <div id="message-log" class="message-log" aria-live="polite"></div>
-        <p id="message-error" class="ai-alert" hidden></p>
+
+        <div id="message-typing" class="message-typing" aria-live="polite" hidden>
+            <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span id="message-typing-text"></span>
+        </div>
+
+        <p id="message-error" class="ai-alert mx-3 mb-2" hidden></p>
+
         <form id="message-form" class="message-form" hidden>
-            <label class="visually-hidden" for="message-box">Message</label>
-            <textarea id="message-box" rows="2" maxlength="2000" placeholder="Write a message" autocomplete="off"></textarea>
-            <button type="submit" class="btn btn-primary" id="message-send">Send</button>
+            <div id="message-quote-bar" class="message-stage-bar" hidden>
+                <div class="message-stage-copy">
+                    <span class="fw-semibold" id="message-quote-who"></span>
+                    <span class="text-muted text-truncate" id="message-quote-text"></span>
+                </div>
+                <button type="button" class="icon-btn" id="message-quote-clear" title="Cancel reply" aria-label="Cancel reply"></button>
+            </div>
+
+            <div id="message-attach-bar" class="message-stage-bar" hidden>
+                <img id="message-attach-thumb" class="message-stage-thumb" alt="" hidden />
+                <div class="message-stage-copy">
+                    <span class="fw-semibold text-truncate" id="message-attach-name"></span>
+                    <span class="small text-muted" id="message-attach-status"></span>
+                </div>
+                <button type="button" class="icon-btn" id="message-attach-clear" title="Remove attachment" aria-label="Remove attachment"></button>
+            </div>
+
+            <div id="message-sticker-pop" class="message-sticker-pop" role="dialog" aria-label="Stickers and emojis" hidden>
+                <div class="message-quick-emojis" id="message-quick-emojis" aria-label="Quick emojis"></div>
+                <div class="message-sticker-grid" id="message-sticker-grid" aria-label="Stickers"></div>
+            </div>
+
+            <div id="message-voice-bar" class="message-voice-bar" hidden>
+                <span class="voice-rec-dot" aria-hidden="true"></span>
+                <span class="fw-semibold" id="message-voice-timer">0:00</span>
+                <span class="small text-muted d-none d-sm-inline">Auto-deletes in 7 days</span>
+                <div class="ms-auto d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="message-voice-cancel">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="message-voice-send">Send voice</button>
+                </div>
+            </div>
+
+            <div class="message-compose-row" id="message-compose-row">
+                <div class="message-compose-tools">
+                    <input id="message-photo-input" type="file" accept="image/*" hidden />
+                    <button type="button" class="icon-btn msg-tool-btn" id="message-photo-btn" title="Send photo" aria-label="Send photo"></button>
+                    <button type="button" class="icon-btn msg-tool-btn" id="message-files-btn" title="Attach from My files" aria-label="Attach from My files"></button>
+                    <button type="button" class="icon-btn msg-tool-btn" id="message-doodle-btn" title="Draw a doodle" aria-label="Draw a doodle"></button>
+                    <button type="button" class="icon-btn msg-tool-btn" id="message-sticker-btn" title="Stickers and emojis" aria-label="Stickers and emojis" aria-expanded="false"></button>
+                    <button type="button" class="icon-btn msg-tool-btn" id="message-mic-btn" title="Record voice note (auto-deletes in 7 days)" aria-label="Record voice note"></button>
+                </div>
+                <div class="message-compose-main">
+                    <label class="visually-hidden" for="message-box">Message</label>
+                    <textarea id="message-box" rows="1" maxlength="2000" placeholder="Write a message…" autocomplete="off"></textarea>
+                    <button type="submit" class="btn btn-primary message-send-btn" id="message-send" title="Send message" aria-label="Send message">Send</button>
+                </div>
+            </div>
         </form>
     </section>
+</div>
+
+<div id="message-react-menu" class="message-react-menu" role="menu" aria-label="React to message" hidden></div>
+
+<div id="message-photo-viewer" class="photo-viewer" role="dialog" aria-modal="true" aria-label="Photo preview" hidden>
+    <button type="button" class="photo-viewer-backdrop" id="message-viewer-backdrop" aria-label="Close photo"></button>
+    <div class="photo-viewer-frame">
+        <img id="message-viewer-img" alt="" />
+        <div class="photo-viewer-bar">
+            <span class="photo-viewer-name" id="message-viewer-name"></span>
+            <div class="photo-viewer-buttons">
+                <a class="icon-btn" id="message-viewer-download" download title="Download" aria-label="Download"></a>
+                <button type="button" class="icon-btn" id="message-viewer-close" title="Close" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="message-files-modal" tabindex="-1" aria-labelledby="message-files-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h6 mb-0" id="message-files-label">Attach from My files</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="search-field w-100 mb-3">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+                    <input id="message-files-search" type="search" placeholder="Search your files" autocomplete="off" aria-label="Search your files" />
+                </label>
+                <div id="message-files-list" class="message-picker-list">
+                    <p class="empty">Loading…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="message-doodle-modal" tabindex="-1" aria-labelledby="message-doodle-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h2 class="modal-title h6 mb-0" id="message-doodle-label">Draw a doodle</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="doodle-toolbar mb-2">
+                    <div class="doodle-swatches" id="doodle-swatches" role="radiogroup" aria-label="Brush color"></div>
+                    <div class="doodle-sizes" id="doodle-sizes" role="radiogroup" aria-label="Brush size">
+                        <button type="button" class="doodle-size-btn active" data-size="5" title="Small brush" aria-label="Small brush"><span style="width:6px;height:6px"></span></button>
+                        <button type="button" class="doodle-size-btn" data-size="11" title="Medium brush" aria-label="Medium brush"><span style="width:11px;height:11px"></span></button>
+                        <button type="button" class="doodle-size-btn" data-size="20" title="Large brush" aria-label="Large brush"><span style="width:16px;height:16px"></span></button>
+                    </div>
+                    <div class="doodle-actions ms-auto d-flex gap-1">
+                        <input id="doodle-bg-input" type="file" accept="image/*" hidden />
+                        <button type="button" class="icon-btn" id="doodle-eraser-btn" title="Eraser" aria-label="Eraser"></button>
+                        <button type="button" class="icon-btn" id="doodle-undo-btn" title="Undo stroke" aria-label="Undo stroke"></button>
+                        <button type="button" class="icon-btn" id="doodle-bg-btn" title="Draw over a photo" aria-label="Draw over a photo"></button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="doodle-clear-btn">Clear</button>
+                    </div>
+                </div>
+                <div class="doodle-stage" id="doodle-stage">
+                    <canvas id="doodle-bg-canvas" width="640" height="480"></canvas>
+                    <canvas id="doodle-draw-canvas" width="640" height="480"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="doodle-send-btn">Send drawing</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

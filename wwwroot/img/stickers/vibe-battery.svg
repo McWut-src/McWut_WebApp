@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut outline -->
+    <rect x="12" y="28" width="68" height="44" rx="10" fill="#ffffff" stroke="#ffffff" stroke-width="8"/>
+    <!-- Battery Outer Case -->
+    <rect x="14" y="30" width="64" height="40" rx="8" fill="#18181b" stroke="#1e293b" stroke-width="4"/>
+    <path d="M82 44 C85 44 86 46 86 48 V52 C86 54 85 56 82 56 Z" fill="#18181b"/>
+    <!-- Low Power Cavity -->
+    <rect x="18" y="34" width="56" height="32" rx="5" fill="#27272a"/>
+    <!-- 2% Critical Red Level -->
+    <rect x="22" y="38" width="14" height="24" rx="3" fill="#ef4444"/>
+    <!-- Neon Lightning Bolt -->
+    <path d="M54 22 L42 50 H55 L47 74 L68 44 H54 Z" fill="#facc15" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+    <text x="60" y="42" font-size="7" font-family="sans-serif" font-weight="900" fill="#ef4444">2%</text>
+  </g>
+</svg>

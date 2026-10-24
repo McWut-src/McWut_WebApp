@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <circle cx="50" cy="50" r="44" fill="#ffffff"/>
+    <!-- Halfpipe wooden ramp curve -->
+    <path d="M12 40 L12 84 L88 84 L88 40 C76 74 60 78 50 78 C40 78 24 74 12 40 Z" fill="#cbd5e1" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <line x1="8" y1="40" x2="16" y2="40" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+    <line x1="84" y1="40" x2="92" y2="40" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+    <!-- Skater Catching Air Silhouette high above ramp -->
+    <!-- Tilted Board -->
+    <g transform="rotate(-25 50 28)">
+      <rect x="34" y="26" width="32" height="6" rx="3" fill="#ec4899" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="38" cy="33" r="2.5" fill="#facc15"/>
+      <circle cx="62" cy="33" r="2.5" fill="#facc15"/>
+      <!-- Skater crouched grab -->
+      <circle cx="50" cy="10" r="5" fill="#0f172a"/>
+      <path d="M50 15 L46 22 L38 24 M50 15 L56 22 L62 26" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+    </g>
+    <!-- Big Air Speedlines -->
+    <path d="M30 46 C32 38 38 32 44 26" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M68 46 C66 38 62 32 58 26" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <!-- Roaring Flames on top of head -->
+  <path d="M22 46 Q14 24 28 28 Q26 10 42 22 Q50 4 58 22 Q74 10 72 28 Q86 24 78 46 Z"
+        fill="#ef4444" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M28 46 Q24 30 35 32 Q38 18 48 28 Q54 14 60 28 Q70 22 68 36 Q76 34 72 46 Z"
+        fill="#f97316" stroke="#111827" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M36 46 Q42 28 50 36 Q58 26 64 46 Z" fill="#facc15"/>
+  <!-- Serene Smiley Head -->
+  <circle cx="50" cy="60" r="30" fill="#facc15" stroke="#111827" stroke-width="4"/>
+  <!-- Peaceful Vacant Eyes -->
+  <circle cx="39" cy="55" r="4" fill="#111827"/>
+  <circle cx="61" cy="55" r="4" fill="#111827"/>
+  <circle cx="40.5" cy="53.5" r="1.3" fill="#ffffff"/>
+  <circle cx="62.5" cy="53.5" r="1.3" fill="#ffffff"/>
+  <!-- Rosy Cheeks & Calm Smile -->
+  <ellipse cx="30" cy="63" rx="4.5" ry="2.5" fill="#ec4899" opacity="0.7"/>
+  <ellipse cx="70" cy="63" rx="4.5" ry="2.5" fill="#ec4899" opacity="0.7"/>
+  <path d="M40 66 Q50 74 60 66" fill="none" stroke="#111827" stroke-width="4" stroke-linecap="round"/>
+
+  </g>
+</svg>

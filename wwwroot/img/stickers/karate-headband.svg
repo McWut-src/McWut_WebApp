@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M8 50 C24 44 76 44 92 50 L90 66 C74 60 26 60 10 66 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M74 54 L92 84 L78 88 L68 60 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M78 54 L84 88 L72 90 L66 62 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- White Headband Arch -->
+    <path d="M10 50 C30 42 70 42 90 50 L88 64 C68 56 32 56 12 64 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Center Red Rising Sun / Dragon Emblem -->
+    <circle cx="50" cy="54" r="8" fill="#dc2626"/>
+    <!-- Trailing knot tails -->
+    <path d="M74 56 L88 82 L80 86 L68 62 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M80 58 L76 86 L68 84 L72 62 Z" fill="#e2e8f0" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Japanese Kanji / Martial arts hash stroke -->
+    <line x1="46" y1="54" x2="54" y2="54" stroke="#ffffff" stroke-width="2"/>
+    <line x1="50" y1="50" x2="50" y2="58" stroke="#ffffff" stroke-width="2"/>
+  </g>
+</svg>

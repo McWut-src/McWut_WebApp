@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut outline -->
+    <path d="M14 50 Q50 42 86 50 L78 84 Q50 92 22 84 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <ellipse cx="50" cy="44" rx="38" ry="20" fill="#ffffff"/>
+    <!-- Takeout Bowl (Classic White / Blue Check) -->
+    <path d="M18 50 L24 82 Q50 90 76 82 L82 50 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <line x1="20" y1="58" x2="80" y2="58" stroke="#0284c7" stroke-width="3"/>
+    <!-- Golden Fries Pile -->
+    <rect x="26" y="32" width="10" height="24" rx="3" fill="#facc15" stroke="#1e293b" stroke-width="2.5" transform="rotate(-20 31 44)"/>
+    <rect x="42" y="24" width="10" height="26" rx="3" fill="#facc15" stroke="#1e293b" stroke-width="2.5" transform="rotate(10 47 37)"/>
+    <rect x="58" y="28" width="10" height="26" rx="3" fill="#facc15" stroke="#1e293b" stroke-width="2.5" transform="rotate(35 63 41)"/>
+    <rect x="36" y="30" width="28" height="9" rx="3" fill="#eab308" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- Rich Brown Gravy Pour -->
+    <path d="M24 44 Q50 56 76 44 Q68 56 50 58 Q32 56 24 44 Z" fill="#78350f" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- Squeaky White Cheese Curds -->
+    <ellipse cx="36" cy="40" rx="7" ry="5" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+    <ellipse cx="54" cy="38" rx="8" ry="6" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+    <ellipse cx="66" cy="46" rx="6" ry="5" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+    <ellipse cx="46" cy="48" rx="7" ry="5" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- Wooden Fork standing up -->
+    <rect x="68" y="14" width="5" height="28" rx="1.5" fill="#fed7aa" stroke="#1e293b" stroke-width="2"/>
+    <path d="M66 14 H75 V20 H66 Z" fill="#fed7aa" stroke="#1e293b" stroke-width="2"/>
+  </g>
+</svg>

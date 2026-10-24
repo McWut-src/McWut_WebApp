@@ -20,5 +20,6 @@ public sealed class StoredFileEntity
     public Guid? DropId { get; set; }
     public DropEntity? Drop { get; set; }
     public string? ChecksumSha256 { get; set; }
+    public bool IsChatOnly { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 }

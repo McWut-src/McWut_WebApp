@@ -81,6 +81,7 @@ public static class DependencyInjection
         services.AddScoped<IGrantService, GrantService>();
         services.AddScoped<IFileContentService, FileContentService>();
         services.AddScoped<IFileLifecycle, FileLifecycle>();
+        services.AddSingleton<TypingPresenceService>();
         services.AddScoped<DirectMessageService>();
         services.TryAddSingleton<IStartupDatabaseContact, ImmediateStartupDatabaseContact>();
         services.AddHostedService<FileLifecycleWorker>();

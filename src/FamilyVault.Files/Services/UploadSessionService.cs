@@ -64,7 +64,8 @@ public sealed class UploadSessionService(
             ExpiresAt = request.Retention.ExpiresAt,
             MaxDownloads = request.Retention.MaxDownloads,
             PasswordHash = string.IsNullOrEmpty(request.Password) ? null : PasswordHashing.Hash(passwordHasher, request.Password),
-            DropId = request.DropId
+            DropId = request.DropId,
+            IsChatOnly = request.IsChatOnly
         };
         var session = new UploadSessionEntity
         {

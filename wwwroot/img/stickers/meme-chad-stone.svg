@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- Die cut white border -->
+    <path d="M32 10 L68 10 L70 36 L66 64 L60 88 L34 88 L30 60 L32 10 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Moai Stone Head -->
+    <path d="M35 14 L65 14 L67 36 L62 64 L56 86 L38 86 L34 60 L35 14 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Heavy brow line -->
+    <rect x="36" y="24" width="28" height="6" rx="2" fill="#64748b" stroke="#1e293b" stroke-width="3"/>
+    <!-- Cool 8-bit black shades -->
+    <rect x="34" y="32" width="14" height="10" rx="1" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+    <rect x="52" y="32" width="14" height="10" rx="1" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+    <line x1="48" y1="36" x2="52" y2="36" stroke="#0f172a" stroke-width="3"/>
+    <rect x="36" y="34" width="4" height="2" fill="#ffffff"/>
+    <rect x="54" y="34" width="4" height="2" fill="#ffffff"/>
+    <!-- Long prominent Moai nose -->
+    <path d="M46 28 L46 60 L54 60 L54 54" fill="#64748b" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- Chiseled Gigachad Jaw & pout -->
+    <line x1="42" y1="68" x2="54" y2="68" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M40 76 Q48 82 56 76" fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

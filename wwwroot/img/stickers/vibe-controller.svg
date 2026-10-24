@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M24 28 C34 26 66 26 76 28 C86 30 94 48 88 78 C86 86 76 88 70 78 L60 62 H40 L30 78 C24 88 14 86 12 78 C6 48 14 30 24 28 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Controller Body -->
+    <path d="M26 32 C36 30 64 30 74 32 C84 34 90 50 84 76 C82 82 74 82 70 74 L58 58 H42 L30 74 C26 82 18 82 16 76 C10 50 16 34 26 32 Z" fill="#18181b" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- D-Pad (Left) -->
+    <path d="M30 42 H24 M27 39 V45" stroke="#38bdf8" stroke-width="5" stroke-linecap="square"/>
+    <!-- Analog Sticks (Glowing Thumbsticks) -->
+    <circle cx="38" cy="54" r="6" fill="#27272a" stroke="#06b6d4" stroke-width="2.5"/>
+    <circle cx="62" cy="54" r="6" fill="#27272a" stroke="#ec4899" stroke-width="2.5"/>
+    <!-- Action Buttons (Right XYAB) -->
+    <circle cx="70" cy="38" r="2.5" fill="#facc15"/>
+    <circle cx="76" cy="44" r="2.5" fill="#ef4444"/>
+    <circle cx="64" cy="44" r="2.5" fill="#3b82f6"/>
+    <circle cx="70" cy="50" r="2.5" fill="#22c55e"/>
+    <!-- Center Guide Button (Neon Logo) -->
+    <circle cx="50" cy="42" r="4" fill="#a855f7"/>
+  </g>
+</svg>

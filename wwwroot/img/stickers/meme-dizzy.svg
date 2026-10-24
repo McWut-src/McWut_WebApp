@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- Die cut white backing with dripping bottom -->
+    <path d="M50 10 C26 10 12 26 12 50 C12 68 20 74 24 82 C26 86 32 86 34 80 C36 74 40 76 44 84 C46 88 52 88 54 82 C56 76 60 76 64 86 C66 90 72 90 74 80 C78 72 88 66 88 50 C88 26 74 10 50 10 Z" fill="#ffffff" stroke="#ffffff" stroke-width="6"/>
+    <!-- Dripping Yellow Face -->
+    <path d="M50 14 C28 14 16 30 16 50 C16 66 22 72 26 78 C28 82 32 82 34 76 C36 70 42 72 44 80 C46 84 50 84 52 78 C54 72 60 72 62 82 C64 86 68 86 70 76 C74 70 84 64 84 50 C84 30 72 14 50 14 Z" fill="#facc15" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Left X Eye -->
+    <path d="M28 36 L40 48 M40 36 L28 48" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+    <!-- Right Spiral Eye -->
+    <path d="M68 40 A6 6 0 1 0 62 34 A9 9 0 0 0 71 43" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+    <!-- Smirk & dripping tongue -->
+    <path d="M30 60 Q50 78 68 58" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>
+    <path d="M46 66 C46 78 52 84 56 84 C60 84 64 78 64 62 Z" fill="#ec4899" stroke="#1e293b" stroke-width="3"/>
+  </g>
+</svg>

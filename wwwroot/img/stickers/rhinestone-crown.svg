@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <path d="M18 74 L13 33 L33 49 L50 19 L67 49 L87 33 L82 74 Z" fill="#facc15" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="13" cy="33" r="4.5" fill="#ec4899" stroke="#111827" stroke-width="2.5"/>
+  <circle cx="50" cy="19" r="4.5" fill="#ffffff" stroke="#111827" stroke-width="2.5"/>
+  <circle cx="87" cy="33" r="4.5" fill="#ec4899" stroke="#111827" stroke-width="2.5"/>
+  <rect x="16" y="72" width="68" height="12" rx="4" fill="#06b6d4" stroke="#111827" stroke-width="3.5"/>
+  <circle cx="30" cy="78" r="3.5" fill="#f8fafc" stroke="#111827" stroke-width="2"/>
+  <circle cx="50" cy="78" r="4" fill="#ec4899" stroke="#111827" stroke-width="2"/>
+  <circle cx="70" cy="78" r="3.5" fill="#f8fafc" stroke="#111827" stroke-width="2"/>
+  <path d="M80 10 Q80 14 84 14 Q80 14 80 18 Q80 14 76 14 Q80 14 80 10 Z" fill="#06b6d4" stroke="#111827" stroke-width="2" stroke-linejoin="round"/>
+
+  </g>
+</svg>

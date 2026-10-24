@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <path d="M20 30 H44 L54 48 L76 56 L88 64 C90 70 88 78 84 80 L18 80 C14 78 14 68 16 54 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Shoe Upper (Black Canvas) -->
+    <path d="M24 34 H42 L52 50 L76 58 C84 62 86 68 84 72 L18 72 C16 58 18 42 24 34 Z" fill="#1e293b" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- White Wave/Stripe -->
+    <path d="M22 56 Q44 54 58 64 T84 68" fill="none" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+    <!-- Thick Skater Rubber Sole -->
+    <rect x="16" y="72" width="70" height="10" rx="3" fill="#ffffff" stroke="#1e293b" stroke-width="3.5"/>
+    <line x1="16" y1="76" x2="86" y2="76" stroke="#dc2626" stroke-width="1.5"/>
+    <!-- White Eyelets & Laces -->
+    <line x1="36" y1="44" x2="44" y2="46" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="42" y1="50" x2="50" y2="52" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="48" y1="56" x2="56" y2="58" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Ankle Star badge -->
+    <circle cx="28" cy="44" r="5" fill="#ffffff"/>
+    <polygon points="28,41 29,43 32,44 29,45 28,47 27,45 24,44 27,43" fill="#dc2626"/>
+  </g>
+</svg>

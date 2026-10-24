@@ -25,7 +25,8 @@ public sealed class UploadsController(
                 body.SizeBytes,
                 body.DropId,
                 retention.FromDto(body.Retention),
-                body.Password),
+                body.Password,
+                body.IsChatOnly),
             cancellationToken);
         return Ok(session);
     }

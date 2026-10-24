@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <rect x="12" y="22" width="76" height="56" rx="10" fill="#ffffff" stroke="#ffffff" stroke-width="8"/>
+    <!-- Cassette Shell -->
+    <rect x="14" y="24" width="72" height="52" rx="8" fill="#18181b" stroke="#1e293b" stroke-width="4"/>
+    <!-- Paper Label -->
+    <rect x="22" y="30" width="56" height="32" rx="4" fill="#06b6d4" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- Transparent Window -->
+    <rect x="28" y="42" width="44" height="16" rx="8" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+    <!-- Spools -->
+    <circle cx="38" cy="50" r="5" fill="#18181b"/>
+    <circle cx="38" cy="50" r="2" fill="#ffffff"/>
+    <circle cx="62" cy="50" r="5" fill="#18181b"/>
+    <circle cx="62" cy="50" r="2" fill="#ffffff"/>
+    <line x1="43" y1="50" x2="57" y2="50" stroke="#ec4899" stroke-width="2"/>
+    <text x="50" y="39" text-anchor="middle" font-size="7" font-family="sans-serif" font-weight="900" fill="#0f172a">LOFI VIBES</text>
+  </g>
+</svg>

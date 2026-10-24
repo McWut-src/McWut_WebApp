@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <!-- Offset 3D Shadow Speech Bubble -->
+  <path d="M16 28 H88 C92 28 95 31 95 35 V67 C95 71 92 74 88 74 H44 L26 90 L30 74 H16 C12 74 9 71 9 67 V35 C9 31 12 28 16 28 Z"
+        fill="#ec4899" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Foreground Speech Bubble -->
+  <path d="M12 22 H84 C88 22 91 25 91 29 V61 C91 65 88 68 84 68 H40 L22 84 L26 68 H12 C8 68 5 65 5 61 V29 C5 25 8 22 12 22 Z"
+        fill="#facc15" stroke="#111827" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Bold BRUH Text -->
+  <text x="48" y="53" text-anchor="middle" font-family="Impact, Arial Black, sans-serif" font-size="25" font-weight="900" fill="#111827" letter-spacing="1.5">BRUH.</text>
+  <!-- Sweat drop on top right -->
+  <path d="M84 10 C84 18 79 22 84 26 C89 22 84 18 84 10 Z" fill="#06b6d4" stroke="#111827" stroke-width="2.5" stroke-linejoin="round"/>
+
+  </g>
+</svg>

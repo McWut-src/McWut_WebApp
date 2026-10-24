@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut backing -->
+    <polygon points="50,14 88,74 12,74" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <rect x="20" y="68" width="60" height="20" rx="3" fill="#ffffff" stroke="#ffffff" stroke-width="6"/>
+    <!-- Woodsmoke curling from chimney -->
+    <path d="M68 28 Q64 16 72 10" fill="none" stroke="#94a3b8" stroke-width="3.5" stroke-linecap="round"/>
+    <rect x="64" y="24" width="8" height="14" fill="#78350f" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- A-Frame Steep Roof -->
+    <polygon points="50,18 84,72 16,72" fill="#991b1b" stroke="#1e293b" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Front Chalet Facade -->
+    <polygon points="50,26 76,70 24,70" fill="#b45309" stroke="#1e293b" stroke-width="3"/>
+    <!-- Illuminated Warm Golden Window -->
+    <polygon points="50,38 60,56 40,56" fill="#fef08a" stroke="#1e293b" stroke-width="2.5"/>
+    <!-- Wooden Door -->
+    <rect x="44" y="58" width="12" height="14" rx="2" fill="#78350f" stroke="#1e293b" stroke-width="2"/>
+    <circle cx="53" cy="65" r="1" fill="#facc15"/>
+    <!-- Snowy Ground -->
+    <rect x="14" y="72" width="72" height="12" rx="4" fill="#f8fafc" stroke="#1e293b" stroke-width="3"/>
+  </g>
+</svg>

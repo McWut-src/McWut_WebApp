@@ -29,9 +29,19 @@ window.mcwutIcon = function (name, extra) {
         story: '<path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v5h5"/><path d="M9 12h6"/><path d="M9 16h3"/><circle cx="16.5" cy="16" r="1.25"/>',
         spark: '<path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/>',
         play: '<polygon points="7 4 20 12 7 20 7 4"/>',
+        pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+        stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
         mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/><path d="M8 21h8"/>',
         code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
-        bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'
+        bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+        smile: '<circle cx="12" cy="12" r="9"/><path d="M8 14.5c1.5 2 6.5 2 8 0"/><path d="M7.5 9.5l2 1-2 1"/><path d="M15 8.5v3"/><path d="M13.5 10h3"/>',
+        reply: '<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+        brush: '<path d="M18.4 3.6a2 2 0 0 1 2.8 2.8L11.5 16c-.8.8-2 1-3 1-1.7 0-3 1.3-3 3 0-.2-1.8-.8-1.8-2.8 0-1.9 1.5-3.4 3.4-3.6.8-.1 1.4-.5 2-1.1z"/>',
+        volume: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.8 5.8a9 9 0 0 1 0 12.4"/>',
+        mute: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>',
+        send: '<line x1="21" y1="3" x2="10" y2="14"/><polygon points="21 3 14 21 10 14 3 10 21 3"/>',
+        undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+        eraser: '<path d="M20 20H7L3 16a1.5 1.5 0 0 1 0-2.1L13.4 3.5a1.5 1.5 0 0 1 2.1 0l5 5a1.5 1.5 0 0 1 0 2.1L11.5 20"/>'
     };
     const body = paths[name] || paths.files;
     const cls = extra ? "icon " + extra : "icon";

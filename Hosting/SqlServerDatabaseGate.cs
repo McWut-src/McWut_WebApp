@@ -168,6 +168,8 @@ public sealed class SqlServerDatabaseGate(
         || path.StartsWithSegments("/css")
         || path.StartsWithSegments("/js")
         || path.StartsWithSegments("/lib")
+        || path.StartsWithSegments("/img")
+        || path.StartsWithSegments("/api/messages/typing")
         || path.StartsWithSegments("/favicon.ico")
         || path.StartsWithSegments("/favicon.svg");
 

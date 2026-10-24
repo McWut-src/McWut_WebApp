@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+  <g filter="url(#shadow)">
+    <!-- White die cut border -->
+    <circle cx="50" cy="50" r="44" fill="#ffffff"/>
+    <!-- Impact Burst Star in background -->
+    <polygon points="50,14 58,34 80,24 68,44 88,54 68,62 76,84 54,72 44,90 38,70 16,76 26,56 10,42 30,38 24,18 42,28" fill="#facc15" stroke="#f59e0b" stroke-width="2"/>
+    <!-- Left Broken Wooden Board Half -->
+    <g transform="rotate(-15 30 50)">
+      <polygon points="16,30 42,30 36,46 44,52 38,68 16,68" fill="#d97706" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="22" y1="36" x2="22" y2="62" stroke="#b45309" stroke-width="2"/>
+      <line x1="28" y1="36" x2="28" y2="62" stroke="#b45309" stroke-width="2"/>
+    </g>
+    <!-- Right Broken Wooden Board Half -->
+    <g transform="rotate(18 70 50)">
+      <polygon points="56,30 82,30 82,68 60,68 64,54 54,48 62,38" fill="#d97706" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="72" y1="36" x2="72" y2="62" stroke="#b45309" stroke-width="2"/>
+      <line x1="76" y1="36" x2="76" y2="62" stroke="#b45309" stroke-width="2"/>
+    </g>
+    <!-- Karate Chop Hand smashing down through middle -->
+    <path d="M50 12 L50 48" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+    <!-- Clenched Karate Knife-hand / Shuto strike -->
+    <path d="M44 14 L56 14 L54 44 L44 42 Z" fill="#fed7aa" stroke="#1e293b" stroke-width="3.5" stroke-linejoin="round"/>
+    <rect x="42" y="10" width="16" height="8" rx="2" fill="#f8fafc" stroke="#1e293b" stroke-width="2"/>
+    <!-- Splinter chips -->
+    <polygon points="46,54 50,48 48,56" fill="#78350f"/>
+    <polygon points="52,56 56,50 54,58" fill="#78350f"/>
+  </g>
+</svg>

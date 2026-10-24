@@ -25,7 +25,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<ShortLinkEntity> ShortLinks => Set<ShortLinkEntity>();
     public DbSet<OpenRouterKeyEntity> OpenRouterKeys => Set<OpenRouterKeyEntity>();
     public DbSet<DirectConversationEntity> DirectConversations => Set<DirectConversationEntity>();
+    public DbSet<DirectConversationMemberEntity> DirectConversationMembers => Set<DirectConversationMemberEntity>();
     public DbSet<DirectMessageEntity> DirectMessages => Set<DirectMessageEntity>();
+    public DbSet<DirectMessageReactionEntity> DirectMessageReactions => Set<DirectMessageReactionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +51,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.Property(x => x.StorageKey).HasMaxLength(128).IsRequired();
             b.Property(x => x.PasswordHash).HasMaxLength(256);
             b.Property(x => x.ChecksumSha256).HasMaxLength(64);
+            b.Property(x => x.IsChatOnly).HasDefaultValue(false);
             b.Property(x => x.Status).HasConversion<int>();
             b.HasIndex(x => x.StorageKey).IsUnique();
             b.HasIndex(x => new { x.OwnerUserId, x.Status, x.DeletedAt });
@@ -169,8 +172,12 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         {
             b.ToTable("DirectConversations");
             b.HasKey(x => x.Id);
+            b.Property(x => x.IsGroup).HasDefaultValue(false);
+            b.Property(x => x.Title).HasMaxLength(80);
             b.Property(x => x.LastPreview).HasMaxLength(120);
-            b.HasIndex(x => new { x.LowUserId, x.HighUserId }).IsUnique();
+            b.Property(x => x.LowReadSequence).HasDefaultValue(0L);
+            b.Property(x => x.HighReadSequence).HasDefaultValue(0L);
+            b.HasIndex(x => new { x.LowUserId, x.HighUserId });
             b.HasIndex(x => x.HighUserId);
             b.HasOne<FamilyMemberEntity>()
                 .WithMany()
@@ -182,16 +189,53 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<DirectConversationMemberEntity>(b =>
+        {
+            b.ToTable("DirectConversationMembers");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.ConversationId, x.UserId }).IsUnique();
+            b.HasIndex(x => x.UserId);
+            b.HasOne<DirectConversationEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<DirectMessageEntity>(b =>
         {
             b.ToTable("DirectMessages");
             b.HasKey(x => x.Id);
             b.Property(x => x.Body).HasMaxLength(DirectMessageRules.BodyMax).IsRequired();
+            b.Property(x => x.AttachmentType).HasMaxLength(24);
+            b.Property(x => x.QuotedAuthor).HasMaxLength(80);
+            b.Property(x => x.QuotedSnippet).HasMaxLength(200);
             b.HasIndex(x => new { x.ConversationId, x.Sequence }).IsUnique();
+            b.HasIndex(x => x.AttachmentFileId);
+            b.HasIndex(x => x.ExpiresAt);
             b.HasOne<DirectConversationEntity>()
                 .WithMany()
                 .HasForeignKey(x => x.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DirectMessageReactionEntity>(b =>
+        {
+            b.ToTable("DirectMessageReactions");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Emoji).HasMaxLength(16).IsRequired();
+            b.HasIndex(x => new { x.MessageId, x.UserId, x.Emoji }).IsUnique();
+            b.HasOne<DirectMessageEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

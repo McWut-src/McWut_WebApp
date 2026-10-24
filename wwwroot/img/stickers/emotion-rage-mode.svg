@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112">
+  <style>
+    .sticker-white-border {
+      filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+              drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+              drop-shadow(2px 2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+              drop-shadow(2px -2px 0 #fff) drop-shadow(-2px 2px 0 #fff)
+              drop-shadow(0 4px 6px rgba(0,0,0,.22));
+    }
+  </style>
+  <g class="sticker-white-border">
+    
+  <!-- Steam puffs blasting from sides -->
+  <path d="M14 34 C6 30 6 20 14 20 C16 14 24 16 24 24 Z" fill="#f8fafc" stroke="#111827" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M86 34 C94 30 94 20 86 20 C84 14 76 16 76 24 Z" fill="#f8fafc" stroke="#111827" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Angry Red Face -->
+  <circle cx="50" cy="54" r="36" fill="#ef4444" stroke="#111827" stroke-width="4.5"/>
+  <!-- Deep V Furrowed Brows -->
+  <path d="M26 36 L45 46 M74 36 L55 46" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Glowing Yellow Rage Eyes -->
+  <circle cx="36" cy="49" r="5" fill="#facc15" stroke="#111827" stroke-width="3"/>
+  <circle cx="64" cy="49" r="5" fill="#facc15" stroke="#111827" stroke-width="3"/>
+  <!-- Gritted Clenched Teeth Mouth -->
+  <rect x="28" y="62" width="44" height="16" rx="7" fill="#ffffff" stroke="#111827" stroke-width="4"/>
+  <line x1="28" y1="70" x2="72" y2="70" stroke="#111827" stroke-width="3"/>
+  <line x1="39" y1="62" x2="39" y2="78" stroke="#111827" stroke-width="2.5"/>
+  <line x1="50" y1="62" x2="50" y2="78" stroke="#111827" stroke-width="2.5"/>
+  <line x1="61" y1="62" x2="61" y2="78" stroke="#111827" stroke-width="2.5"/>
+
+  </g>
+</svg>
