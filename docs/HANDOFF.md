@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000025`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000026`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**24 October 2026, 17:43 UTC.** Production was moved on purpose to group messaging, 84 SVG stickers & meme collection, custom reactions, voice memo attachments, and doodle canvas.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000025` | `ghcr.io/mcwut-src/mcwut_webapp:c57488b7218611efa85469753704689798efd067` |
+| Live | `ca-mcwut--0000026` | `ghcr.io/mcwut-src/mcwut_webapp:1f9dbfa1e77b5fa001efabcfec3670b8cd7b39be` |
+
+`0000026` has 100% of the traffic and is Healthy. `0000025` is the previous revision and can be brought back. The new revision’s startup log says it is listening. It does not say `Database migrate and identity seed finished.`
+
+Checked while signed out, on `0000026`: both hosts `/health` return `ok`, Register is 404, and `/`, `/Privacy`, `/profile`, `/files`, `/messages`, `/passwords`, and `/ai` redirect to sign-in. `/img/stickers/meme-rock-side-eye.svg` returns 200. The sign-in page shows McWut, and the title is Sign in - McWut. It does not show a privacy link, an invitation sentence, or a toy password. Sign-in with the production password was not tried. This build adds the `AddKidsChatEnhancements` migration, which applies on the first database access.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000025
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000025=100
+```
 
 **17 October 2026, 18:37 UTC.** Production was moved on purpose to support reading and editing code and configuration files in My files with dedicated code icon and monospace font.
 

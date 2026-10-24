@@ -15,8 +15,8 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000025` | `ghcr.io/mcwut-src/mcwut_webapp:c57488b7218611efa85469753704689798efd067` |
-| Rollback | `ca-mcwut--0000024` | `ghcr.io/mcwut-src/mcwut_webapp:81e006e93793ea90b84173044bdbeef68c00241a` |
+| Live | `ca-mcwut--0000026` | `ghcr.io/mcwut-src/mcwut_webapp:1f9dbfa1e77b5fa001efabcfec3670b8cd7b39be` |
+| Rollback | `ca-mcwut--0000025` | `ghcr.io/mcwut-src/mcwut_webapp:c57488b7218611efa85469753704689798efd067` |
 
 `ca-mcwut--0000023` (`808a8b866988196ac17211297f3b53ef2254573b`), `ca-mcwut--0000022` (`2912aa3ca2baf08a86201465d5f904d9cac24d3e`), `ca-mcwut--0000021` (`b8093471aea98fc6aed6910afb1a71528cc9fd6b`), `ca-mcwut--0000020` (`5223a861b89ecff785f1e34d4a02520ce73ef788`), `ca-mcwut--0000019` (`5f3abb564ea61d83921c23ac6812f894bb9f9cff`), and `ca-mcwut--adminpw` (`c1323430bef02d089f97fb594424dbb12f852e9a`) are older rollbacks. `0000018` is that same image, stopped. The password is not in git.
 
@@ -29,8 +29,8 @@ Promote only when Vince asks to publish or promote. A docs request, including â€
 Rollback of the image above:
 
 ```powershell
-az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000024
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000024=100
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000025
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000025=100
 ```
 
 ## How Vince wants changes shipped
