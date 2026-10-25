@@ -15,12 +15,12 @@ Trust the promotion table in [HANDOFF.md](HANDOFF.md), then confirm with Azure b
 
 | | Revision | Image |
 |---|---|---|
-| Live | `ca-mcwut--0000026` | `ghcr.io/mcwut-src/mcwut_webapp:1f9dbfa1e77b5fa001efabcfec3670b8cd7b39be` |
-| Rollback | `ca-mcwut--0000025` | `ghcr.io/mcwut-src/mcwut_webapp:c57488b7218611efa85469753704689798efd067` |
+| Live | `ca-mcwut--0000027` | `ghcr.io/mcwut-src/mcwut_webapp:ddeb9042a2c97ee7c596cfd9b694d8ab69ccd80c` |
+| Rollback | `ca-mcwut--0000026` | `ghcr.io/mcwut-src/mcwut_webapp:1f9dbfa1e77b5fa001efabcfec3670b8cd7b39be` |
 
-`ca-mcwut--0000023` (`808a8b866988196ac17211297f3b53ef2254573b`), `ca-mcwut--0000022` (`2912aa3ca2baf08a86201465d5f904d9cac24d3e`), `ca-mcwut--0000021` (`b8093471aea98fc6aed6910afb1a71528cc9fd6b`), `ca-mcwut--0000020` (`5223a861b89ecff785f1e34d4a02520ce73ef788`), `ca-mcwut--0000019` (`5f3abb564ea61d83921c23ac6812f894bb9f9cff`), and `ca-mcwut--adminpw` (`c1323430bef02d089f97fb594424dbb12f852e9a`) are older rollbacks. `0000018` is that same image, stopped. The password is not in git.
+`ca-mcwut--0000025` (`c57488b7218611efa85469753704689798efd067`), `ca-mcwut--0000023` (`808a8b866988196ac17211297f3b53ef2254573b`), `ca-mcwut--0000022` (`2912aa3ca2baf08a86201465d5f904d9cac24d3e`), `ca-mcwut--0000021` (`b8093471aea98fc6aed6910afb1a71528cc9fd6b`), `ca-mcwut--0000020` (`5223a861b89ecff785f1e34d4a02520ce73ef788`), `ca-mcwut--0000019` (`5f3abb564ea61d83921c23ac6812f894bb9f9cff`), and `ca-mcwut--adminpw` (`c1323430bef02d089f97fb594424dbb12f852e9a`) are older rollbacks. `0000018` is that same image, stopped. The password is not in git.
 
-Commit `c57488b` adds support for reading and editing code and configuration files in My files with dedicated code icon and monospace font. Commit `81e006e` adds password vault read-only member sharing, bare domain support (e.g. `facebook.com`), site favicons with lock fallback, and a standalone password generator card. Commit `808a8b8` adds voice memo recording, download limits / burn-after-reading, Ask AI in note/story reader, password health checks & generator, message browser notifications, and PWA manifest. Commit `2912aa3` adds password vault JSON import, in-place note and story editing, inline audio/video playback, message search & clickable links, and the AI paid models toggle. Commit `b809347` adds private member-to-member Messages. Commit `5223a86` adds the AI chat. Commit `5f3abb5` shows the member’s name and color on the signed-in bar, and downloads a vault copy. Commit `c132343` shares a file or a story with a member and lists stories on My files. Commit `31b6fc8` stops a cold start from opening or creating Azure SQL. A docs commit after `c57488b` is not the Azure image.
+Commit `ddeb904` adds kid accounts in Admin to disable and hide all AI features for marked kids (preserving Messages AI sticker generation) and custom AI sticker generation. Commit `1f9dbfa` adds group messaging, 84 SVG stickers & meme collection, custom reactions, voice memo attachments, and doodle canvas. Commit `c57488b` adds support for reading and editing code and configuration files in My files with dedicated code icon and monospace font. Commit `81e006e` adds password vault read-only member sharing, bare domain support (e.g. `facebook.com`), site favicons with lock fallback, and a standalone password generator card. Commit `808a8b8` adds voice memo recording, download limits / burn-after-reading, Ask AI in note/story reader, password health checks & generator, message browser notifications, and PWA manifest. Commit `2912aa3` adds password vault JSON import, in-place note and story editing, inline audio/video playback, message search & clickable links, and the AI paid models toggle. Commit `b809347` adds private member-to-member Messages. Commit `5223a86` adds the AI chat. Commit `5f3abb5` shows the member’s name and color on the signed-in bar, and downloads a vault copy. Commit `c132343` shares a file or a story with a member and lists stories on My files. Commit `31b6fc8` stops a cold start from opening or creating Azure SQL. A docs commit after `ddeb904` is not the Azure image.
 
 `git push` of `main` builds `ghcr.io/mcwut-src/mcwut_webapp:<full SHA>` and moves the tag `:qa` to that commit. It does not change https://mcwut.com. Do not point Azure at `:qa` or `:latest`. Pin the full feature SHA.
 
@@ -29,8 +29,8 @@ Promote only when Vince asks to publish or promote. A docs request, including �
 Rollback of the image above:
 
 ```powershell
-az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000025
-az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000025=100
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000026
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000026=100
 ```
 
 ## How Vince wants changes shipped
