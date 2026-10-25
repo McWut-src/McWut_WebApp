@@ -131,7 +131,13 @@ builder.Services.AddScoped<InviteService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PasswordVaultService>();
 builder.Services.AddScoped<OpenRouterKeyService>();
+builder.Services.AddScoped<AdminStickerKeyService>();
 builder.Services.AddScoped<AiChatService>();
+builder.Services.AddScoped<StickerGeneratorService>();
+builder.Services.AddHttpClient<GoogleGeminiClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(180);
+});
 builder.Services.AddHttpClient<OpenRouterClient>(client =>
 {
     client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");

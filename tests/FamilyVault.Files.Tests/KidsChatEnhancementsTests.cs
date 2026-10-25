@@ -408,6 +408,55 @@ public class KidsChatEnhancementsTests
         Assert.Empty(typing.GetTypingNames(conv.Id, SqliteFixture.OwnerId));
     }
 
+    [Fact]
+    public void Sticker_generator_rules_enforce_five_word_limit_child_safety_and_svg_sanitization()
+    {
+        Assert.Equal(16, StickerGeneratorRules.Themes.Count);
+        Assert.Equal("dojo-karate", StickerGeneratorRules.NormalizeTheme("dojo-karate").Id);
+        Assert.Equal("street-skate", StickerGeneratorRules.NormalizeTheme("unknown-theme").Id);
+
+        // Prompt normalization: 1..5 words allowed, >5 words or blocked words rejected
+        Assert.Equal("ninja cat eating poutine", StickerGeneratorRules.NormalizePrompt("  ninja   cat eating poutine "));
+        Assert.Throws<DirectMessageValidationException>(() => StickerGeneratorRules.NormalizePrompt(""));
+        Assert.Throws<DirectMessageValidationException>(() => StickerGeneratorRules.NormalizePrompt("one two three four five six"));
+        Assert.Throws<DirectMessageValidationException>(() => StickerGeneratorRules.NormalizePrompt("cool gun sticker"));
+
+        // Custom sticker slug recognition in DirectMessageRules
+        var customId = Guid.NewGuid();
+        var customToken = $"[sticker:custom-{customId:N}]";
+        Assert.True(DirectMessageRules.TryParseSticker(customToken, out var parsedSlug));
+        Assert.Equal($"custom-{customId:N}", parsedSlug);
+        Assert.Equal("🎨 Sticker", DirectMessageRules.FormatPreview(customToken, null));
+
+        // SVG sanitization strips scripts, event handlers, foreignObject, and external URLs while keeping valid shapes
+        var rawModelReply = """
+            Here is your sticker:
+            ```svg
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" onload="alert(1)">
+              <script>alert('xss')</script>
+              <foreignObject><div>bad</div></foreignObject>
+              <defs>
+                <filter id="ds"><feDropShadow dx="0" dy="4" stdDeviation="3"/></filter>
+              </defs>
+              <g filter="url(#ds)" onclick="evil()">
+                <circle cx="60" cy="60" r="45" fill="#facc15" stroke="#111827" stroke-width="4" />
+                <path d="M40 70 Q60 85 80 70" fill="none" stroke="#111827" stroke-width="4" style="background:url(https://evil.example/x)" />
+              </g>
+            </svg>
+            ```
+            """;
+
+        var cleanSvg = StickerGeneratorRules.SanitizeSvg(rawModelReply);
+        Assert.Contains("viewBox=\"0 0 120 120\"", cleanSvg);
+        Assert.Contains("<circle", cleanSvg);
+        Assert.Contains("filter=\"url(#ds)\"", cleanSvg);
+        Assert.DoesNotContain("<script", cleanSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("foreignObject", cleanSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("onload", cleanSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("onclick", cleanSvg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("evil.example", cleanSvg, StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class TestEnv : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = "Development";

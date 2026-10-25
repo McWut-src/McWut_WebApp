@@ -11,6 +11,7 @@ public static class IdentitySeed
     public const string DemoEmail = "member@mcwut.com";
     public const string DemoPassword = "member";
     public const string AdminRole = "Admin";
+    public const string KidRole = "Kid";
 
     public static async Task SeedAsync(IServiceScopeFactory scopes, CancellationToken cancellationToken = default)
     {
@@ -24,6 +25,11 @@ public static class IdentitySeed
         if (!await roles.RoleExistsAsync(AdminRole))
         {
             await roles.CreateAsync(new IdentityRole(AdminRole));
+        }
+
+        if (!await roles.RoleExistsAsync(KidRole))
+        {
+            await roles.CreateAsync(new IdentityRole(KidRole));
         }
 
         if (identity.SeedDemoUsers || environment.IsDevelopment())

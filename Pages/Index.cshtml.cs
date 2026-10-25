@@ -8,9 +8,11 @@ public class IndexModel(IFamilyRoster roster) : PageModel
 {
     public string? HelloName { get; private set; }
     public string? AccentColor { get; private set; }
+    public bool IsKid { get; private set; }
 
     public async Task OnGetAsync()
     {
+        IsKid = User.IsInRole(IdentitySeed.KidRole);
         var id = User.GetVaultUserId();
         if (id is null)
         {

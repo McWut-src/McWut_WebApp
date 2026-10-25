@@ -46,6 +46,10 @@
         return (bytes / (1024 * 1024)).toFixed(1) + " MB";
     }
 
+    function isKidUser() {
+        return document.body.classList.contains("is-kid") || document.body.getAttribute("data-kid") === "true";
+    }
+
     function esc(value) {
         return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
             "&": "&amp;",
@@ -896,6 +900,9 @@
     }
 
     async function askAiAboutCurrentNote() {
+        if (isKidUser()) {
+            return;
+        }
         const file = ownedFiles.concat(incomingFiles).find(f => sameId(f.id, noteFileId));
         if (!file || !canRead(file)) {
             return;
@@ -1064,7 +1071,7 @@
         }
         const aiBtn = root.querySelector("[data-note-ai]");
         if (aiBtn) {
-            aiBtn.hidden = !withinLimit;
+            aiBtn.hidden = isKidUser() || !withinLimit;
         }
         syncShareButton(root, file);
         const body = root.querySelector("[data-note-body]");
@@ -1193,6 +1200,9 @@
     }
 
     async function askAiAboutCurrentStory() {
+        if (isKidUser()) {
+            return;
+        }
         const story = findStory(storyOpenId);
         if (!story || !story.body) {
             return;
@@ -1359,7 +1369,7 @@
         }
         const aiBtn = root.querySelector("[data-story-ai]");
         if (aiBtn) {
-            aiBtn.hidden = !story.body;
+            aiBtn.hidden = isKidUser() || !story.body;
         }
         if (canShare) {
             share.setAttribute("data-story-id", story.id);

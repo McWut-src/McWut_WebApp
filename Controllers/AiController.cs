@@ -9,6 +9,7 @@ namespace McWutWebApp.Controllers;
 
 [ApiController]
 [Authorize]
+[DisallowKids]
 [AutoValidateAntiforgeryToken]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("api/ai")]

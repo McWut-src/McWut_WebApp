@@ -30,6 +30,7 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
 
     public string? Notice { get; private set; }
     public int RequiredLength { get; private set; }
+    public bool IsKid { get; private set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -66,6 +67,7 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
 
         if (!ModelState.IsValid)
         {
+            IsKid = User.IsInRole(IdentitySeed.KidRole);
             AccentColor = color ?? MemberColors.Fallback;
             return Page();
         }
@@ -73,6 +75,7 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
         var id = User.RequireVaultUserId();
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;
         await roster.UpdateProfileAsync(id, email, name, color, HttpContext.RequestAborted);
+        IsKid = User.IsInRole(IdentitySeed.KidRole);
         DisplayName = name;
         AccentColor = color;
         Notice = "Saved.";
@@ -118,6 +121,7 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
 
     private async Task LoadAsync()
     {
+        IsKid = User.IsInRole(IdentitySeed.KidRole);
         var id = User.RequireVaultUserId();
         var member = await roster.GetAsync(id, HttpContext.RequestAborted);
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;

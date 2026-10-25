@@ -15,7 +15,7 @@
                 }
                 @hello
             </h1>
-            <p class="page-kicker">Files, logins, links, messages, and a chat. Just for us.</p>
+            <p class="page-kicker">@(Model.IsKid ? "Files, logins, links, and messages. Just for us." : "Files, logins, links, messages, and a chat. Just for us.")</p>
         </div>
     </div>
     <div class="dest-grid">
@@ -39,15 +39,18 @@
             <strong>Messages</strong>
             <span>A note to another member.</span>
         </a>
-        <a class="dest" asp-page="/Ai/Index">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>
-            <strong>AI</strong>
-            <span>A chat with your own key.</span>
-        </a>
+        @if (!Model.IsKid)
+        {
+            <a class="dest" asp-page="/Ai/Index">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>
+                <strong>AI</strong>
+                <span>A chat with your own key.</span>
+            </a>
+        }
         <a class="dest" asp-page="/Profile/Index">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
             <strong>Profile</strong>
-            <span>Name, color, and an AI key.</span>
+            <span>@(Model.IsKid ? "Name, color, and password." : "Name, color, and an AI key.")</span>
         </a>
     </div>
 </div>

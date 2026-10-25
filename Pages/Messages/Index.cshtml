@@ -96,6 +96,29 @@
 
             <div id="message-sticker-pop" class="message-sticker-pop" role="dialog" aria-label="Stickers and emojis" hidden>
                 <div class="message-quick-emojis" id="message-quick-emojis" aria-label="Quick emojis"></div>
+                <div class="message-sticker-creator">
+                    <select id="sticker-create-theme" class="form-select form-select-sm sticker-theme-select" aria-label="Sticker style theme">
+                        <option value="street-skate">🛹 Street &amp; Skate</option>
+                        <option value="y2k-chrome">✨ Y2K Chrome</option>
+                        <option value="cyber-neon">⚡ Cyber Neon</option>
+                        <option value="comic-boom">💥 Comic Pop / Boom</option>
+                        <option value="graffiti-tag">🎨 Graffiti Tag</option>
+                        <option value="anime-chibi">🌟 Anime Chibi</option>
+                        <option value="retro-pixel">👾 Retro Arcade / 16-Bit</option>
+                        <option value="dojo-karate">🥋 Dojo &amp; Martial Arts</option>
+                        <option value="valdavid-outdoors">🌲 Val-David Outdoors</option>
+                        <option value="mtl-quebec">⚜️ Montreal &amp; Quebec Vibes</option>
+                        <option value="spooky-cute">👻 Spooky Cute</option>
+                        <option value="gamer-badge">🎮 Esports / Gamer Badge</option>
+                        <option value="vaporwave">🌅 Vaporwave Sunset</option>
+                        <option value="cozy-lofi">☕ Cozy Lo-Fi</option>
+                        <option value="holo-foil">🌈 Holographic Foil</option>
+                        <option value="3d-mascot">🧸 Chunky 3D Vinyl Toy</option>
+                    </select>
+                    <input type="text" id="sticker-create-prompt" class="form-control form-control-sm sticker-prompt-input" maxlength="50" placeholder="Create sticker (5 words max)…" autocomplete="off" aria-label="Sticker description (5 words max)" />
+                    <button type="button" id="sticker-create-btn" class="btn btn-sm btn-primary sticker-create-btn" title="Generate AI sticker">Create</button>
+                </div>
+                <p id="sticker-create-status" class="sticker-create-status small mb-0" hidden></p>
                 <div class="message-sticker-grid" id="message-sticker-grid" aria-label="Stickers"></div>
             </div>
 

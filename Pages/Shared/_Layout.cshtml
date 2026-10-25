@@ -18,8 +18,10 @@
     var barInk = MemberLabel.PaleInk;
     var barPale = false;
     var unreadMessages = 0;
+    var isKid = false;
     if (personal)
     {
+        isKid = User.IsInRole(IdentitySeed.KidRole);
         var id = User.GetVaultUserId();
         if (id is not null)
         {
@@ -46,6 +48,10 @@
     if (personal)
     {
         bodyClass += barPale ? " bar-pale" : " bar-dark";
+        if (isKid)
+        {
+            bodyClass += " is-kid";
+        }
     }
 
     var bodyStyle = personal ? $"--bar: {bar}; --bar-ink: {barInk};" : null;
@@ -75,7 +81,7 @@
     <link rel="stylesheet" href="~/McWutWebApp.styles.css" asp-append-version="true" />
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
 </head>
-<body class="@bodyClass" style="@bodyStyle">
+<body class="@bodyClass" style="@bodyStyle" data-kid="@(isKid ? "true" : null)">
     <div class="app-shell">
         <header class="topbar">
             @if (personal)
@@ -103,9 +109,12 @@
                         <span class="top-count"></span>
                     }
                 </a>
-                <a class="top-icon d-lg-none" asp-page="/Ai/Index" title="AI" aria-label="AI">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>
-                </a>
+                @if (!isKid)
+                {
+                    <a class="top-icon d-lg-none" asp-page="/Ai/Index" title="AI" aria-label="AI">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.2L17.6 8.6 13.4 10 12 14.2 10.6 10 6.4 8.6 10.6 7.2z"/><path d="M18 14.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"/></svg>
+                    </a>
+                }
                 <a class="top-icon d-lg-none" asp-page="/Profile/Index" title="Profile" aria-label="Profile">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
                 </a>

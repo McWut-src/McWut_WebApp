@@ -1,0 +1,59 @@
+@page "/admin/stickers"
+@model McWutWebApp.Pages.Admin.StickersModel
+@{
+    ViewData["Title"] = "Sticker AI";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Sticker AI Provider</h1>
+        <p class="page-kicker">Manage the dedicated AI key used by all family members to generate custom stickers in Messages. This key is completely separate from your personal OpenRouter key.</p>
+    </div>
+</div>
+
+<div class="panel mb-4">
+    <h2 class="h6 mb-3">Sticker AI Key</h2>
+
+    @if (!string.IsNullOrEmpty(Model.Notice))
+    {
+        <div class="alert alert-success">@Model.Notice</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label text-muted small text-uppercase fw-semibold">Status</label>
+        <div>
+            @if (Model.Status.Configured)
+            {
+                <span class="badge bg-success">Configured (@Model.Status.Provider)</span>
+                <span class="ms-2 text-muted small">Key ending in <code>…@Model.Status.Hint</code></span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Not configured</span>
+                <span class="ms-2 text-muted small">Sticker generation is currently unavailable.</span>
+            }
+        </div>
+    </div>
+
+    <form method="post" class="mb-3">
+        <div class="mb-3">
+            <label class="form-label" for="apiKey">API Key (Google Gemini or OpenRouter)</label>
+            <input id="apiKey" name="apiKey" class="form-control" type="password" placeholder="Paste your Google Gemini or OpenRouter key" autocomplete="off" />
+            <div class="form-text">
+                Recommended: <strong>Google AI Studio (Gemini 2.5 Flash)</strong> for high-quality SVG generation at zero cost. Get a free key at <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">aistudio.google.com</a>.
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save key</button>
+            @if (Model.Status.Configured)
+            {
+                <button type="submit" asp-page-handler="Delete" class="btn btn-outline-danger">Remove key</button>
+            }
+        </div>
+    </form>
+</div>

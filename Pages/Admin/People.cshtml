@@ -7,7 +7,7 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">People</h1>
-        <p class="page-kicker">Turn an account off when someone should not sign in. Their files stay. New people still join from <a asp-page="/Admin/Invites">Invites</a>.</p>
+        <p class="page-kicker">Turn an account off when someone should not sign in. Mark kids to keep AI features off for them. Their files stay. New people still join from <a asp-page="/Admin/Invites">Invites</a>.</p>
     </div>
 </div>
 
@@ -28,6 +28,7 @@
             <tr>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Kid</th>
                 <th>Sign-in</th>
                 <th></th>
             </tr>
@@ -38,6 +39,26 @@
             <tr>
                 <td>@person.Email</td>
                 <td>@person.Roles</td>
+                <td>
+                    @if (person.IsSelf || person.IsAdmin)
+                    {
+                        <span class="text-muted small">—</span>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="SetKid" class="d-inline">
+                            <input type="hidden" name="id" value="@person.Id" />
+                            <input type="hidden" name="isKid" value="@(!person.IsKid ? "true" : "false")" />
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="checkbox" id="kid-@person.Id" checked="@person.IsKid" onchange="this.form.submit()" title="Tick to mark as kid (disables AI)" aria-label="Mark @person.Email as kid" />
+                                <label class="form-check-label small" for="kid-@person.Id">@(person.IsKid ? "Kid (no AI)" : "Adult")</label>
+                            </div>
+                            <noscript>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary ms-1">Save</button>
+                            </noscript>
+                        </form>
+                    }
+                </td>
                 <td>@(person.Disabled ? "Off" : "On")</td>
                 <td class="text-end">
                     @if (person.IsSelf)

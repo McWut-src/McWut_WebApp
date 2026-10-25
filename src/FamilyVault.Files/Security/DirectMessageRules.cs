@@ -20,6 +20,7 @@ public static class DirectMessageRules
     public const int TitleMax = 80;
     public const int QuoteSnippetMax = 160;
     public const int VoiceRetentionDays = 7;
+    public const string CustomStickerContentType = "image/x-mcwut-sticker+svg";
 
     public static readonly IReadOnlyList<string> AllowedReactions =
     [
@@ -236,13 +237,25 @@ public static class DirectMessageRules
         }
 
         var candidate = trimmed["[sticker:".Length..^1];
-        if (!AllowedStickers.Contains(candidate))
+        if (!AllowedStickers.Contains(candidate) && !TryParseCustomStickerId(candidate, out _))
         {
             return false;
         }
 
         slug = candidate;
         return true;
+    }
+
+    public static bool TryParseCustomStickerId(string? slug, out Guid fileId)
+    {
+        fileId = Guid.Empty;
+        if (string.IsNullOrWhiteSpace(slug) || !slug.StartsWith("custom-", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var hex = slug["custom-".Length..];
+        return hex.Length == 32 && Guid.TryParseExact(hex, "N", out fileId);
     }
 
     public static string Preview(string body) => Truncate(CollapseSpaces(body), PreviewMax);

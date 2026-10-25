@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace McWutWebApp.Pages.Admin;
 
 [Authorize(Roles = IdentitySeed.AdminRole)]
-public class PeopleModel(UserManager<IdentityUser> users) : PageModel
+public class PeopleModel(UserManager<IdentityUser> users, RoleManager<IdentityRole> roleManager) : PageModel
 {
     public IReadOnlyList<PersonRow> People { get; private set; } = [];
     public string? Notice { get; private set; }
@@ -49,6 +49,31 @@ public class PeopleModel(UserManager<IdentityUser> users) : PageModel
         return Page();
     }
 
+    public async Task<IActionResult> OnPostSetKidAsync(string id, bool isKid, CancellationToken cancellationToken)
+    {
+        var error = await ChangeKidAsync(id, isKid);
+        if (error is null)
+        {
+            Notice = isKid
+                ? "Account marked as a kid. AI features are disabled for them."
+                : "Account marked as adult. AI features are enabled for them.";
+        }
+        else
+        {
+            Error = error;
+        }
+
+        await LoadAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostToggleKidAsync(string id, CancellationToken cancellationToken)
+    {
+        var account = await users.FindByIdAsync(id);
+        var currentlyKid = account is not null && await users.IsInRoleAsync(account, IdentitySeed.KidRole);
+        return await OnPostSetKidAsync(id, !currentlyKid, cancellationToken);
+    }
+
     private async Task LoadAsync()
     {
         var selfId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -58,15 +83,72 @@ public class PeopleModel(UserManager<IdentityUser> users) : PageModel
         {
             var roles = await users.GetRolesAsync(account);
             var disabled = await users.IsLockedOutAsync(account);
+            var isKid = roles.Contains(IdentitySeed.KidRole, StringComparer.OrdinalIgnoreCase);
+            var isAdmin = roles.Contains(IdentitySeed.AdminRole, StringComparer.OrdinalIgnoreCase);
+            var displayRoles = roles
+                .Where(r => !string.Equals(r, IdentitySeed.KidRole, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
             rows.Add(new PersonRow(
                 account.Id,
                 account.Email ?? account.UserName ?? "(no email)",
-                roles.Count == 0 ? "Member" : string.Join(", ", roles),
+                displayRoles.Count == 0 ? "Member" : string.Join(", ", displayRoles),
                 disabled,
+                isKid,
+                isAdmin,
                 string.Equals(account.Id, selfId, StringComparison.Ordinal)));
         }
 
         People = rows;
+    }
+
+    private async Task<string?> ChangeKidAsync(string? id, bool isKid)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return "Missing account.";
+        }
+
+        var account = await users.FindByIdAsync(id);
+        if (account is null)
+        {
+            return "That account was not found.";
+        }
+
+        var selfId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.Equals(account.Id, selfId, StringComparison.Ordinal))
+        {
+            return "You cannot change kid status on your own account.";
+        }
+
+        if (isKid && await users.IsInRoleAsync(account, IdentitySeed.AdminRole))
+        {
+            return "An admin cannot be marked as a kid.";
+        }
+
+        if (!await roleManager.RoleExistsAsync(IdentitySeed.KidRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(IdentitySeed.KidRole));
+        }
+
+        var currentlyKid = await users.IsInRoleAsync(account, IdentitySeed.KidRole);
+        if (isKid != currentlyKid)
+        {
+            var result = isKid
+                ? await users.AddToRoleAsync(account, IdentitySeed.KidRole)
+                : await users.RemoveFromRoleAsync(account, IdentitySeed.KidRole);
+
+            if (!result.Succeeded)
+            {
+                return isKid
+                    ? "Could not mark this account as a kid."
+                    : "Could not remove kid status from this account.";
+            }
+
+            await users.UpdateSecurityStampAsync(account);
+        }
+
+        return null;
     }
 
     private async Task<string?> ChangeAsync(string? id, bool disable)
@@ -121,5 +203,5 @@ public class PeopleModel(UserManager<IdentityUser> users) : PageModel
         return cleared.Succeeded ? null : "Could not turn this account back on.";
     }
 
-    public sealed record PersonRow(string Id, string Email, string Roles, bool Disabled, bool IsSelf);
+    public sealed record PersonRow(string Id, string Email, string Roles, bool Disabled, bool IsKid, bool IsAdmin, bool IsSelf);
 }

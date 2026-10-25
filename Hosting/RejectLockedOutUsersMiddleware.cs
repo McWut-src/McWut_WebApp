@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
 namespace McWutWebApp.Hosting;
 
 /// <summary>
 /// A turned-off account must stop working even if they still have a sign-in cookie.
+/// Also synchronizes role changes (such as Kid status) into the active session immediately.
 /// </summary>
 public sealed class RejectLockedOutUsersMiddleware(RequestDelegate next)
 {
@@ -15,17 +17,41 @@ public sealed class RejectLockedOutUsersMiddleware(RequestDelegate next)
         if (context.User.Identity?.IsAuthenticated == true && !IsQuietPath(context.Request.Path))
         {
             var user = await users.GetUserAsync(context.User);
-            if (user is not null && await users.IsLockedOutAsync(user))
+            if (user is not null)
             {
-                await signIn.SignOutAsync();
-                if (context.Request.Path.StartsWithSegments("/api"))
+                if (await users.IsLockedOutAsync(user))
                 {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await signIn.SignOutAsync();
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return;
+                    }
+
+                    context.Response.Redirect("/Identity/Account/Login");
                     return;
                 }
 
-                context.Response.Redirect("/Identity/Account/Login");
-                return;
+                var isKidInDb = await users.IsInRoleAsync(user, IdentitySeed.KidRole);
+                var isKidInClaim = context.User.IsInRole(IdentitySeed.KidRole);
+                if (isKidInDb != isKidInClaim && context.User.Identity is ClaimsIdentity identity)
+                {
+                    var roleClaimType = identity.RoleClaimType ?? ClaimTypes.Role;
+                    if (isKidInDb)
+                    {
+                        identity.AddClaim(new Claim(roleClaimType, IdentitySeed.KidRole));
+                    }
+                    else
+                    {
+                        var claim = identity.FindFirst(c => c.Type == roleClaimType && string.Equals(c.Value, IdentitySeed.KidRole, StringComparison.OrdinalIgnoreCase));
+                        if (claim is not null)
+                        {
+                            identity.RemoveClaim(claim);
+                        }
+                    }
+
+                    await signIn.RefreshSignInAsync(user);
+                }
             }
         }
 

@@ -11,8 +11,46 @@ namespace McWutWebApp.Controllers;
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [ServiceFilter(typeof(UpsertFamilyMemberFilter))]
 [Route("api/messages")]
-public sealed class MessagesController(DirectMessageService messages) : ControllerBase
+public sealed class MessagesController(DirectMessageService messages, StickerGeneratorService stickers) : ControllerBase
 {
+    [HttpGet("stickers")]
+    public async Task<ActionResult<IReadOnlyList<CustomStickerView>>> ListStickers(CancellationToken cancellationToken) =>
+        Ok(await stickers.ListAsync(
+            User.RequireVaultUserId(),
+            User.IsInRole(IdentitySeed.AdminRole),
+            cancellationToken));
+
+    [HttpPost("stickers")]
+    public async Task<ActionResult<CustomStickerView>> CreateSticker(
+        [FromBody] StickerGenerateBody body,
+        CancellationToken cancellationToken) =>
+        Ok(await stickers.GenerateAsync(
+            User.RequireVaultUserId(),
+            body.Theme,
+            body.Prompt,
+            cancellationToken));
+
+    [HttpGet("stickers/{id:guid}.svg")]
+    [IgnoreAntiforgeryToken]
+    [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Client)]
+    public async Task<IActionResult> StickerSvg(Guid id, CancellationToken cancellationToken)
+    {
+        var stream = await stickers.OpenSvgAsync(id, cancellationToken);
+        Response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'";
+        return File(stream, "image/svg+xml");
+    }
+
+    [HttpDelete("stickers/{id:guid}")]
+    public async Task<IActionResult> DeleteSticker(Guid id, CancellationToken cancellationToken)
+    {
+        await stickers.DeleteAsync(
+            User.RequireVaultUserId(),
+            User.IsInRole(IdentitySeed.AdminRole),
+            id,
+            cancellationToken);
+        return NoContent();
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<DirectConversationView>>> List(CancellationToken cancellationToken) =>
         Ok(await messages.ListAsync(User.RequireVaultUserId(), cancellationToken));
@@ -106,4 +144,10 @@ public sealed class MessageReactionBody
 {
     public Guid MessageId { get; set; }
     public string? Emoji { get; set; }
+}
+
+public sealed class StickerGenerateBody
+{
+    public string? Theme { get; set; }
+    public string? Prompt { get; set; }
 }

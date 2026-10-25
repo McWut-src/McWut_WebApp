@@ -50,6 +50,10 @@
     const stickerPopEl = document.getElementById("message-sticker-pop");
     const quickEmojisEl = document.getElementById("message-quick-emojis");
     const stickerGridEl = document.getElementById("message-sticker-grid");
+    const stickerCreateThemeEl = document.getElementById("sticker-create-theme");
+    const stickerCreatePromptEl = document.getElementById("sticker-create-prompt");
+    const stickerCreateBtn = document.getElementById("sticker-create-btn");
+    const stickerCreateStatusEl = document.getElementById("sticker-create-status");
     const micBtn = document.getElementById("message-mic-btn");
 
     const voiceBarEl = document.getElementById("message-voice-bar");
@@ -190,6 +194,8 @@
 
     let conversations = [];
     let members = [];
+    let customStickers = [];
+    let creatingSticker = false;
     let myFilesCache = null;
     let selectedId = null;
     let seen = new Set();
@@ -613,7 +619,17 @@
             return null;
         }
         const slug = trimmed.slice(9, -1);
-        return STICKER_SET.has(slug) ? slug : null;
+        if (STICKER_SET.has(slug) || /^custom-[0-9a-fA-F]{32}$/.test(slug)) {
+            return slug;
+        }
+        return null;
+    }
+
+    function stickerUrlForSlug(slug) {
+        if (slug && slug.startsWith("custom-")) {
+            return `/api/messages/stickers/${encodeURIComponent(slug.slice(7))}.svg`;
+        }
+        return `/img/stickers/${slug}.svg`;
     }
 
     function isJumboEmoji(text) {
@@ -938,8 +954,8 @@
         if (stickerSlug) {
             const st = document.createElement("img");
             st.className = "message-sticker";
-            st.src = `/img/stickers/${stickerSlug}.svg`;
-            const found = STICKERS.find(s => s.slug === stickerSlug);
+            st.src = stickerUrlForSlug(stickerSlug);
+            const found = customStickers.find(s => s.slug === stickerSlug) || STICKERS.find(s => s.slug === stickerSlug);
             st.alt = found ? found.label : "Sticker";
             item.append(st);
         } else if (row.body) {
@@ -1256,6 +1272,148 @@
     quoteClearBtn?.addEventListener("click", clearQuote);
 
     // --- Stickers & Quick Emojis ---
+    function setStickerStatus(text, isError, showDots) {
+        if (!stickerCreateStatusEl) return;
+        if (!text) {
+            stickerCreateStatusEl.hidden = true;
+            stickerCreateStatusEl.textContent = "";
+            stickerCreateStatusEl.classList.remove("text-danger", "text-muted");
+            return;
+        }
+        stickerCreateStatusEl.hidden = false;
+        stickerCreateStatusEl.textContent = text;
+        if (showDots) {
+            const dots = document.createElement("span");
+            dots.className = "sticker-dots";
+            dots.innerHTML = "<span></span><span></span><span></span>";
+            stickerCreateStatusEl.append(dots);
+        }
+        stickerCreateStatusEl.classList.toggle("text-danger", Boolean(isError));
+        stickerCreateStatusEl.classList.toggle("text-muted", !isError);
+    }
+
+    function renderStickerGrid() {
+        if (!stickerGridEl) return;
+        stickerGridEl.innerHTML = "";
+        const all = [...customStickers, ...STICKERS];
+        all.forEach(st => {
+            const wrap = document.createElement("div");
+            wrap.className = "sticker-pick-cell";
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "sticker-pick-btn";
+            btn.title = st.label;
+            btn.setAttribute("aria-label", `Send ${st.label} sticker`);
+            const img = document.createElement("img");
+            img.src = stickerUrlForSlug(st.slug);
+            img.alt = st.label;
+            img.loading = "lazy";
+            btn.append(img);
+            btn.addEventListener("click", () => {
+                hideStickerPop();
+                sendPayload({ body: `[sticker:${st.slug}]` });
+            });
+            wrap.append(btn);
+
+            if (st.id && st.canDelete) {
+                const delBtn = document.createElement("button");
+                delBtn.type = "button";
+                delBtn.className = "sticker-del-btn";
+                delBtn.title = "Delete custom sticker";
+                delBtn.setAttribute("aria-label", `Delete ${st.label} sticker`);
+                delBtn.textContent = "×";
+                delBtn.addEventListener("click", async (ev) => {
+                    ev.stopPropagation();
+                    try {
+                        await api(`/api/messages/stickers/${encodeURIComponent(st.id)}`, {
+                            method: "DELETE",
+                            headers: headers()
+                        });
+                        customStickers = customStickers.filter(item => item.id !== st.id);
+                        renderStickerGrid();
+                    } catch (err) {
+                        setStickerStatus(err.message || "Could not delete sticker.", true);
+                    }
+                });
+                wrap.append(delBtn);
+            }
+
+            stickerGridEl.append(wrap);
+        });
+    }
+
+    async function loadCustomStickers() {
+        try {
+            const list = await api("/api/messages/stickers", { headers: headers() });
+            if (Array.isArray(list)) {
+                customStickers = list;
+                renderStickerGrid();
+            }
+        } catch {
+            /* Keep built-in stickers if custom fetch fails */
+        }
+    }
+
+    async function createCustomSticker() {
+        if (creatingSticker || !stickerCreatePromptEl) return;
+        const prompt = String(stickerCreatePromptEl.value || "").trim();
+        if (!prompt) {
+            setStickerStatus("Write 1 to 5 words for your sticker.", true);
+            stickerCreatePromptEl.focus();
+            return;
+        }
+        const words = prompt.split(/\s+/).filter(Boolean);
+        if (words.length > 5) {
+            setStickerStatus("Keep your sticker prompt to 5 words max.", true);
+            stickerCreatePromptEl.focus();
+            return;
+        }
+
+        const theme = stickerCreateThemeEl ? stickerCreateThemeEl.value : "street-skate";
+        creatingSticker = true;
+        if (stickerCreateBtn) {
+            stickerCreateBtn.disabled = true;
+            stickerCreateBtn.innerHTML = '<span class="sticker-dots"><span></span><span></span><span></span></span>';
+        }
+        if (stickerCreateThemeEl) stickerCreateThemeEl.disabled = true;
+        if (stickerCreatePromptEl) stickerCreatePromptEl.disabled = true;
+        setStickerStatus("Drawing your sticker ", false, true);
+
+        try {
+            const created = await api("/api/messages/stickers", {
+                method: "POST",
+                headers: headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ theme, prompt })
+            });
+            if (created && created.slug) {
+                customStickers = [created, ...customStickers.filter(x => x.slug !== created.slug)];
+                renderStickerGrid();
+                if (stickerGridEl) {
+                    stickerGridEl.scrollTop = 0;
+                }
+            }
+            if (stickerCreatePromptEl) {
+                stickerCreatePromptEl.value = "";
+            }
+            setStickerStatus("Added to your sticker collection!", false, false);
+            window.setTimeout(() => setStickerStatus("", false), 2500);
+        } catch (err) {
+            setStickerStatus(err.message || "Could not create sticker.", true, false);
+        } finally {
+            creatingSticker = false;
+            if (stickerCreateBtn) {
+                stickerCreateBtn.disabled = false;
+                stickerCreateBtn.textContent = "Create";
+            }
+            if (stickerCreateThemeEl) stickerCreateThemeEl.disabled = false;
+            if (stickerCreatePromptEl) {
+                stickerCreatePromptEl.disabled = false;
+                stickerCreatePromptEl.focus();
+            }
+        }
+    }
+
     function initStickersAndEmojis() {
         if (quickEmojisEl) {
             QUICK_EMOJIS.forEach(em => {
@@ -1276,26 +1434,17 @@
                 quickEmojisEl.append(btn);
             });
         }
-        if (stickerGridEl) {
-            stickerGridEl.innerHTML = "";
-            STICKERS.forEach(st => {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className = "sticker-pick-btn";
-                btn.title = st.label;
-                btn.setAttribute("aria-label", `Send ${st.label} sticker`);
-                const img = document.createElement("img");
-                img.src = `/img/stickers/${st.slug}.svg`;
-                img.alt = st.label;
-                img.loading = "lazy";
-                btn.append(img);
-                btn.addEventListener("click", () => {
-                    hideStickerPop();
-                    sendPayload({ body: `[sticker:${st.slug}]` });
-                });
-                stickerGridEl.append(btn);
-            });
-        }
+        renderStickerGrid();
+        loadCustomStickers();
+
+        stickerCreateBtn?.addEventListener("click", createCustomSticker);
+        stickerCreatePromptEl?.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") {
+                ev.preventDefault();
+                ev.stopPropagation();
+                createCustomSticker();
+            }
+        });
     }
     initStickersAndEmojis();
 
@@ -1312,6 +1461,9 @@
         const nextOpen = stickerPopEl.hidden;
         stickerPopEl.hidden = !nextOpen;
         stickerBtn.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+        if (nextOpen) {
+            loadCustomStickers();
+        }
     });
 
     // --- Upload Helper & Attachments ---

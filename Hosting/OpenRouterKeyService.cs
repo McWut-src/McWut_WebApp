@@ -97,6 +97,32 @@ public sealed class OpenRouterKeyService(
         return key;
     }
 
+    public async Task<string> RequireKeyWithFallbackAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        if (cache.TryGetValue(CacheKey(userId), out string? cached) && !string.IsNullOrEmpty(cached))
+        {
+            return cached;
+        }
+
+        var rows = await db.OpenRouterKeys.AsNoTracking().ToListAsync(cancellationToken);
+        var own = rows.FirstOrDefault(x => x.UserId == userId);
+        if (own is not null && TryUnprotect(own.KeyCipher, out var ownKey))
+        {
+            cache.Set(CacheKey(userId), ownKey, KeyCacheOptions);
+            return ownKey;
+        }
+
+        foreach (var fallbackRow in rows.OrderByDescending(x => x.UpdatedAt))
+        {
+            if (TryUnprotect(fallbackRow.KeyCipher, out var sharedKey))
+            {
+                return sharedKey;
+            }
+        }
+
+        throw new OpenRouterValidationException("Save an OpenRouter key on Profile first.");
+    }
+
     private bool TryUnprotect(string cipher, out string key)
     {
         key = "";
