@@ -1,7 +1,7 @@
 # Guidelines for a future agent
 
 **Written:** 9 October 2026  
-**Read with:** [HANDOFF.md](HANDOFF.md), [SCOPE.md](SCOPE.md)  
+**Read with:** [HANDOFF.md](HANDOFF.md), [SCOPE.md](SCOPE.md), [IDEAS.md](IDEAS.md)  
 **Repo:** https://github.com/McWut-src/McWut_WebApp (`main`)  
 **Folder:** `C:\vince\McWutWebApp`
 

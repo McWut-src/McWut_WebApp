@@ -4,6 +4,7 @@
 **Live:** https://mcwut.com · https://www.mcwut.com  
 **Handoff:** [HANDOFF.md](HANDOFF.md)  
 **Agent guide:** [AGENT.md](AGENT.md)  
+**Future ideas:** [IDEAS.md](IDEAS.md)  
 **No open Register. No public invite until you send a link.**
 
 Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/README.md).
