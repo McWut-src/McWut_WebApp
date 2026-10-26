@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000030`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000031`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**26 October 2026, 21:41 UTC.** Production was moved on purpose to mature, adult, and professional profile styling: executive palette swatches (Executive Navy, Classic Slate, Oxford Blue, Forest Green, Deep Bordeaux, Rich Cognac, Royal Plum, Warm Espresso), professional header emblems (Executive Crest, Compass Star, Quill & Ink, Sovereign Anchor, Royal Coronet, Signet Monogram, Alpine Summit, Diamond Facet), architectural header motifs (Architectural Grid, Serene Waves, Alpine Horizon, Herringbone Weave, Night Constellation), clean background pattern tiles (Fine Linen Texture, Architectural Dot Matrix, Diamond Lattice, Isometric Tessellation, Art Deco Geometry, Botanical Laurel), 5 discrete synthesized notification chimes, title/status personalization, and dedicated adult AI theming while preserving safe-for-teens family guardrails.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000030` | `ghcr.io/mcwut-src/mcwut_webapp:707b7e4c41b9312f3a0efd9f649220a9109ba169` |
+| Live | `ca-mcwut--0000031` | `ghcr.io/mcwut-src/mcwut_webapp:ec97694f0b8d46ca77bb446dcde5190497b48801` |
+
+`0000031` has 100% of the traffic and is Healthy. `0000030` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000031`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` redirects to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. Sign-in with the production password was not tried.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000030
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000030=100
+```
 
 **26 October 2026, 21:27 UTC.** Production was moved on purpose to fix AI personalization SVG display and retention: distinct parameterless MIME types (`image/x-mcwut-badge+svg`, `image/x-mcwut-motif+svg`, `image/x-mcwut-tile+svg`) to avoid upload parameter normalization, backwards-compatible retrieval for existing raw SVG emblems/motifs/tiles, and file sweeper protection for all custom personalization items and stickers.
 
