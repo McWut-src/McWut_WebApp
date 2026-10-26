@@ -25,6 +25,8 @@ public sealed record CustomSvgItemView(
 
 public sealed record PresetOption(string Value, string Label, string Url);
 
+public sealed record PaletteSwatch(string Hex, string Label);
+
 public sealed record TeenColorSwatch(string Hex, string Label);
 
 public sealed record PersonalizationStateView(
@@ -44,9 +46,13 @@ public sealed class PersonalizationService(
     IMemoryCache cache,
     TimeProvider time)
 {
-    public const string BadgeContentType = "image/svg+xml;badge=1";
-    public const string MotifContentType = "image/svg+xml;motif=1";
-    public const string TileContentType = "image/svg+xml;bgtile=1";
+    public const string BadgeContentType = "image/x-mcwut-badge+svg";
+    public const string MotifContentType = "image/x-mcwut-motif+svg";
+    public const string TileContentType = "image/x-mcwut-tile+svg";
+
+    public const string LegacyBadgeContentType = "image/svg+xml;badge=1";
+    public const string LegacyMotifContentType = "image/svg+xml;motif=1";
+    public const string LegacyTileContentType = "image/svg+xml;bgtile=1";
 
     private static readonly byte[] FlairXorMask =
         new Guid("464c4149-5253-4554-5449-4e4753563130").ToByteArray();
@@ -243,7 +249,11 @@ public sealed class PersonalizationService(
                         && f.IsChatOnly
                         && (f.ContentType == BadgeContentType
                             || f.ContentType == MotifContentType
-                            || f.ContentType == TileContentType)
+                            || f.ContentType == TileContentType
+                            || f.ContentType == LegacyBadgeContentType
+                            || f.ContentType == LegacyMotifContentType
+                            || f.ContentType == LegacyTileContentType
+                            || (f.ContentType == "image/svg+xml" && f.OriginalFileName.EndsWith(".svg")))
                         && f.DeletedAt == null
                         && f.Status == FileStatus.Ready)
             .ToListAsync(cancellationToken);
@@ -254,9 +264,14 @@ public sealed class PersonalizationService(
             {
                 var kind = f.ContentType switch
                 {
-                    BadgeContentType => "badge",
-                    MotifContentType => "motif",
-                    _ => "tile"
+                    BadgeContentType or LegacyBadgeContentType => "badge",
+                    MotifContentType or LegacyMotifContentType => "motif",
+                    TileContentType or LegacyTileContentType => "tile",
+                    _ => (f.OriginalFileName.Contains("Motif", StringComparison.OrdinalIgnoreCase)
+                          ? "motif"
+                          : (f.OriginalFileName.Contains("Tile", StringComparison.OrdinalIgnoreCase)
+                             ? "tile"
+                             : "badge"))
                 };
                 return new CustomSvgItemView(
                     f.Id,
@@ -402,7 +417,11 @@ public sealed class PersonalizationService(
                      && f.IsChatOnly
                      && (f.ContentType == BadgeContentType
                          || f.ContentType == MotifContentType
-                         || f.ContentType == TileContentType)
+                         || f.ContentType == TileContentType
+                         || f.ContentType == LegacyBadgeContentType
+                         || f.ContentType == LegacyMotifContentType
+                         || f.ContentType == LegacyTileContentType
+                         || (f.ContentType == "image/svg+xml" && f.OriginalFileName.EndsWith(".svg")))
                      && f.DeletedAt == null
                      && f.Status == FileStatus.Ready,
                 cancellationToken)
@@ -419,7 +438,11 @@ public sealed class PersonalizationService(
                      && f.IsChatOnly
                      && (f.ContentType == BadgeContentType
                          || f.ContentType == MotifContentType
-                         || f.ContentType == TileContentType)
+                         || f.ContentType == TileContentType
+                         || f.ContentType == LegacyBadgeContentType
+                         || f.ContentType == LegacyMotifContentType
+                         || f.ContentType == LegacyTileContentType
+                         || (f.ContentType == "image/svg+xml" && f.OriginalFileName.EndsWith(".svg")))
                      && f.DeletedAt == null,
                 cancellationToken)
             ?? throw new VaultNotFoundException();

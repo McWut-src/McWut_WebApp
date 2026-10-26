@@ -87,10 +87,13 @@ public sealed class FileLifecycle(
 
         var eligible = unlinkedChatCandidates
             .Where(f => f.CreatedAt <= chatCutoff
-                        && !f.ContentType.Contains(";sticker=")
-                        && !f.ContentType.Contains(";badge=")
-                        && !f.ContentType.Contains(";motif=")
-                        && !f.ContentType.Contains(";bgtile="))
+                        && !f.ContentType.StartsWith("image/x-mcwut-", StringComparison.OrdinalIgnoreCase)
+                        && !f.ContentType.Contains("sticker", StringComparison.OrdinalIgnoreCase)
+                        && !f.ContentType.Contains("badge", StringComparison.OrdinalIgnoreCase)
+                        && !f.ContentType.Contains("motif", StringComparison.OrdinalIgnoreCase)
+                        && !f.ContentType.Contains("tile", StringComparison.OrdinalIgnoreCase)
+                        && !f.ContentType.Contains("bgtile", StringComparison.OrdinalIgnoreCase)
+                        && !f.OriginalFileName.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         if (eligible.Count > 0)

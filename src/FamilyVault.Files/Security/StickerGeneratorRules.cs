@@ -16,6 +16,18 @@ public static partial class StickerGeneratorRules
     public const int MaxSmallSvgElements = 45;
     public const int MaxStatusTagChars = 30;
 
+    public static readonly IReadOnlyList<StickerThemePreset> ProfileThemes =
+    [
+        new("minimal-executive", "Executive Minimalist", "Clean, understated corporate vector minimalism, refined thin strokes (#0b1f3a, #334155), pure geometric elegance, spacious layout, subtle luxury."),
+        new("architectural-line", "Architectural & Technical", "Precise architectural blueprint line-work, refined geometric construction lines, slate (#1e293b) and steel blue (#3b82f6) accents, drafting precision."),
+        new("modern-heraldic", "Heraldic & Crest", "Sophisticated heraldic crest and signet shield style, deep navy (#0b1f3a), gold leaf (#d97706), balanced royal symmetry, timeless seal aesthetic."),
+        new("fine-lineart", "Fine Line Art & Botanical", "Delicate continuous single-line art, understated botanical and organic silhouettes, warm charcoal (#1f2937) and sage (#059669) tones, organic sophistication."),
+        new("geometric-deco", "Art Deco & Geometric", "Luxurious Art Deco geometric symmetry, metallic brass and antique gold accents, stepped chevron motifs, crisp sharp vector balance."),
+        new("classic-monogram", "Classic Monogram & Signet", "Timeless signet ring and wax monogram style, circular framing, elegant typography / initials, dignified premium seal aesthetic."),
+        new("valdavid-outdoors", "Alpine & Outdoors", "Laurentian mountain adventure patch style, pine forest greens, granite crag grays, warm sunset amber, outdoor climbing/nature badge."),
+        new("mtl-quebec", "Montreal & Nordic", "Iconic Montreal and Quebec local pop-art sticker style, royal blue, warm maple gold, bold graphic shapes.")
+    ];
+
     public static readonly IReadOnlyList<StickerThemePreset> Themes =
     [
         new("voxel-craft", "Voxel & 16-Bit Craft", "Blocky Minecraft-inspired voxel and 16-bit pixel geometry, diamond cyan (#22d3ee), creeper emerald (#22c55e), obsidian dark outlines (#111827), crisp stepped edges."),
@@ -80,6 +92,14 @@ public static partial class StickerGeneratorRules
     public static StickerThemePreset NormalizeTheme(string? themeId)
     {
         var clean = (themeId ?? "").Trim();
+        foreach (var theme in ProfileThemes)
+        {
+            if (string.Equals(theme.Id, clean, StringComparison.OrdinalIgnoreCase))
+            {
+                return theme;
+            }
+        }
+
         foreach (var theme in Themes)
         {
             if (string.Equals(theme.Id, clean, StringComparison.OrdinalIgnoreCase))
@@ -155,7 +175,7 @@ public static partial class StickerGeneratorRules
         var collapsed = SpaceCollapseRegex().Replace(sb.ToString(), " ").Trim();
         if (collapsed.Length > MaxStatusTagChars)
         {
-            throw new DirectMessageValidationException($"Keep your gamer tag or status to {MaxStatusTagChars} characters.");
+            throw new DirectMessageValidationException($"Keep your title or status to {MaxStatusTagChars} characters.");
         }
 
         var tokens = WordSplitRegex().Split(collapsed);
@@ -163,7 +183,7 @@ public static partial class StickerGeneratorRules
         {
             if (!string.IsNullOrEmpty(token) && BlockedTerms.Contains(token))
             {
-                throw new DirectMessageValidationException("Keep your gamer tag friendly and family-safe.");
+                throw new DirectMessageValidationException("Keep your title or status friendly and family-safe.");
             }
         }
 
@@ -198,14 +218,14 @@ public static partial class StickerGeneratorRules
     public static IReadOnlyList<OpenRouterTurn> BuildBadgeMessages(StickerThemePreset theme, string cleanPrompt)
     {
         var system = """
-            You are an expert gaming & icon vector designer creating compact 64x64 personal header emblems and badges.
+            You are an expert graphic and icon vector designer creating compact 64x64 personal emblems, seals, and badges for a professional web app.
             Output ONLY raw valid SVG code starting with <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"> and ending with </svg>.
             Do NOT wrap the output in markdown fences or write any commentary.
             Strict Size, Style & Safety Rules:
             1. Canvas: viewBox="0 0 64 64". Keep all shapes within 4..60.
             2. Small & Fast: Use 8 to 28 concise SVG elements maximum. Use integer or 1-decimal coordinates so the SVG stays under 4 KB and renders sharply at 28x28px.
-            3. Icon Clarity: Design a bold, centered emblem/crest with high contrast, a strong backing silhouette or shield/circle frame, and crisp strokes (stroke-width="2.5" to "3.5"). Avoid tiny text.
-            4. Teen & Kid Safety Guardrail: Must be 100% family-friendly, safe, and wholesome (gaming, sports, martial arts, fun memes, nature). If the prompt is unsafe or inappropriate, draw a cool pixel mystery block with a "?" instead.
+            3. Icon Clarity: Design a refined, centered emblem/crest with high contrast, a strong backing silhouette or shield/circle frame, and crisp strokes (stroke-width="2.5" to "3.5"). Avoid tiny text.
+            4. Safe for Teen & Family Guardrail: Must be 100% wholesome, professional, and family-safe (safe for teens and kids: strictly no weapons, violence, adult content, or offensive material). If the prompt is inappropriate or unsafe, draw an elegant minimalist crest with a star.
             5. Never use <script>, <image>, <foreignObject>, <style>, or external URLs.
             """;
 
@@ -227,8 +247,8 @@ public static partial class StickerGeneratorRules
             Strict Size, Style & Safety Rules:
             1. Canvas: viewBox="0 0 120 56". Transparent background (do NOT add a full-canvas background <rect>).
             2. Small & Fast: Use 8 to 24 concise SVG elements maximum (under 5 KB).
-            3. Header Accent Style: Create a clean, rhythmic horizontal banner pattern or silhouette motif (e.g. voxel skyline, basketball court arcs, dojo waves, cyber circuit lines, arcade stars) using white (#ffffff) and vibrant accent fills with semi-transparent opacities (opacity="0.35" to "0.85") so it blends smoothly over any colored header bar.
-            4. Teen & Kid Safety Guardrail: Must be 100% family-friendly and safe. If unsafe, draw simple geometric stars and pixels.
+            3. Header Accent Style: Create a clean, elegant horizontal banner pattern or silhouette motif (e.g. architectural grid, serene horizon waves, alpine ridge, subtle geometric pinstripe, minimalist botanical lines) using white (#ffffff) and subtle accent fills with soft opacities (opacity="0.25" to "0.75") so it blends smoothly over any colored header bar.
+            4. Safe for Teen & Family Guardrail: Must be 100% wholesome, professional, and family-safe (safe for teens and kids). If unsafe or inappropriate, draw clean architectural lines.
             5. Never use <script>, <image>, <foreignObject>, <style>, or external URLs.
             """;
 
@@ -250,8 +270,8 @@ public static partial class StickerGeneratorRules
             Strict Size, Style & Safety Rules:
             1. Canvas: viewBox="0 0 80 80". Transparent background is MANDATORY (do NOT put a solid <rect> filling 80x80).
             2. Small & Fast: Use 6 to 22 concise geometric/line-art SVG elements maximum (under 4 KB).
-            3. Repeating Wallpaper Style: Arrange 2 to 4 small, clean, evenly spaced icons or geometric motifs (around 16x16 to 24x24 each, placed near (20,20) and (60,60)) using clean strokes (#64748b or theme colors, stroke-width="2", fill-opacity="0.25") so when tiled across a webpage at low opacity it looks like a sleek subtle gaming/teen wallpaper pattern.
-            4. Teen & Kid Safety Guardrail: Must be 100% family-friendly and safe. If unsafe, draw simple isometric cubes.
+            3. Repeating Wallpaper Style: Arrange 2 to 4 small, clean, evenly spaced geometric or organic motifs (around 16x16 to 24x24 each, placed near (20,20) and (60,60)) using clean strokes (#64748b or theme colors, stroke-width="1.5", fill-opacity="0.2") so when tiled across a webpage at low opacity it creates a sophisticated, understated professional wallpaper pattern.
+            4. Safe for Teen & Family Guardrail: Must be 100% wholesome, professional, and family-safe (safe for teens and kids). If unsafe or inappropriate, draw a subtle geometric grid.
             5. Never use <script>, <image>, <foreignObject>, <style>, or external URLs.
             """;
 

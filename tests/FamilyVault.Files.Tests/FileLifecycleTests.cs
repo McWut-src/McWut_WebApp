@@ -132,7 +132,35 @@ public class FileLifecycleTests
                 CreatedAt = now.AddHours(-48)
             };
 
-            fx.Db.StoredFiles.AddRange(unlinkedOld, unlinkedFresh, linkedOld, stickerOld);
+            // 5. Real custom sticker (image/x-mcwut-sticker+svg) older than 24h -> should NOT be purged
+            var realStickerOld = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "real-sticker.svg",
+                ContentType = "image/x-mcwut-sticker+svg",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-48)
+            };
+
+            // 6. Custom AI badge (image/x-mcwut-badge+svg) older than 24h -> should NOT be purged
+            var badgeOld = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "Flaming V.svg",
+                ContentType = "image/x-mcwut-badge+svg",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-48)
+            };
+
+            fx.Db.StoredFiles.AddRange(unlinkedOld, unlinkedFresh, linkedOld, stickerOld, realStickerOld, badgeOld);
 
             var conv = new DirectConversationEntity
             {
@@ -163,11 +191,15 @@ public class FileLifecycleTests
             var file2 = await fx.Db.StoredFiles.FindAsync(unlinkedFresh.Id);
             var file3 = await fx.Db.StoredFiles.FindAsync(linkedOld.Id);
             var file4 = await fx.Db.StoredFiles.FindAsync(stickerOld.Id);
+            var file5 = await fx.Db.StoredFiles.FindAsync(realStickerOld.Id);
+            var file6 = await fx.Db.StoredFiles.FindAsync(badgeOld.Id);
 
             Assert.NotNull(file1!.DeletedAt); // purged
             Assert.Null(file2!.DeletedAt);    // kept (fresh)
             Assert.Null(file3!.DeletedAt);    // kept (linked to message)
             Assert.Null(file4!.DeletedAt);    // kept (sticker)
+            Assert.Null(file5!.DeletedAt);    // kept (real custom sticker)
+            Assert.Null(file6!.DeletedAt);    // kept (custom AI badge)
         }
         finally
         {

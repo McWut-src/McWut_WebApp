@@ -1,5 +1,14 @@
+using FamilyVault.Files.Configuration;
+using FamilyVault.Files.Contracts;
 using FamilyVault.Files.Data.Entities;
+using FamilyVault.Files.Security;
+using FamilyVault.Files.Services;
+using FamilyVault.Files.Storage;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace FamilyVault.Files.Tests;
 
@@ -44,5 +53,55 @@ public class PersonalizationAndSystemSettingsTests
         var readS = await fx.Db.SystemSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Key == "SiteAiKey");
         Assert.NotNull(readS);
         Assert.Equal("encrypted-secret", readS.ValueCipher);
+    }
+
+    [Fact]
+    public async Task Custom_personalization_svg_preserves_content_type_on_upload()
+    {
+        await using var fx = new SqliteFixture();
+        await fx.SeedMembersAsync();
+
+        var root = Directory.CreateTempSubdirectory();
+        try
+        {
+            var options = Options.Create(new FilesOptions
+            {
+                Local = new LocalFilesOptions { RootPath = root.FullName },
+                AllowAnyContentType = true
+            });
+            var store = new LocalDiskObjectStore(options, new TestHostEnv());
+            var quota = new QuotaService(fx.Db, options);
+            var scanner = new NoOpContentScanner();
+            var time = new TestTimeProvider(DateTimeOffset.Parse("2026-10-26T12:00:00Z"));
+            var hasher = new PasswordHasher<object>();
+            var uploads = new UploadSessionService(fx.Db, store, quota, scanner, time, hasher, options);
+
+            var session = await uploads.BeginAsync(new BeginUploadRequest(
+                SqliteFixture.OwnerId,
+                "Flaming V.svg",
+                "image/x-mcwut-badge+svg",
+                128,
+                null,
+                Retention.Forever(),
+                null,
+                IsChatOnly: true));
+
+            var file = await fx.Db.StoredFiles.FindAsync(session.FileId);
+            Assert.NotNull(file);
+            Assert.Equal("image/x-mcwut-badge+svg", file.ContentType);
+            Assert.True(file.IsChatOnly);
+        }
+        finally
+        {
+            root.Delete(true);
+        }
+    }
+
+    private sealed class TestHostEnv : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = "Development";
+        public string ApplicationName { get; set; } = "tests";
+        public string ContentRootPath { get; set; } = Path.GetTempPath();
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }
