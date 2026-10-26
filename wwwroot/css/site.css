@@ -3167,7 +3167,29 @@ html[data-theme="dark"] .has-bg-tile .app-main::before {
 .color-swatches {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-swatch-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.color-swatch-dot:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px var(--blue);
+}
+
+.color-swatch-dot:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .color-swatch-chip {
@@ -3199,14 +3221,14 @@ html[data-theme="dark"] .has-bg-tile .app-main::before {
 }
 
 .flair-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .flair-custom-wrap {
   position: relative;
-  display: flex;
+  display: inline-flex;
 }
 
 .flair-custom-wrap .flair-option {
@@ -3214,20 +3236,39 @@ html[data-theme="dark"] .has-bg-tile .app-main::before {
 }
 
 .flair-option {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 76px;
-  padding: 8px 6px;
-  border-radius: 10px;
+  min-height: 48px;
+  padding: 6px 10px;
+  border-radius: 8px;
   border: 1.5px solid var(--line);
   background: var(--fill);
   color: var(--ink);
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+}
+
+.flair-grid-compact .flair-option {
+  width: 50px;
+  height: 50px;
+  min-height: 50px;
+  padding: 6px;
+}
+
+.flair-grid-wide .flair-option {
+  width: 96px;
+  height: 44px;
+  min-height: 44px;
+  padding: 6px;
+}
+
+.flair-grid-tile .flair-option {
+  width: 58px;
+  height: 48px;
+  min-height: 48px;
+  padding: 6px;
 }
 
 .flair-option:hover {
@@ -3242,41 +3283,41 @@ html[data-theme="dark"] .has-bg-tile .app-main::before {
 }
 
 .flair-thumb-badge {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
 .flair-thumb-motif {
   display: block;
-  width: 84px;
-  height: 30px;
-  border-radius: 6px;
+  width: 80px;
+  height: 28px;
+  border-radius: 4px;
   background-color: var(--bar, var(--navy));
   background-repeat: repeat-x;
   background-position: center;
-  background-size: auto 30px;
+  background-size: auto 28px;
 }
 
 .flair-thumb-tile {
   display: block;
-  width: 44px;
-  height: 34px;
-  border-radius: 6px;
+  width: 42px;
+  height: 32px;
+  border-radius: 4px;
   border: 1px solid var(--line);
   background-color: var(--surface);
   background-repeat: repeat;
   background-position: center;
-  background-size: 34px 34px;
+  background-size: 32px 32px;
 }
 
 .flair-none {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   border: 1px dashed var(--line);
   color: var(--muted);
   font-weight: 600;
@@ -3294,21 +3335,22 @@ html[data-theme="dark"] .has-bg-tile .app-main::before {
 
 .flair-delete {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .flair-delete:hover {

@@ -218,17 +218,17 @@
             btn.appendChild(spanThumb);
         }
 
-        const label = document.createElement("span");
-        label.className = "flair-label";
-        label.textContent = item.label;
-        btn.appendChild(label);
+        if (item.label) {
+            btn.title = item.label;
+            btn.setAttribute("aria-label", item.label);
+        }
 
         const del = document.createElement("button");
         del.type = "button";
         del.className = "flair-delete";
         del.setAttribute("data-delete-svg", item.id);
-        del.title = "Delete custom SVG";
-        del.setAttribute("aria-label", "Delete custom SVG");
+        del.title = "Delete";
+        del.setAttribute("aria-label", "Delete");
         del.textContent = "×";
 
         wrap.appendChild(btn);

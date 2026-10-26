@@ -18,14 +18,14 @@ public static partial class StickerGeneratorRules
 
     public static readonly IReadOnlyList<StickerThemePreset> ProfileThemes =
     [
-        new("minimal-executive", "Executive Minimalist", "Clean, understated corporate vector minimalism, refined thin strokes (#0b1f3a, #334155), pure geometric elegance, spacious layout, subtle luxury."),
-        new("architectural-line", "Architectural & Technical", "Precise architectural blueprint line-work, refined geometric construction lines, slate (#1e293b) and steel blue (#3b82f6) accents, drafting precision."),
-        new("modern-heraldic", "Heraldic & Crest", "Sophisticated heraldic crest and signet shield style, deep navy (#0b1f3a), gold leaf (#d97706), balanced royal symmetry, timeless seal aesthetic."),
-        new("fine-lineart", "Fine Line Art & Botanical", "Delicate continuous single-line art, understated botanical and organic silhouettes, warm charcoal (#1f2937) and sage (#059669) tones, organic sophistication."),
-        new("geometric-deco", "Art Deco & Geometric", "Luxurious Art Deco geometric symmetry, metallic brass and antique gold accents, stepped chevron motifs, crisp sharp vector balance."),
-        new("classic-monogram", "Classic Monogram & Signet", "Timeless signet ring and wax monogram style, circular framing, elegant typography / initials, dignified premium seal aesthetic."),
-        new("valdavid-outdoors", "Alpine & Outdoors", "Laurentian mountain adventure patch style, pine forest greens, granite crag grays, warm sunset amber, outdoor climbing/nature badge."),
-        new("mtl-quebec", "Montreal & Nordic", "Iconic Montreal and Quebec local pop-art sticker style, royal blue, warm maple gold, bold graphic shapes.")
+        new("minimal-executive", "Minimal", "Clean, understated corporate vector minimalism, refined thin strokes (#0b1f3a, #334155), pure geometric elegance, spacious layout, subtle luxury."),
+        new("architectural-line", "Blueprint", "Precise architectural blueprint line-work, refined geometric construction lines, slate (#1e293b) and steel blue (#3b82f6) accents, drafting precision."),
+        new("modern-heraldic", "Heraldic", "Sophisticated heraldic crest and signet shield style, deep navy (#0b1f3a), gold leaf (#d97706), balanced royal symmetry, timeless seal aesthetic."),
+        new("fine-lineart", "Line Art", "Delicate continuous single-line art, understated botanical and organic silhouettes, warm charcoal (#1f2937) and sage (#059669) tones, organic sophistication."),
+        new("geometric-deco", "Art Deco", "Luxurious Art Deco geometric symmetry, metallic brass and antique gold accents, stepped chevron motifs, crisp sharp vector balance."),
+        new("classic-monogram", "Monogram", "Timeless signet ring and wax monogram style, circular framing, elegant typography / initials, dignified premium seal aesthetic."),
+        new("valdavid-outdoors", "Nature", "Laurentian mountain adventure patch style, pine forest greens, granite crag grays, warm sunset amber, outdoor climbing/nature badge."),
+        new("mtl-quebec", "Quebec", "Iconic Montreal and Quebec local pop-art sticker style, royal blue, warm maple gold, bold graphic shapes.")
     ];
 
     public static readonly IReadOnlyList<StickerThemePreset> Themes =

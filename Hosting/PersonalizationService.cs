@@ -61,14 +61,14 @@ public sealed class PersonalizationService(
 
     public static readonly IReadOnlyList<PaletteSwatch> Swatches =
     [
-        new("#0b1f3a", "Executive Navy"),
-        new("#334155", "Classic Slate"),
-        new("#1e3a8a", "Oxford Blue"),
-        new("#065f46", "Forest Green"),
-        new("#881337", "Deep Bordeaux"),
-        new("#b45309", "Rich Cognac"),
-        new("#581c87", "Royal Plum"),
-        new("#78350f", "Warm Espresso")
+        new("#0b1f3a", "Navy"),
+        new("#334155", "Slate"),
+        new("#1e3a8a", "Oxford"),
+        new("#065f46", "Forest"),
+        new("#881337", "Burgundy"),
+        new("#b45309", "Cognac"),
+        new("#581c87", "Plum"),
+        new("#78350f", "Espresso")
     ];
 
     public static readonly IReadOnlyList<TeenColorSwatch> TeenSwatches =
@@ -76,24 +76,24 @@ public sealed class PersonalizationService(
 
     public static readonly IReadOnlyList<(string Id, string Label)> ChimeThemes =
     [
-        ("classic", "Classic Studio Chime"),
-        ("soft-bell", "Soft Crystal Bell"),
-        ("acoustic-wood", "Warm Acoustic Marimba"),
-        ("executive-pulse", "Executive Discrete Pulse"),
-        ("minimal-tap", "Minimalist Studio Tick")
+        ("classic", "Classic"),
+        ("soft-bell", "Bell"),
+        ("acoustic-wood", "Acoustic Wood"),
+        ("executive-pulse", "Executive Pulse"),
+        ("minimal-tap", "Minimal Tap")
     ];
 
     public static readonly IReadOnlyList<PresetOption> BadgePresets =
     [
         new("none", "None", ""),
-        new("preset:crest-shield", "Executive Crest", "/api/personalization/preset/badge/crest-shield.svg"),
-        new("preset:compass-star", "Compass Star", "/api/personalization/preset/badge/compass-star.svg"),
-        new("preset:quill-pen", "Quill & Ink", "/api/personalization/preset/badge/quill-pen.svg"),
-        new("preset:anchor-seal", "Sovereign Anchor", "/api/personalization/preset/badge/anchor-seal.svg"),
-        new("preset:crown-regal", "Royal Coronet", "/api/personalization/preset/badge/crown-regal.svg"),
-        new("preset:monogram-seal", "Signet Monogram", "/api/personalization/preset/badge/monogram-seal.svg"),
-        new("preset:summit-peak", "Alpine Summit", "/api/personalization/preset/badge/summit-peak.svg"),
-        new("preset:geometric-gem", "Diamond Facet", "/api/personalization/preset/badge/geometric-gem.svg")
+        new("preset:crest-shield", "Crest", "/api/personalization/preset/badge/crest-shield.svg"),
+        new("preset:compass-star", "Compass", "/api/personalization/preset/badge/compass-star.svg"),
+        new("preset:quill-pen", "Quill", "/api/personalization/preset/badge/quill-pen.svg"),
+        new("preset:anchor-seal", "Anchor", "/api/personalization/preset/badge/anchor-seal.svg"),
+        new("preset:crown-regal", "Crown", "/api/personalization/preset/badge/crown-regal.svg"),
+        new("preset:monogram-seal", "Monogram", "/api/personalization/preset/badge/monogram-seal.svg"),
+        new("preset:summit-peak", "Summit", "/api/personalization/preset/badge/summit-peak.svg"),
+        new("preset:geometric-gem", "Geometric Gem", "/api/personalization/preset/badge/geometric-gem.svg")
     ];
 
     public static readonly IReadOnlyList<PresetOption> MotifPresets =
