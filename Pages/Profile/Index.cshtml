@@ -9,7 +9,7 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">Profile</h1>
-        <p class="page-kicker">@(Model.IsKid ? "Your name, color, header badge, background, and sign-in password." : "Your name, color, header badge, background, sign-in password, and personal AI key.")</p>
+        <p class="page-kicker">@(Model.IsKid ? "Your name, color, header emblem, background, and sign-in password." : "Your name, color, header emblem, background, sign-in password, and personal AI key.")</p>
     </div>
 </div>
 
@@ -26,7 +26,7 @@
 
     <section class="card mb-3">
         <div class="card-body">
-            <h2 class="h6 mb-3">Name, gamer tag, and color</h2>
+            <h2 class="h6 mb-3">Name, title, and color</h2>
             <p class="field-hint mb-3">This color is the bar and the menu. A pale color uses dark text. A dark color uses pale text. The same color marks your name on a file you share. It is not shown on a public link.</p>
             <form method="post" asp-page-handler="Profile" autocomplete="off">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
@@ -37,8 +37,8 @@
                         <span asp-validation-for="DisplayName" class="text-danger"></span>
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label" for="StatusTag">Gamer tag / status <span class="text-muted fw-normal">(optional)</span></label>
-                        <input asp-for="StatusTag" class="form-control" maxlength="30" placeholder="e.g. Diamond Rank, Clutch Shooter, Black Belt" autocomplete="off" />
+                        <label class="form-label" for="StatusTag">Title / status <span class="text-muted fw-normal">(optional)</span></label>
+                        <input asp-for="StatusTag" class="form-control" maxlength="30" placeholder="e.g. Architect, Research Lead, Photography, Away this week" autocomplete="off" />
                         <span asp-validation-for="StatusTag" class="text-danger"></span>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                         <span class="color-hex" id="color-hex">@Model.AccentColor</span>
                     </div>
                     <div class="color-swatches" role="group" aria-label="Quick color presets">
-                        @foreach (var swatch in PersonalizationService.TeenSwatches)
+                        @foreach (var swatch in PersonalizationService.Swatches)
                         {
                             <button type="button" class="color-swatch-chip" data-color-preset="@swatch.Hex" title="@swatch.Label (@swatch.Hex)">
                                 <span class="swatch-dot" style="background: @swatch.Hex"></span>
@@ -66,8 +66,8 @@
 
     <section class="card mb-3" id="header-studio">
         <div class="card-body">
-            <h2 class="h6 mb-1">Header badge &amp; bar style</h2>
-            <p class="field-hint mb-3">Pick a compact badge next to your name or a subtle header bar motif—or generate your own in seconds with Site AI (1 to 5 words).</p>
+            <h2 class="h6 mb-1">Header emblem &amp; bar style</h2>
+            <p class="field-hint mb-3">Pick a refined header emblem or an accent bar motif—or design custom vector artwork with Site AI (1 to 5 words).</p>
 
             <label class="form-label small fw-semibold text-uppercase text-muted">Header Emblem (64×64)</label>
             <div class="flair-grid mb-3" id="badge-grid" role="group" aria-label="Header badge">
@@ -102,13 +102,13 @@
             <div class="flair-ai-box mb-4">
                 <div class="flair-ai-row">
                     <select id="ai-badge-theme" class="form-select form-select-sm flair-theme-select" aria-label="Badge style">
-                        @foreach (var t in StickerGeneratorRules.Themes)
+                        @foreach (var t in StickerGeneratorRules.ProfileThemes)
                         {
                             <option value="@t.Id">@t.Label</option>
                         }
                     </select>
-                    <input id="ai-badge-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. flaming basketball, pixel pickaxe, black belt dragon)" />
-                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-badge-btn" data-gen-kind="badge">Create AI badge</button>
+                    <input id="ai-badge-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. golden lion crest, fountain pen, mountain compass, heraldic shield)" />
+                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-badge-btn" data-gen-kind="badge">Create AI emblem</button>
                 </div>
             </div>
 
@@ -145,12 +145,12 @@
             <div class="flair-ai-box">
                 <div class="flair-ai-row">
                     <select id="ai-motif-theme" class="form-select form-select-sm flair-theme-select" aria-label="Header motif style">
-                        @foreach (var t in StickerGeneratorRules.Themes)
+                        @foreach (var t in StickerGeneratorRules.ProfileThemes)
                         {
                             <option value="@t.Id">@t.Label</option>
                         }
                     </select>
-                    <input id="ai-motif-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. neon circuit waves, pixel clouds, court lines)" />
+                    <input id="ai-motif-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. alpine ridge line, serene ocean waves, pinstripe grid, architectural lines)" />
                     <button type="button" class="btn btn-sm btn-outline-primary flair-gen-btn" id="ai-motif-btn" data-gen-kind="motif">Create AI motif</button>
                 </div>
             </div>
@@ -161,7 +161,7 @@
     <section class="card mb-3" id="bg-studio">
         <div class="card-body">
             <h2 class="h6 mb-1">Background pattern tile</h2>
-            <p class="field-hint mb-3">Choose a subtle repeating vector pattern for your pages, or design a custom 80×80 seamless tile with Site AI. Cards and text stay clean and readable.</p>
+            <p class="field-hint mb-3">Choose a subtle repeating vector pattern for your workspace, or design a custom 80×80 seamless tile with Site AI. Cards and text stay clean and readable.</p>
 
             <div class="flair-grid mb-3" id="tile-grid" role="group" aria-label="Background tile">
                 @foreach (var p in PersonalizationService.TilePresets)
@@ -195,13 +195,13 @@
             <div class="flair-ai-box">
                 <div class="flair-ai-row">
                     <select id="ai-tile-theme" class="form-select form-select-sm flair-theme-select" aria-label="Tile style">
-                        @foreach (var t in StickerGeneratorRules.Themes)
+                        @foreach (var t in StickerGeneratorRules.ProfileThemes)
                         {
                             <option value="@t.Id">@t.Label</option>
                         }
                     </select>
-                    <input id="ai-tile-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. minecraft pickaxes, basketballs, shuriken stars)" />
-                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-tile-btn" data-gen-kind="tile">Create AI tile</button>
+                    <input id="ai-tile-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. subtle linen crosshatch, art deco geometry, drafting dots, botanical laurel)" />
+                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-tile-btn" data-gen-kind="tile">Create AI pattern</button>
                 </div>
             </div>
             <p id="bg-studio-status" class="field-hint mt-2 mb-0" hidden></p>
@@ -210,15 +210,15 @@
 
     <section class="card mb-3">
         <div class="card-body">
-            <h2 class="h6 mb-1">Appearance &amp; message chime</h2>
-            <p class="field-hint mb-3">Light or dark stays on this browser. Your message chime plays when a message arrives while Messages is open.</p>
+            <h2 class="h6 mb-1">Appearance &amp; notification chime</h2>
+            <p class="field-hint mb-3">Light or dark stays on this browser. Your notification chime plays softly when a message arrives while Messages is open.</p>
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <div class="theme-choice" role="group" aria-label="Appearance">
                     <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="light" aria-pressed="true">Light</button>
                     <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="dark" aria-pressed="false">Dark</button>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <label class="form-label mb-0 small text-muted" for="chime-select">Chime</label>
+                    <label class="form-label mb-0 small text-muted" for="chime-select">Notification sound</label>
                     <select id="chime-select" class="form-select form-select-sm" style="width: auto;">
                         @foreach (var (chimeId, chimeLabel) in PersonalizationService.ChimeThemes)
                         {

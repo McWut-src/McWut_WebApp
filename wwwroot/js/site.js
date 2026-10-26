@@ -153,56 +153,60 @@ window.mcwut = window.mcwut || {
             gain.connect(ctx.destination);
 
             if (kind === "send") {
-                osc.type = theme === "arcade-8bit" ? "square" : "triangle";
+                osc.type = "sine";
                 osc.frequency.setValueAtTime(523.25, now);
                 osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
-                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.setValueAtTime(0.05, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
                 osc.start(now);
                 osc.stop(now + 0.1);
                 return;
             }
 
-            if (theme === "arcade-8bit") {
-                osc.type = "square";
-                osc.frequency.setValueAtTime(987.77, now); // B5
-                osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6 coin!
-                gain.gain.setValueAtTime(0.06, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-                osc.start(now);
-                osc.stop(now + 0.28);
-            } else if (theme === "voxel-pop") {
+            if (theme === "soft-bell" || theme === "arcade-8bit") {
+                // Pure crystal bell: soft sine chime with high shimmer
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(320, now);
-                osc.frequency.exponentialRampToValueAtTime(780, now + 0.065);
-                gain.gain.setValueAtTime(0.11, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } else if (theme === "court-buzzer") {
-                osc.type = "sawtooth";
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.setValueAtTime(587.33, now + 0.09);
+                osc.frequency.setValueAtTime(880, now); // A5
+                osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6
                 gain.gain.setValueAtTime(0.06, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
                 osc.start(now);
-                osc.stop(now + 0.24);
-            } else if (theme === "dojo-gong") {
+                osc.stop(now + 0.32);
+            } else if (theme === "acoustic-wood" || theme === "voxel-pop") {
+                // Warm acoustic marimba / wooden tap
                 osc.type = "triangle";
-                osc.frequency.setValueAtTime(293.66, now); // D4
-                osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
-                gain.gain.setValueAtTime(0.12, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
-                osc.start(now);
-                osc.stop(now + 0.36);
-            } else {
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(587.33, now);
-                osc.frequency.setValueAtTime(880, now + 0.09);
+                osc.frequency.setValueAtTime(440, now); // A4
+                osc.frequency.exponentialRampToValueAtTime(370, now + 0.09);
                 gain.gain.setValueAtTime(0.09, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
                 osc.start(now);
-                osc.stop(now + 0.24);
+                osc.stop(now + 0.14);
+            } else if (theme === "executive-pulse" || theme === "court-buzzer") {
+                // Executive discrete pulse: subtle two-tone sine
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(659.25, now); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.08); // G5
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.start(now);
+                osc.stop(now + 0.22);
+            } else if (theme === "minimal-tap" || theme === "dojo-gong") {
+                // Minimalist studio tick: discrete subtle tap
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                osc.start(now);
+                osc.stop(now + 0.06);
+            } else {
+                // Classic studio chime: warm harmonic interval (D5 to A5)
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.08); // A5
+                gain.gain.setValueAtTime(0.07, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+                osc.start(now);
+                osc.stop(now + 0.26);
             }
         } catch (e) {}
     }

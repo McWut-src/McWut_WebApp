@@ -17,7 +17,7 @@
     const colorHex = document.getElementById("color-hex");
     const statusInput = document.getElementById("StatusTag");
 
-    // 1. Teen Color Swatches
+    // 1. Color Swatches
     document.querySelectorAll("[data-color-preset]").forEach(function (btn) {
         btn.addEventListener("click", function () {
             const hex = btn.getAttribute("data-color-preset");

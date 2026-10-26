@@ -412,14 +412,18 @@ public class KidsChatEnhancementsTests
     public void Sticker_generator_rules_enforce_five_word_limit_child_safety_and_svg_sanitization()
     {
         Assert.Equal(19, StickerGeneratorRules.Themes.Count);
+        Assert.NotEmpty(StickerGeneratorRules.ProfileThemes);
+        Assert.Equal("minimal-executive", StickerGeneratorRules.NormalizeTheme("minimal-executive").Id);
+        Assert.Equal("architectural-line", StickerGeneratorRules.NormalizeTheme("architectural-line").Id);
         Assert.Equal("dojo-karate", StickerGeneratorRules.NormalizeTheme("dojo-karate").Id);
         Assert.Equal("voxel-craft", StickerGeneratorRules.NormalizeTheme("voxel-craft").Id);
         Assert.Equal("hoops-court", StickerGeneratorRules.NormalizeTheme("hoops-court").Id);
         Assert.Equal("meme-pop", StickerGeneratorRules.NormalizeTheme("meme-pop").Id);
         Assert.Equal("voxel-craft", StickerGeneratorRules.NormalizeTheme("unknown-theme").Id);
 
-        // Gamer status tag normalization & safety
+        // Professional title / status tag normalization & safety
         Assert.Equal("", StickerGeneratorRules.NormalizeStatusTag(null));
+        Assert.Equal("Principal Architect", StickerGeneratorRules.NormalizeStatusTag("  Principal   Architect "));
         Assert.Equal("Diamond Rank 💎", StickerGeneratorRules.NormalizeStatusTag("  Diamond   Rank 💎 "));
         Assert.Throws<DirectMessageValidationException>(() =>
             StickerGeneratorRules.NormalizeStatusTag("This status tag is way too long to fit in thirty characters"));
