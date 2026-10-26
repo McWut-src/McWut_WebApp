@@ -1,6 +1,6 @@
 # McWut — current cycle
 
-**Updated:** 16 October 2026  
+**Updated:** 26 October 2026  
 **Live:** https://mcwut.com · https://www.mcwut.com  
 **Handoff:** [HANDOFF.md](HANDOFF.md)  
 **Agent guide:** [AGENT.md](AGENT.md)  
@@ -19,7 +19,7 @@ Hosting is done ([archive/](archive/)). How you ship: [tutorials/](tutorials/REA
 - Photo previews, plus inline audio and video playback on My files and on the share page. Short notes and Markdown files can be read on My files and on the share page. Markdown is rendered on the server. Mermaid diagrams in a note, including Gantt charts and mindmaps, are drawn in the browser.
 - Admin **People** (turn an account off / on) and **Status**.
 - Admin **Reset password** (`/admin/reset-password`) to set another person's McWut sign-in password.
-- Personal **Passwords** vault with read-only member sharing (members view and copy only), bare domain support (`facebook.com`), site favicons with lock fallback, an independent **Generate password** box, and JSON export/import (**Download copy** / **Import copy**). **Profile** (`/profile`) sets your name, a color, your own sign-in password, and an OpenRouter key.
+- Personal **Passwords** vault with read-only member sharing (members view and copy only), bare domain support (`facebook.com`), site favicons with lock fallback, an independent **Generate password** box, and JSON export/import (**Download copy** / **Import copy**). **Profile** (`/profile`) sets your name, a color, your own sign-in password, an optional gamer tag, teen color swatches, 64x64 AI header emblems, 120x56 header bar motifs, 80x80 repeating vector background tiles, 5 synthesized Web Audio chime themes, and a Personal AI key (for non-kid accounts). Shared creative tools (stickers, header emblems, motifs, background tiles) use **Site AI** managed in Admin.
 - **Messages** (`/messages`). Private 1:1 and custom multi-member group chats (only invited participants in a chat can read it). Supports inline photos, attaching saved items from My files, a 2-layer touch Doodle & Photo Drawing pad, 16 kid-friendly SVG stickers, jumbo emojis, 7-day auto-deleting walkie-talkie voice notes, emoji reactions, tap-to-quote replies, live read receipts (`✓✓ Read`), zero-SQL in-memory typing indicators, Web Audio chimes, and optional browser notifications. The menu shows an unread count.
 - **AI** (`/ai`). With no working key, the page explains how to make one and the chat stays off. The key is saved on Profile. Free models are listed by default, with an optional **Paid models** toggle. A reply streams in, and Send can stop it. Markdown is on by default, and a Markdown reply is drawn like a note. A chat can be saved into **Chats** on My files, and can get a public link like any other file.
 - Photo gallery thumbnails and large view on My files.
