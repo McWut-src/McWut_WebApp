@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using FamilyVault.Files.Contracts;
+using FamilyVault.Files.Security;
 using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,13 +9,20 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace McWutWebApp.Pages.Profile;
 
-public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, SignInManager<IdentityUser> signIn) : PageModel
+public class IndexModel(
+    IFamilyRoster roster,
+    PersonalizationService personalization,
+    UserManager<IdentityUser> users,
+    SignInManager<IdentityUser> signIn) : PageModel
 {
     [BindProperty]
     public string? DisplayName { get; set; }
 
     [BindProperty]
     public string? AccentColor { get; set; }
+
+    [BindProperty]
+    public string? StatusTag { get; set; }
 
     [BindProperty]
     [Required(ErrorMessage = "Enter your current password.")]
@@ -31,6 +39,8 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
     public string? Notice { get; private set; }
     public int RequiredLength { get; private set; }
     public bool IsKid { get; private set; }
+    public PersonalizationSettings Flair { get; private set; } = new();
+    public IReadOnlyList<CustomSvgItemView> CustomSvgItems { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -65,19 +75,41 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
             ModelState.AddModelError(nameof(AccentColor), "Choose a color.");
         }
 
+        var cleanTag = "";
+        try
+        {
+            cleanTag = StickerGeneratorRules.NormalizeStatusTag(StatusTag);
+        }
+        catch (DirectMessageValidationException ex)
+        {
+            ModelState.AddModelError(nameof(StatusTag), ex.Message);
+        }
+
+        var id = User.RequireVaultUserId();
         if (!ModelState.IsValid)
         {
             IsKid = User.IsInRole(IdentitySeed.KidRole);
             AccentColor = color ?? MemberColors.Fallback;
+            var currentState = await personalization.GetStateAsync(id, HttpContext.RequestAborted);
+            Flair = currentState.Settings;
+            CustomSvgItems = currentState.CustomItems;
             return Page();
         }
 
-        var id = User.RequireVaultUserId();
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;
         await roster.UpdateProfileAsync(id, email, name, color, HttpContext.RequestAborted);
+        var existingFlair = await personalization.GetSettingsAsync(id, HttpContext.RequestAborted);
+        var savedState = await personalization.SaveSettingsAsync(
+            id,
+            existingFlair with { StatusTag = cleanTag },
+            HttpContext.RequestAborted);
+
         IsKid = User.IsInRole(IdentitySeed.KidRole);
         DisplayName = name;
         AccentColor = color;
+        StatusTag = cleanTag;
+        Flair = savedState.Settings;
+        CustomSvgItems = savedState.CustomItems;
         Notice = "Saved.";
         return Page();
     }
@@ -86,6 +118,7 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
     {
         ModelState.Remove(nameof(DisplayName));
         ModelState.Remove(nameof(AccentColor));
+        ModelState.Remove(nameof(StatusTag));
         RequiredLength = users.Options.Password.RequiredLength;
         await LoadAsync();
         if (!string.Equals(NewPassword, ConfirmPassword, StringComparison.Ordinal))
@@ -144,5 +177,10 @@ public class IndexModel(IFamilyRoster roster, UserManager<IdentityUser> users, S
                 DisplayName = local;
             }
         }
+
+        var state = await personalization.GetStateAsync(id, HttpContext.RequestAborted);
+        Flair = state.Settings;
+        CustomSvgItems = state.CustomItems;
+        StatusTag = state.Settings.StatusTag;
     }
 }

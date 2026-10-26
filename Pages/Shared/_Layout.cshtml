@@ -4,6 +4,7 @@
 @inject Microsoft.AspNetCore.Identity.SignInManager<Microsoft.AspNetCore.Identity.IdentityUser> SignInManager
 @inject FamilyVault.Files.Contracts.IFamilyRoster Roster
 @inject FamilyVault.Files.Services.DirectMessageService DirectMessages
+@inject McWutWebApp.Hosting.PersonalizationService Personalization
 @{
     var signedIn = SignInManager.IsSignedIn(User);
     var path = Context.Request.Path.Value ?? "";
@@ -19,6 +20,10 @@
     var barPale = false;
     var unreadMessages = 0;
     var isKid = false;
+    PersonalizationSettings flair = new();
+    string? badgeUrl = null;
+    string? motifUrl = null;
+    string? tileUrl = null;
     if (personal)
     {
         isKid = User.IsInRole(IdentitySeed.KidRole);
@@ -29,6 +34,10 @@
             shownName = MemberNames.Shown(member?.DisplayName, member?.Email ?? User.Identity?.Name);
             accent = MemberColors.Normalize(member?.AccentColor);
             unreadMessages = await DirectMessages.UnreadCountAsync(id.Value, Context.RequestAborted);
+            flair = await Personalization.GetSettingsAsync(id.Value, Context.RequestAborted);
+            badgeUrl = PersonalizationService.ResolveBadgeUrl(flair.HeaderBadge);
+            motifUrl = PersonalizationService.ResolveMotifUrl(flair.HeaderMotif);
+            tileUrl = PersonalizationService.ResolveTileUrl(flair.BackgroundTile);
         }
 
         bar = accent ?? MemberColors.Fallback;
@@ -37,6 +46,8 @@
         ViewData["ShownName"] = shownName;
         ViewData["Accent"] = accent;
         ViewData["MessageUnread"] = unreadMessages;
+        ViewData["FlairBadgeUrl"] = badgeUrl;
+        ViewData["FlairStatusTag"] = flair.StatusTag;
     }
 
     var bodyClass = personal ? "is-auth" : "is-guest";
@@ -52,9 +63,26 @@
         {
             bodyClass += " is-kid";
         }
+        if (tileUrl is not null)
+        {
+            bodyClass += " has-bg-tile";
+        }
+        if (motifUrl is not null)
+        {
+            bodyClass += " has-bar-motif";
+        }
     }
 
-    var bodyStyle = personal ? $"--bar: {bar}; --bar-ink: {barInk};" : null;
+    var styleBuilder = personal ? $"--bar: {bar}; --bar-ink: {barInk};" : "";
+    if (personal && motifUrl is not null)
+    {
+        styleBuilder += $" --bar-motif: url('{motifUrl}');";
+    }
+    if (personal && tileUrl is not null)
+    {
+        styleBuilder += $" --bg-tile: url('{tileUrl}');";
+    }
+    var bodyStyle = styleBuilder.Length > 0 ? styleBuilder : null;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -81,16 +109,28 @@
     <link rel="stylesheet" href="~/McWutWebApp.styles.css" asp-append-version="true" />
     <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
 </head>
-<body class="@bodyClass" style="@bodyStyle" data-kid="@(isKid ? "true" : null)">
+<body class="@bodyClass" style="@bodyStyle" data-kid="@(isKid ? "true" : null)" data-chime="@(personal ? flair.ChimeTheme : null)">
     <div class="app-shell">
         <header class="topbar">
+            @if (personal && motifUrl is not null)
+            {
+                <div class="topbar-motif" aria-hidden="true"></div>
+            }
             @if (personal)
             {
                 <button class="top-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#app-menu" aria-controls="app-menu" aria-label="Open menu" title="Menu">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
                 </button>
             }
+            @if (personal && badgeUrl is not null)
+            {
+                <img class="brand-badge" src="@badgeUrl" alt="" aria-hidden="true" />
+            }
             <a class="brand" asp-area="" asp-page="/Index">@(personal ? shownName : "McWut")</a>
+            @if (personal && !string.IsNullOrEmpty(flair.StatusTag))
+            {
+                <span class="topbar-status d-none d-md-inline-flex">@flair.StatusTag</span>
+            }
             @if (personal)
             {
                 <a class="top-icon d-lg-none" asp-page="/Vault/Index" title="My files" aria-label="My files">

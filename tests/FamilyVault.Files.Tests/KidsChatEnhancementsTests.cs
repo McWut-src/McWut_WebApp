@@ -411,9 +411,20 @@ public class KidsChatEnhancementsTests
     [Fact]
     public void Sticker_generator_rules_enforce_five_word_limit_child_safety_and_svg_sanitization()
     {
-        Assert.Equal(16, StickerGeneratorRules.Themes.Count);
+        Assert.Equal(19, StickerGeneratorRules.Themes.Count);
         Assert.Equal("dojo-karate", StickerGeneratorRules.NormalizeTheme("dojo-karate").Id);
-        Assert.Equal("street-skate", StickerGeneratorRules.NormalizeTheme("unknown-theme").Id);
+        Assert.Equal("voxel-craft", StickerGeneratorRules.NormalizeTheme("voxel-craft").Id);
+        Assert.Equal("hoops-court", StickerGeneratorRules.NormalizeTheme("hoops-court").Id);
+        Assert.Equal("meme-pop", StickerGeneratorRules.NormalizeTheme("meme-pop").Id);
+        Assert.Equal("voxel-craft", StickerGeneratorRules.NormalizeTheme("unknown-theme").Id);
+
+        // Gamer status tag normalization & safety
+        Assert.Equal("", StickerGeneratorRules.NormalizeStatusTag(null));
+        Assert.Equal("Diamond Rank 💎", StickerGeneratorRules.NormalizeStatusTag("  Diamond   Rank 💎 "));
+        Assert.Throws<DirectMessageValidationException>(() =>
+            StickerGeneratorRules.NormalizeStatusTag("This status tag is way too long to fit in thirty characters"));
+        Assert.Throws<DirectMessageValidationException>(() =>
+            StickerGeneratorRules.NormalizeStatusTag("Bad gun tag"));
 
         // Prompt normalization: 1..5 words allowed, >5 words or blocked words rejected
         Assert.Equal("ninja cat eating poutine", StickerGeneratorRules.NormalizePrompt("  ninja   cat eating poutine "));
@@ -455,6 +466,12 @@ public class KidsChatEnhancementsTests
         Assert.DoesNotContain("onload", cleanSvg, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("onclick", cleanSvg, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("evil.example", cleanSvg, StringComparison.OrdinalIgnoreCase);
+
+        // Small SVG sanitization enforces custom viewBox and maxElements cap
+        var cleanBadge = StickerGeneratorRules.SanitizeSvg(rawModelReply, "0 0 64 64", StickerGeneratorRules.MaxSmallSvgBytes, maxElements: 1);
+        Assert.Contains("viewBox=\"0 0 64 64\"", cleanBadge);
+        Assert.Contains("<circle", cleanBadge);
+        Assert.DoesNotContain("<path", cleanBadge);
     }
 
     private sealed class TestEnv : IHostEnvironment

@@ -84,7 +84,7 @@ public sealed class AdminStickerKeyService(
         var resolved = await ResolveKeyAsync(cancellationToken);
         if (string.IsNullOrEmpty(resolved.Key))
         {
-            throw new DirectMessageValidationException("The Admin has not configured the Sticker AI API key yet in Admin > Stickers.");
+            throw new DirectMessageValidationException("The Admin has not configured the Site AI API key yet in Admin > Site AI.");
         }
 
         return resolved;

@@ -3072,3 +3072,289 @@ html.is-rail .sidebar .side-label {
   display: none !important;
 }
 
+/* --- Personalization: Header Badge, Motif, Background Tile & Profile Studio --- */
+.topbar {
+  overflow: hidden;
+}
+
+.topbar > * {
+  position: relative;
+  z-index: 2;
+}
+
+.topbar-motif {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--bar-motif);
+  background-repeat: repeat-x;
+  background-position: right center;
+  background-size: auto 56px;
+  opacity: 0.28;
+  pointer-events: none;
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.95));
+  -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.95));
+}
+
+.brand-badge {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.topbar-status {
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-pale .topbar-status {
+  background: rgba(11, 31, 58, 0.12);
+}
+
+.home-badge {
+  width: 30px;
+  height: 30px;
+  vertical-align: -6px;
+  margin-right: 6px;
+  object-fit: contain;
+}
+
+.home-status-tag {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--chip);
+  color: var(--ink);
+}
+
+.has-bg-tile .app-main {
+  position: relative;
+  z-index: 1;
+}
+
+.has-bg-tile .app-main::before {
+  content: "";
+  position: fixed;
+  inset: 56px 0 0 0;
+  z-index: -1;
+  background-image: var(--bg-tile);
+  background-repeat: repeat;
+  background-size: 84px 84px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+html[data-theme="dark"] .has-bg-tile .app-main::before {
+  opacity: 0.11;
+}
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.color-swatch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--fill);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.color-swatch-chip:hover {
+  border-color: var(--blue);
+  background: var(--hover);
+}
+
+.swatch-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.flair-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.flair-custom-wrap {
+  position: relative;
+  display: flex;
+}
+
+.flair-custom-wrap .flair-option {
+  width: 100%;
+}
+
+.flair-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 76px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--fill);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.flair-option:hover {
+  border-color: var(--blue);
+  background: var(--hover);
+}
+
+.flair-option.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: 0 0 0 1px var(--blue);
+}
+
+.flair-thumb-badge {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.flair-thumb-motif {
+  display: block;
+  width: 84px;
+  height: 30px;
+  border-radius: 6px;
+  background-color: var(--bar, var(--navy));
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: auto 30px;
+}
+
+.flair-thumb-tile {
+  display: block;
+  width: 44px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background-color: var(--surface);
+  background-repeat: repeat;
+  background-position: center;
+  background-size: 34px 34px;
+}
+
+.flair-none {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.flair-label {
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flair-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.flair-delete:hover {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.flair-ai-box {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--fill);
+  border: 1px solid var(--line);
+}
+
+.flair-ai-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.flair-theme-select {
+  flex: 0 1 190px;
+}
+
+.flair-prompt-input {
+  flex: 1 1 200px;
+}
+
+.flair-gen-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+  .topbar {
+    gap: 4px;
+    padding: 0 10px;
+  }
+
+  .brand-badge {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+
+

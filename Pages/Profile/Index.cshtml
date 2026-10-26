@@ -1,4 +1,6 @@
 @page "/profile"
+@using FamilyVault.Files.Security
+@using McWutWebApp.Hosting
 @model McWutWebApp.Pages.Profile.IndexModel
 @{
     ViewData["Title"] = "Profile";
@@ -7,11 +9,16 @@
 <div class="page-head">
     <div>
         <h1 class="page-title">Profile</h1>
-        <p class="page-kicker">@(Model.IsKid ? "Your name, a color, and the password you use to sign in." : "Your name, a color, the password you use to sign in, and an AI key.")</p>
+        <p class="page-kicker">@(Model.IsKid ? "Your name, color, header badge, background, and sign-in password." : "Your name, color, header badge, background, sign-in password, and personal AI key.")</p>
     </div>
 </div>
 
-<div class="profile-sheet">
+<div class="profile-sheet" id="profile-sheet"
+     data-badge="@Model.Flair.HeaderBadge"
+     data-motif="@Model.Flair.HeaderMotif"
+     data-tile="@Model.Flair.BackgroundTile"
+     data-chime="@Model.Flair.ChimeTheme"
+     data-tag="@Model.Flair.StatusTag">
     @if (Model.Notice is not null)
     {
         <div class="alert alert-success">@Model.Notice</div>
@@ -19,20 +26,36 @@
 
     <section class="card mb-3">
         <div class="card-body">
-            <h2 class="h6 mb-3">Name and color</h2>
+            <h2 class="h6 mb-3">Name, gamer tag, and color</h2>
             <p class="field-hint mb-3">This color is the bar and the menu. A pale color uses dark text. A dark color uses pale text. The same color marks your name on a file you share. It is not shown on a public link.</p>
             <form method="post" asp-page-handler="Profile" autocomplete="off">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                <div class="mb-3">
-                    <label class="form-label" for="DisplayName">Name</label>
-                    <input asp-for="DisplayName" class="form-control" maxlength="40" autocomplete="nickname" />
-                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="DisplayName">Name</label>
+                        <input asp-for="DisplayName" class="form-control" maxlength="40" autocomplete="nickname" />
+                        <span asp-validation-for="DisplayName" class="text-danger"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="StatusTag">Gamer tag / status <span class="text-muted fw-normal">(optional)</span></label>
+                        <input asp-for="StatusTag" class="form-control" maxlength="30" placeholder="e.g. Diamond Rank, Clutch Shooter, Black Belt" autocomplete="off" />
+                        <span asp-validation-for="StatusTag" class="text-danger"></span>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="AccentColor">Color</label>
-                    <div class="color-field">
+                    <div class="color-field mb-2">
                         <input asp-for="AccentColor" type="color" class="color-pick" />
                         <span class="color-hex" id="color-hex">@Model.AccentColor</span>
+                    </div>
+                    <div class="color-swatches" role="group" aria-label="Quick color presets">
+                        @foreach (var swatch in PersonalizationService.TeenSwatches)
+                        {
+                            <button type="button" class="color-swatch-chip" data-color-preset="@swatch.Hex" title="@swatch.Label (@swatch.Hex)">
+                                <span class="swatch-dot" style="background: @swatch.Hex"></span>
+                                <span>@swatch.Label</span>
+                            </button>
+                        }
                     </div>
                     <span asp-validation-for="AccentColor" class="text-danger"></span>
                 </div>
@@ -41,13 +64,169 @@
         </div>
     </section>
 
+    <section class="card mb-3" id="header-studio">
+        <div class="card-body">
+            <h2 class="h6 mb-1">Header badge &amp; bar style</h2>
+            <p class="field-hint mb-3">Pick a compact badge next to your name or a subtle header bar motif—or generate your own in seconds with Site AI (1 to 5 words).</p>
+
+            <label class="form-label small fw-semibold text-uppercase text-muted">Header Emblem (64×64)</label>
+            <div class="flair-grid mb-3" id="badge-grid" role="group" aria-label="Header badge">
+                @foreach (var p in PersonalizationService.BadgePresets)
+                {
+                    var active = string.Equals(Model.Flair.HeaderBadge, p.Value, StringComparison.OrdinalIgnoreCase);
+                    <button type="button" class="flair-option @(active ? "active" : null)" data-flair-kind="badge" data-flair-value="@p.Value" aria-pressed="@(active ? "true" : "false")">
+                        @if (!string.IsNullOrEmpty(p.Url))
+                        {
+                            <img src="@p.Url" alt="" class="flair-thumb-badge" loading="lazy" />
+                        }
+                        else
+                        {
+                            <span class="flair-none">—</span>
+                        }
+                        <span class="flair-label">@p.Label</span>
+                    </button>
+                }
+                @foreach (var c in Model.CustomSvgItems.Where(x => x.Kind == "badge"))
+                {
+                    var active = string.Equals(Model.Flair.HeaderBadge, c.Value, StringComparison.OrdinalIgnoreCase);
+                    <div class="flair-custom-wrap">
+                        <button type="button" class="flair-option @(active ? "active" : null)" data-flair-kind="badge" data-flair-value="@c.Value" aria-pressed="@(active ? "true" : "false")">
+                            <img src="@c.Url" alt="" class="flair-thumb-badge" loading="lazy" />
+                            <span class="flair-label">@c.Label</span>
+                        </button>
+                        <button type="button" class="flair-delete" data-delete-svg="@c.Id" title="Delete custom SVG" aria-label="Delete custom SVG">×</button>
+                    </div>
+                }
+            </div>
+
+            <div class="flair-ai-box mb-4">
+                <div class="flair-ai-row">
+                    <select id="ai-badge-theme" class="form-select form-select-sm flair-theme-select" aria-label="Badge style">
+                        @foreach (var t in StickerGeneratorRules.Themes)
+                        {
+                            <option value="@t.Id">@t.Label</option>
+                        }
+                    </select>
+                    <input id="ai-badge-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. flaming basketball, pixel pickaxe, black belt dragon)" />
+                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-badge-btn" data-gen-kind="badge">Create AI badge</button>
+                </div>
+            </div>
+
+            <label class="form-label small fw-semibold text-uppercase text-muted">Header Bar Accent Motif (120×56)</label>
+            <div class="flair-grid mb-2" id="motif-grid" role="group" aria-label="Header motif">
+                @foreach (var p in PersonalizationService.MotifPresets)
+                {
+                    var active = string.Equals(Model.Flair.HeaderMotif, p.Value, StringComparison.OrdinalIgnoreCase);
+                    <button type="button" class="flair-option flair-option-wide @(active ? "active" : null)" data-flair-kind="motif" data-flair-value="@p.Value" aria-pressed="@(active ? "true" : "false")">
+                        @if (!string.IsNullOrEmpty(p.Url))
+                        {
+                            <span class="flair-thumb-motif" style="background-image: url('@p.Url')"></span>
+                        }
+                        else
+                        {
+                            <span class="flair-none">—</span>
+                        }
+                        <span class="flair-label">@p.Label</span>
+                    </button>
+                }
+                @foreach (var c in Model.CustomSvgItems.Where(x => x.Kind == "motif"))
+                {
+                    var active = string.Equals(Model.Flair.HeaderMotif, c.Value, StringComparison.OrdinalIgnoreCase);
+                    <div class="flair-custom-wrap">
+                        <button type="button" class="flair-option flair-option-wide @(active ? "active" : null)" data-flair-kind="motif" data-flair-value="@c.Value" aria-pressed="@(active ? "true" : "false")">
+                            <span class="flair-thumb-motif" style="background-image: url('@c.Url')"></span>
+                            <span class="flair-label">@c.Label</span>
+                        </button>
+                        <button type="button" class="flair-delete" data-delete-svg="@c.Id" title="Delete custom SVG" aria-label="Delete custom SVG">×</button>
+                    </div>
+                }
+            </div>
+
+            <div class="flair-ai-box">
+                <div class="flair-ai-row">
+                    <select id="ai-motif-theme" class="form-select form-select-sm flair-theme-select" aria-label="Header motif style">
+                        @foreach (var t in StickerGeneratorRules.Themes)
+                        {
+                            <option value="@t.Id">@t.Label</option>
+                        }
+                    </select>
+                    <input id="ai-motif-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. neon circuit waves, pixel clouds, court lines)" />
+                    <button type="button" class="btn btn-sm btn-outline-primary flair-gen-btn" id="ai-motif-btn" data-gen-kind="motif">Create AI motif</button>
+                </div>
+            </div>
+            <p id="header-studio-status" class="field-hint mt-2 mb-0" hidden></p>
+        </div>
+    </section>
+
+    <section class="card mb-3" id="bg-studio">
+        <div class="card-body">
+            <h2 class="h6 mb-1">Background pattern tile</h2>
+            <p class="field-hint mb-3">Choose a subtle repeating vector pattern for your pages, or design a custom 80×80 seamless tile with Site AI. Cards and text stay clean and readable.</p>
+
+            <div class="flair-grid mb-3" id="tile-grid" role="group" aria-label="Background tile">
+                @foreach (var p in PersonalizationService.TilePresets)
+                {
+                    var active = string.Equals(Model.Flair.BackgroundTile, p.Value, StringComparison.OrdinalIgnoreCase);
+                    <button type="button" class="flair-option @(active ? "active" : null)" data-flair-kind="tile" data-flair-value="@p.Value" aria-pressed="@(active ? "true" : "false")">
+                        @if (!string.IsNullOrEmpty(p.Url))
+                        {
+                            <span class="flair-thumb-tile" style="background-image: url('@p.Url')"></span>
+                        }
+                        else
+                        {
+                            <span class="flair-none">—</span>
+                        }
+                        <span class="flair-label">@p.Label</span>
+                    </button>
+                }
+                @foreach (var c in Model.CustomSvgItems.Where(x => x.Kind == "tile"))
+                {
+                    var active = string.Equals(Model.Flair.BackgroundTile, c.Value, StringComparison.OrdinalIgnoreCase);
+                    <div class="flair-custom-wrap">
+                        <button type="button" class="flair-option @(active ? "active" : null)" data-flair-kind="tile" data-flair-value="@c.Value" aria-pressed="@(active ? "true" : "false")">
+                            <span class="flair-thumb-tile" style="background-image: url('@c.Url')"></span>
+                            <span class="flair-label">@c.Label</span>
+                        </button>
+                        <button type="button" class="flair-delete" data-delete-svg="@c.Id" title="Delete custom SVG" aria-label="Delete custom SVG">×</button>
+                    </div>
+                }
+            </div>
+
+            <div class="flair-ai-box">
+                <div class="flair-ai-row">
+                    <select id="ai-tile-theme" class="form-select form-select-sm flair-theme-select" aria-label="Tile style">
+                        @foreach (var t in StickerGeneratorRules.Themes)
+                        {
+                            <option value="@t.Id">@t.Label</option>
+                        }
+                    </select>
+                    <input id="ai-tile-prompt" type="text" class="form-control form-control-sm flair-prompt-input" maxlength="50" placeholder="1–5 words (e.g. minecraft pickaxes, basketballs, shuriken stars)" />
+                    <button type="button" class="btn btn-sm btn-primary flair-gen-btn" id="ai-tile-btn" data-gen-kind="tile">Create AI tile</button>
+                </div>
+            </div>
+            <p id="bg-studio-status" class="field-hint mt-2 mb-0" hidden></p>
+        </div>
+    </section>
+
     <section class="card mb-3">
         <div class="card-body">
-            <h2 class="h6 mb-1">Appearance</h2>
-            <p class="field-hint mb-3">Light or dark. This stays on this browser. The bar keeps your color.</p>
-            <div class="theme-choice" role="group" aria-label="Appearance">
-                <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="light" aria-pressed="true">Light</button>
-                <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="dark" aria-pressed="false">Dark</button>
+            <h2 class="h6 mb-1">Appearance &amp; message chime</h2>
+            <p class="field-hint mb-3">Light or dark stays on this browser. Your message chime plays when a message arrives while Messages is open.</p>
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="theme-choice" role="group" aria-label="Appearance">
+                    <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="light" aria-pressed="true">Light</button>
+                    <button type="button" class="btn btn-outline-secondary theme-btn" data-theme-value="dark" aria-pressed="false">Dark</button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 small text-muted" for="chime-select">Chime</label>
+                    <select id="chime-select" class="form-select form-select-sm" style="width: auto;">
+                        @foreach (var (chimeId, chimeLabel) in PersonalizationService.ChimeThemes)
+                        {
+                            <option value="@chimeId" selected="@(Model.Flair.ChimeTheme == chimeId ? "selected" : null)">@chimeLabel</option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="chime-preview-btn">Preview sound</button>
+                </div>
             </div>
         </div>
     </section>
@@ -56,8 +235,8 @@
     {
         <section class="card mb-3" id="ai-key">
             <div class="card-body">
-                <h2 class="h6 mb-1">AI key</h2>
-                <p class="field-hint mb-3">Your own key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">OpenRouter</a>. It is encrypted and not shared. The full key is not shown again. <a href="https://openrouter.ai/" target="_blank" rel="noopener">Create an account</a> if you need one.</p>
+                <h2 class="h6 mb-1">Personal AI key (Chat)</h2>
+                <p class="field-hint mb-3">Your own key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">OpenRouter</a> for the <a asp-page="/Ai/Index">AI chat</a> and Ask AI in notes. It is encrypted and not shared. (Stickers, header badges, and background tiles already use the shared Site AI.) <a href="https://openrouter.ai/" target="_blank" rel="noopener">Create an account</a> if you need one.</p>
                 <form id="ai-key-form" class="ai-key-form" method="post" autocomplete="off">
                     <div class="ai-key-field">
                         <label class="form-label" for="ai-key-input">OpenRouter key</label>
@@ -100,6 +279,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/profile-flair.js" asp-append-version="true"></script>
     @if (!Model.IsKid)
     {
         <script src="~/js/ai-key.js" asp-append-version="true"></script>

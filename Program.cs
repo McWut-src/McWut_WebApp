@@ -101,6 +101,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Share/Index");
     options.Conventions.AllowAnonymousToPage("/Join/Index");
     options.Conventions.AuthorizeFolder("/Admin", "Admin");
+    options.Conventions.AddPageRoute("/Admin/Stickers", "/admin/stickers");
     options.Conventions.AllowAnonymousToAreaPage("Identity", "/Account/Login");
     if (identityOptions.AllowRegistration)
     {
@@ -134,6 +135,7 @@ builder.Services.AddScoped<OpenRouterKeyService>();
 builder.Services.AddScoped<AdminStickerKeyService>();
 builder.Services.AddScoped<AiChatService>();
 builder.Services.AddScoped<StickerGeneratorService>();
+builder.Services.AddScoped<PersonalizationService>();
 builder.Services.AddHttpClient<GoogleGeminiClient>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(180);

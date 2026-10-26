@@ -9,11 +9,19 @@
     <div class="page-head">
         <div>
             <h1 class="page-title">
-                @if (Model.AccentColor is not null)
+                @if (Model.BadgeUrl is not null)
+                {
+                    <img class="home-badge" src="@Model.BadgeUrl" alt="" aria-hidden="true" />
+                }
+                else if (Model.AccentColor is not null)
                 {
                     <span class="me-dot" style="background: @Model.AccentColor" aria-hidden="true"></span>
                 }
                 @hello
+                @if (Model.StatusTag is not null)
+                {
+                    <span class="home-status-tag">@Model.StatusTag</span>
+                }
             </h1>
             <p class="page-kicker">@(Model.IsKid ? "Files, logins, links, and messages. Just for us." : "Files, logins, links, messages, and a chat. Just for us.")</p>
         </div>

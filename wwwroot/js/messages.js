@@ -417,6 +417,10 @@
         if (!soundActive()) {
             return;
         }
+        if (window.mcwut && typeof window.mcwut.playChime === "function") {
+            window.mcwut.playChime(kind);
+            return;
+        }
         const ctx = ensureAudioContext();
         if (!ctx || ctx.state !== "running") {
             return;

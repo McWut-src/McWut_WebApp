@@ -100,6 +100,79 @@ window.mcwut = window.mcwut || {
         }
         var when = new Date(iso);
         return when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    },
+    _audioCtx: null,
+    playChime: function (kind, themeOverride) {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        try {
+            if (!window.mcwut._audioCtx) {
+                window.mcwut._audioCtx = new Ctx();
+            }
+            var ctx = window.mcwut._audioCtx;
+            if (ctx.state === "suspended") {
+                ctx.resume().catch(function () {});
+            }
+            var theme = themeOverride || document.body.getAttribute("data-chime") || "classic";
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (kind === "send") {
+                osc.type = theme === "arcade-8bit" ? "square" : "triangle";
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                return;
+            }
+
+            if (theme === "arcade-8bit") {
+                osc.type = "square";
+                osc.frequency.setValueAtTime(987.77, now); // B5
+                osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6 coin!
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                osc.start(now);
+                osc.stop(now + 0.28);
+            } else if (theme === "voxel-pop") {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(780, now + 0.065);
+                gain.gain.setValueAtTime(0.11, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (theme === "court-buzzer") {
+                osc.type = "sawtooth";
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(587.33, now + 0.09);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                osc.start(now);
+                osc.stop(now + 0.24);
+            } else if (theme === "dojo-gong") {
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(293.66, now); // D4
+                osc.frequency.exponentialRampToValueAtTime(220, now + 0.35);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+                osc.start(now);
+                osc.stop(now + 0.36);
+            } else {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.setValueAtTime(880, now + 0.09);
+                gain.gain.setValueAtTime(0.09, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                osc.start(now);
+                osc.stop(now + 0.24);
+            }
+        } catch (e) {}
     }
 };
 

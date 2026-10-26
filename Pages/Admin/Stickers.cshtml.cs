@@ -30,7 +30,7 @@ public class StickersModel(AdminStickerKeyService adminKeys) : PageModel
         try
         {
             Status = await adminKeys.SaveAsync(apiKey, cancellationToken);
-            Notice = $"Saved {Status.Provider} API key for sticker generation.";
+            Notice = $"Saved {Status.Provider} API key for Site AI.";
         }
         catch (DirectMessageValidationException ex)
         {
@@ -45,7 +45,7 @@ public class StickersModel(AdminStickerKeyService adminKeys) : PageModel
     {
         await adminKeys.DeleteAsync(cancellationToken);
         Status = new AdminStickerKeyStatus(false, null, null);
-        Notice = "Removed sticker AI API key.";
+        Notice = "Removed Site AI API key.";
         return Page();
     }
 }

@@ -15,7 +15,7 @@
     var people = On("/admin/people");
     var reset = On("/admin/reset-password");
     var status = On("/admin/status");
-    var stickers = On("/admin/stickers");
+    var stickers = On("/admin/site-ai") || On("/admin/stickers");
     var privacy = On("/privacy");
     var shown = ViewData["ShownName"] as string ?? User.Identity?.Name;
     var messageUnread = ViewData["MessageUnread"] as int? ?? 0;
@@ -58,7 +58,7 @@
     <div class="side-label">Admin</div>
     <nav class="side-nav" aria-label="Admin">
         <a class="side-link @(people ? "active" : null)" asp-page="/Admin/People" title="People" aria-current="@(people ? "page" : null)">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a3 3 0 0 1 0 5.75"/></svg>
             <span>People</span>
         </a>
         <a class="side-link @(invites ? "active" : null)" asp-page="/Admin/Invites" title="Invites" aria-current="@(invites ? "page" : null)">
@@ -73,9 +73,9 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
             <span>Status</span>
         </a>
-        <a class="side-link @(stickers ? "active" : null)" asp-page="/Admin/Stickers" title="Sticker AI" aria-current="@(stickers ? "page" : null)">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-            <span>Sticker AI</span>
+        <a class="side-link @(stickers ? "active" : null)" asp-page="/Admin/Stickers" title="Site AI" aria-current="@(stickers ? "page" : null)">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v4"/><path d="M15 2v4"/><path d="M9 18v4"/><path d="M15 18v4"/><path d="M2 9h4"/><path d="M2 15h4"/><path d="M18 9h4"/><path d="M18 15h4"/></svg>
+            <span>Site AI</span>
         </a>
     </nav>
 }

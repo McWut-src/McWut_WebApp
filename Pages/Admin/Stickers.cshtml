@@ -1,18 +1,18 @@
-@page "/admin/stickers"
+@page "/admin/site-ai"
 @model McWutWebApp.Pages.Admin.StickersModel
 @{
-    ViewData["Title"] = "Sticker AI";
+    ViewData["Title"] = "Site AI";
 }
 
 <div class="page-head">
     <div>
-        <h1 class="page-title">Sticker AI Provider</h1>
-        <p class="page-kicker">Manage the dedicated AI key used by all family members to generate custom stickers in Messages. This key is completely separate from your personal OpenRouter key.</p>
+        <h1 class="page-title">Site AI</h1>
+        <p class="page-kicker">Manage the shared Site AI key provided by the Admin for all family members (including teens and kids) to generate custom chat stickers, header badges, and background tiles. This is separate from each member's personal OpenRouter key for AI chat.</p>
     </div>
 </div>
 
 <div class="panel mb-4">
-    <h2 class="h6 mb-3">Sticker AI Key</h2>
+    <h2 class="h6 mb-3">Site AI Key (Shared Creative Tools)</h2>
 
     @if (!string.IsNullOrEmpty(Model.Notice))
     {
@@ -35,7 +35,7 @@
             else
             {
                 <span class="badge bg-secondary">Not configured</span>
-                <span class="ms-2 text-muted small">Sticker generation is currently unavailable.</span>
+                <span class="ms-2 text-muted small">Site AI generators (stickers, header badges, background tiles) are currently unavailable.</span>
             }
         </div>
     </div>
@@ -45,7 +45,7 @@
             <label class="form-label" for="apiKey">API Key (Google Gemini or OpenRouter)</label>
             <input id="apiKey" name="apiKey" class="form-control" type="password" placeholder="Paste your Google Gemini or OpenRouter key" autocomplete="off" />
             <div class="form-text">
-                Recommended: <strong>Google AI Studio (Gemini 2.5 Flash)</strong> for high-quality SVG generation at zero cost. Get a free key at <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">aistudio.google.com</a>.
+                Recommended: <strong>Google AI Studio (Gemini 2.5 Flash)</strong> for fast, compact SVG generation (stickers, header emblems, background patterns). Get a key at <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">aistudio.google.com</a>.
             </div>
         </div>
         <div class="d-flex gap-2">
