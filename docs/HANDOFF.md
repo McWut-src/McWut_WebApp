@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000028`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000029`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**26 October 2026, 14:51 UTC.** Production was moved on purpose to technical debt reduction and application hardening: Azure SQL serverless auto-pause optimization (24-hour sweep cadence), 503 self-refreshing SQL wake page for pauses (errors 40613/42119), global security defense-in-depth headers, dedicated `UserPersonalizations` and `SystemSettings` database tables (with backward-compatible fallback), DM query sequence-based paging, unlinked chat upload sweeping, and Identity lockout & IP login rate limiting.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000028` | `ghcr.io/mcwut-src/mcwut_webapp:f6c46d9052f77b9331608bb214a5b8a586a49d48` |
+| Live | `ca-mcwut--0000029` | `ghcr.io/mcwut-src/mcwut_webapp:99371b40a9fe560bb184d159ecabfdf9f84660b7` |
+
+`0000029` has 100% of the traffic and is Healthy. `0000028` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000029`: both hosts `/health` return `ok` with security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`), Register is 404, and `/files` redirects to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. Sign-in with the production password was not tried. This build adds migration `AddPersonalizationAndSystemSettings`. That migration runs on the first request that needs the database, and only if `sql-mcwut` already exists.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000028
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000028=100
+```
 
 **26 October 2026, 01:21 UTC.** Production was moved on purpose to Site AI in Admin, distinct Admin sidebar icons, and personalizations for everyone/teens (compact 64x64 AI header emblems, 120x56 header motifs, 80x80 repeating background tiles, gamer status tags, teen color swatches, and 5 Web Audio synthesized chime themes).
 
