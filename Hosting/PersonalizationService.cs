@@ -127,22 +127,38 @@ public sealed class PersonalizationService(
             return cached;
         }
 
-        var rowId = DeriveFlairKeyId(userId);
-        var row = await db.OpenRouterKeys.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.UserId == rowId, cancellationToken);
+        var row = await db.UserPersonalizations.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
 
-        PersonalizationSettings settings = new();
-        if (row is not null && !string.IsNullOrWhiteSpace(row.KeyCipher))
+        PersonalizationSettings settings;
+        if (row is not null)
         {
-            try
+            settings = NormalizeSettings(new PersonalizationSettings(
+                row.StatusTag,
+                row.HeaderBadge,
+                row.HeaderMotif,
+                row.BackgroundTile,
+                row.ChimeTheme));
+        }
+        else
+        {
+            // Backwards compatibility: check legacy OpenRouterKeys row
+            var legacyId = DeriveFlairKeyId(userId);
+            var legacyRow = await db.OpenRouterKeys.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == legacyId, cancellationToken);
+            if (legacyRow is not null && !string.IsNullOrWhiteSpace(legacyRow.KeyCipher))
             {
-                var parsed = JsonSerializer.Deserialize<PersonalizationSettings>(row.KeyCipher);
-                if (parsed is not null)
+                try
                 {
-                    settings = NormalizeSettings(parsed);
+                    var parsed = JsonSerializer.Deserialize<PersonalizationSettings>(legacyRow.KeyCipher);
+                    settings = parsed is not null ? NormalizeSettings(parsed) : new();
+                }
+                catch (JsonException)
+                {
+                    settings = new();
                 }
             }
-            catch (JsonException)
+            else
             {
                 settings = new();
             }
@@ -170,16 +186,40 @@ public sealed class PersonalizationService(
         CancellationToken cancellationToken)
     {
         var clean = NormalizeSettings(input);
-        var rowId = DeriveFlairKeyId(userId);
-        var row = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == rowId, cancellationToken);
+        var now = time.GetUtcNow();
+        var row = await db.UserPersonalizations.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
         if (row is null)
         {
-            row = new OpenRouterKeyEntity { UserId = rowId };
-            db.OpenRouterKeys.Add(row);
+            row = new UserPersonalizationEntity
+            {
+                UserId = userId,
+                StatusTag = clean.StatusTag,
+                HeaderBadge = clean.HeaderBadge,
+                HeaderMotif = clean.HeaderMotif,
+                BackgroundTile = clean.BackgroundTile,
+                ChimeTheme = clean.ChimeTheme,
+                UpdatedAt = now
+            };
+            db.UserPersonalizations.Add(row);
+        }
+        else
+        {
+            row.StatusTag = clean.StatusTag;
+            row.HeaderBadge = clean.HeaderBadge;
+            row.HeaderMotif = clean.HeaderMotif;
+            row.BackgroundTile = clean.BackgroundTile;
+            row.ChimeTheme = clean.ChimeTheme;
+            row.UpdatedAt = now;
         }
 
-        row.KeyCipher = JsonSerializer.Serialize(clean);
-        row.UpdatedAt = time.GetUtcNow();
+        // Clean up legacy OpenRouterKeys entry if it exists
+        var legacyId = DeriveFlairKeyId(userId);
+        var legacyRow = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == legacyId, cancellationToken);
+        if (legacyRow is not null)
+        {
+            db.OpenRouterKeys.Remove(legacyRow);
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         var cacheKey = "user-flair-" + userId.ToString("N");

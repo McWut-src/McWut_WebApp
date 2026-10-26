@@ -603,6 +603,24 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("StoredFiles", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.SystemSettingEntity", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ValueCipher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("SystemSettings", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.UploadSessionEntity", b =>
                 {
                     b.Property<Guid>("SessionId")
@@ -639,6 +657,44 @@ namespace FamilyVault.Files.Data.Migrations
                     b.HasIndex("FileId");
 
                     b.ToTable("UploadSessions", (string)null);
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.UserPersonalizationEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BackgroundTile")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChimeTheme")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HeaderBadge")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HeaderMotif")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StatusTag")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserPersonalizations", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -936,6 +992,17 @@ namespace FamilyVault.Files.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("File");
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.UserPersonalizationEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

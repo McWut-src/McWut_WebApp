@@ -76,6 +76,44 @@ public sealed class FileLifecycle(
             await TryDeleteBlobAsync(session.StorageKey, cancellationToken).ConfigureAwait(false);
         }
 
+        // Purge unlinked chat uploads (photos/doodles) that were completed but never sent in a message after 24h
+        var chatCutoff = now.AddHours(-24);
+        var unlinkedChatCandidates = await db.StoredFiles
+            .Where(f => f.IsChatOnly
+                        && f.DeletedAt == null
+                        && f.Status == FileStatus.Ready)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var eligible = unlinkedChatCandidates
+            .Where(f => f.CreatedAt <= chatCutoff
+                        && !f.ContentType.Contains(";sticker=")
+                        && !f.ContentType.Contains(";badge=")
+                        && !f.ContentType.Contains(";motif=")
+                        && !f.ContentType.Contains(";bgtile="))
+            .ToList();
+
+        if (eligible.Count > 0)
+        {
+            var eligibleIds = eligible.Select(f => f.Id).ToList();
+            var attachedIds = await db.DirectMessages.AsNoTracking()
+                .Where(m => m.AttachmentFileId != null && eligibleIds.Contains(m.AttachmentFileId.Value))
+                .Select(m => m.AttachmentFileId!.Value)
+                .Distinct()
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var attachedSet = new HashSet<Guid>(attachedIds);
+            foreach (var unlinked in eligible)
+            {
+                if (!attachedSet.Contains(unlinked.Id))
+                {
+                    unlinked.DeletedAt = now;
+                    await TryDeleteBlobAsync(unlinked.StorageKey, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 

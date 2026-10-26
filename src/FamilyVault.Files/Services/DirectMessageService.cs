@@ -389,35 +389,81 @@ public sealed class DirectMessageService(
             cancellationToken).ConfigureAwait(false);
 
         var now = time.GetUtcNow();
-        var allRows = await db.DirectMessages.AsNoTracking()
-            .Where(row => row.ConversationId == conversationId)
-            .OrderBy(row => row.Sequence)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-        var rows = allRows
-            .Where(row => row.ExpiresAt is null || row.ExpiresAt > now)
-            .ToList();
-
         List<DirectMessageEntity> selectedRows;
         var hasOlder = false;
+
         if (afterId is Guid after)
         {
-            var marker = rows.FindIndex(row => row.Id == after);
-            selectedRows = marker < 0 ? [] : rows.Skip(marker + 1).ToList();
+            var markerSeq = await db.DirectMessages.AsNoTracking()
+                .Where(row => row.ConversationId == conversationId && row.Id == after)
+                .Select(row => (long?)row.Sequence)
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (markerSeq is long seq)
+            {
+                var fetched = await db.DirectMessages.AsNoTracking()
+                    .Where(row => row.ConversationId == conversationId && row.Sequence > seq)
+                    .OrderBy(row => row.Sequence)
+                    .Take(PageSize)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                selectedRows = fetched.Where(row => row.ExpiresAt is null || row.ExpiresAt > now).ToList();
+            }
+            else
+            {
+                selectedRows = [];
+            }
         }
         else if (beforeId is Guid before)
         {
-            var marker = rows.FindIndex(row => row.Id == before);
-            selectedRows = marker <= 0 ? [] : rows.Take(marker).TakeLast(PageSize).ToList();
-            hasOlder = marker > PageSize;
+            var markerSeq = await db.DirectMessages.AsNoTracking()
+                .Where(row => row.ConversationId == conversationId && row.Id == before)
+                .Select(row => (long?)row.Sequence)
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (markerSeq is long seq)
+            {
+                var fetched = await db.DirectMessages.AsNoTracking()
+                    .Where(row => row.ConversationId == conversationId && row.Sequence < seq)
+                    .OrderByDescending(row => row.Sequence)
+                    .Take(PageSize + 1)
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                hasOlder = fetched.Count > PageSize;
+                selectedRows = fetched.Take(PageSize)
+                    .Where(row => row.ExpiresAt is null || row.ExpiresAt > now)
+                    .OrderBy(row => row.Sequence)
+                    .ToList();
+            }
+            else
+            {
+                selectedRows = [];
+            }
         }
         else
         {
-            selectedRows = rows.TakeLast(PageSize).ToList();
-            hasOlder = rows.Count > selectedRows.Count;
+            var fetched = await db.DirectMessages.AsNoTracking()
+                .Where(row => row.ConversationId == conversationId)
+                .OrderByDescending(row => row.Sequence)
+                .Take(PageSize + 1)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+            hasOlder = fetched.Count > PageSize;
+            selectedRows = fetched.Take(PageSize)
+                .Where(row => row.ExpiresAt is null || row.ExpiresAt > now)
+                .OrderBy(row => row.Sequence)
+                .ToList();
         }
 
-        var syncWindow = rows.TakeLast(LiveSyncWindow).ToList();
+        var syncWindow = await db.DirectMessages.AsNoTracking()
+            .Where(row => row.ConversationId == conversationId)
+            .OrderByDescending(row => row.Sequence)
+            .Take(LiveSyncWindow)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
         var messageIdsForReactions = selectedRows.Select(r => r.Id)
             .Concat(syncWindow.Select(r => r.Id))
             .Distinct()

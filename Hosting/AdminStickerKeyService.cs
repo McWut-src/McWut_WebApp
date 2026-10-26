@@ -17,8 +17,9 @@ public sealed class AdminStickerKeyService(
     TimeProvider time,
     IMemoryCache cache)
 {
-    // Well-known Guid for the system-wide Admin sticker generator provider key
+    // Well-known Guid for backwards compatibility during migration
     public static readonly Guid AdminStickerKeyId = new("00000000-0000-0000-0000-00000057494b"); // "STIK" in hex
+    private const string SettingKey = "SiteAiKey";
     private const string CacheKey = "admin-sticker-ai-key";
     private readonly IDataProtector _protector = protection.CreateProtector("McWut.AdminStickerKey.v1");
 
@@ -51,15 +52,23 @@ public sealed class AdminStickerKeyService(
             throw new DirectMessageValidationException("Enter a valid API key (Google Gemini or OpenRouter).");
         }
 
-        var row = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
+        var row = await db.SystemSettings.FirstOrDefaultAsync(x => x.Key == SettingKey, cancellationToken);
         if (row is null)
         {
-            row = new OpenRouterKeyEntity { UserId = AdminStickerKeyId };
-            db.OpenRouterKeys.Add(row);
+            row = new SystemSettingEntity { Key = SettingKey };
+            db.SystemSettings.Add(row);
         }
 
-        row.KeyCipher = _protector.Protect($"{provider}:{clean}");
+        row.ValueCipher = _protector.Protect($"{provider}:{clean}");
         row.UpdatedAt = time.GetUtcNow();
+
+        // Clean up legacy OpenRouterKeys entry if it exists
+        var legacyRow = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
+        if (legacyRow is not null)
+        {
+            db.OpenRouterKeys.Remove(legacyRow);
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         cache.Set(CacheKey, (clean, provider), TimeSpan.FromHours(12));
@@ -69,12 +78,19 @@ public sealed class AdminStickerKeyService(
 
     public async Task DeleteAsync(CancellationToken cancellationToken)
     {
-        var row = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
+        var row = await db.SystemSettings.FirstOrDefaultAsync(x => x.Key == SettingKey, cancellationToken);
         if (row is not null)
         {
-            db.OpenRouterKeys.Remove(row);
-            await db.SaveChangesAsync(cancellationToken);
+            db.SystemSettings.Remove(row);
         }
+
+        var legacyRow = await db.OpenRouterKeys.FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
+        if (legacyRow is not null)
+        {
+            db.OpenRouterKeys.Remove(legacyRow);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
 
         cache.Remove(CacheKey);
     }
@@ -97,16 +113,32 @@ public sealed class AdminStickerKeyService(
             return cached;
         }
 
-        // 1. Check database entry
-        var row = await db.OpenRouterKeys.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
-        if (row is not null && TryUnprotect(row.KeyCipher, out var plain))
+        // 1. Check SystemSettings database entry
+        var row = await db.SystemSettings.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Key == SettingKey, cancellationToken);
+        if (row is not null && TryUnprotect(row.ValueCipher, out var plain))
         {
             var colon = plain.IndexOf(':');
             if (colon > 0)
             {
                 var prov = plain[..colon];
                 var k = plain[(colon + 1)..];
+                var res = (k, prov);
+                cache.Set(CacheKey, res, TimeSpan.FromHours(12));
+                return res;
+            }
+        }
+
+        // Fallback: Check legacy OpenRouterKeys entry
+        var legacyRow = await db.OpenRouterKeys.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == AdminStickerKeyId, cancellationToken);
+        if (legacyRow is not null && TryUnprotect(legacyRow.KeyCipher, out var legacyPlain))
+        {
+            var colon = legacyPlain.IndexOf(':');
+            if (colon > 0)
+            {
+                var prov = legacyPlain[..colon];
+                var k = legacyPlain[(colon + 1)..];
                 var res = (k, prov);
                 cache.Set(CacheKey, res, TimeSpan.FromHours(12));
                 return res;

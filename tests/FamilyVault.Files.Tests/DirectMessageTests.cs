@@ -167,4 +167,23 @@ public class DirectMessageServiceTests
         var earlier = await messages.ThreadAsync(SqliteFixture.OtherId, opened.Id, null, page.Messages[0].Id);
         Assert.Contains(earlier.Messages, row => row.Id == first!.Id);
     }
+
+    [Fact]
+    public async Task ThreadAsync_with_afterId_returns_only_newer_messages()
+    {
+        await using var fx = new SqliteFixture();
+        await fx.SeedMembersAsync();
+        var messages = new DirectMessageService(fx.Db, new TestTimeProvider(Now));
+        var opened = await messages.OpenAsync(SqliteFixture.OwnerId, SqliteFixture.OtherId);
+
+        var m1 = await messages.SendAsync(SqliteFixture.OwnerId, opened.Id, "first");
+        var m2 = await messages.SendAsync(SqliteFixture.OtherId, opened.Id, "second");
+        var m3 = await messages.SendAsync(SqliteFixture.OwnerId, opened.Id, "third");
+
+        var delta = await messages.ThreadAsync(SqliteFixture.OwnerId, opened.Id, afterId: m1.Id, beforeId: null);
+
+        Assert.Equal(2, delta.Messages.Count);
+        Assert.Equal(m2.Id, delta.Messages[0].Id);
+        Assert.Equal(m3.Id, delta.Messages[1].Id);
+    }
 }

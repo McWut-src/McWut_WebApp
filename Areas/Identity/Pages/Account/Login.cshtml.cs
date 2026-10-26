@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace McWutWebApp.Areas.Identity.Pages.Account;
 
 [AllowAnonymous]
+[EnableRateLimiting("login")]
 public class LoginModel(SignInManager<IdentityUser> signInManager) : PageModel
 {
     [BindProperty]
@@ -41,7 +43,7 @@ public class LoginModel(SignInManager<IdentityUser> signInManager) : PageModel
             return Page();
         }
 
-        var result = await signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             return LocalRedirect(returnUrl);
@@ -49,7 +51,16 @@ public class LoginModel(SignInManager<IdentityUser> signInManager) : PageModel
 
         if (result.IsLockedOut)
         {
-            ModelState.AddModelError(string.Empty, "This account is turned off. Ask an admin to turn it back on.");
+            var user = await signInManager.UserManager.FindByEmailAsync(Input.Email);
+            if (user?.LockoutEnd is { } lockoutEnd && lockoutEnd > DateTimeOffset.UtcNow.AddDays(30))
+            {
+                ModelState.AddModelError(string.Empty, "This account is turned off. Ask an admin to turn it back on.");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Too many failed attempts. This account is temporarily locked for 10 minutes. Please try again shortly.");
+            }
+
             ReturnUrl = returnUrl;
             return Page();
         }

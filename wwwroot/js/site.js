@@ -64,6 +64,38 @@
 })();
 
 window.mcwut = window.mcwut || {
+    csrfToken: function () {
+        var meta = document.querySelector('meta[name="request-verification-token"]');
+        return meta ? meta.getAttribute("content") : "";
+    },
+    headers: function (extra) {
+        return Object.assign({
+            "RequestVerificationToken": (window.mcwut.csrfToken ? window.mcwut.csrfToken() : ""),
+            "Accept": "application/json"
+        }, extra || {});
+    },
+    api: async function (url, options) {
+        var response = await fetch(url, options);
+        if (response.status === 204) {
+            return null;
+        }
+        var text = await response.text();
+        var data = null;
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                if (response.ok) {
+                    throw err;
+                }
+            }
+        }
+        if (!response.ok) {
+            var message = data && (data.error || data.title) ? (data.error || data.title) : "Request failed (" + response.status + ")";
+            throw new Error(message);
+        }
+        return data;
+    },
     esc: function (value) {
         return String(value ?? "").replace(/[&<>"']/g, function (ch) {
             return {

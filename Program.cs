@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using FamilyVault.Files;
 using FamilyVault.Files.Azure;
 using FamilyVault.Files.Data;
@@ -7,6 +8,7 @@ using McWutWebApp.Hosting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,10 +73,29 @@ builder.Services
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredUniqueChars = 0;
-        options.Lockout.AllowedForNewUsers = false;
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetSlidingWindowLimiter(ip, _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 2,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        });
+    });
+});
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -179,7 +200,16 @@ if (!httpOnly)
     app.UseHttpsRedirection();
 }
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.XFrameOptions = "SAMEORIGIN";
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    await next();
+});
+
 app.UseRouting();
+app.UseRateLimiter();
 app.Use(async (context, next) =>
 {
     var allow = context.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<IdentitySiteOptions>>().Value.AllowRegistration;

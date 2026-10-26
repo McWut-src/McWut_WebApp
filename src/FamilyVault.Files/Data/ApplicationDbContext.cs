@@ -24,6 +24,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<PasswordVaultItemEntity> PasswordVaultItems => Set<PasswordVaultItemEntity>();
     public DbSet<ShortLinkEntity> ShortLinks => Set<ShortLinkEntity>();
     public DbSet<OpenRouterKeyEntity> OpenRouterKeys => Set<OpenRouterKeyEntity>();
+    public DbSet<UserPersonalizationEntity> UserPersonalizations => Set<UserPersonalizationEntity>();
+    public DbSet<SystemSettingEntity> SystemSettings => Set<SystemSettingEntity>();
     public DbSet<DirectConversationEntity> DirectConversations => Set<DirectConversationEntity>();
     public DbSet<DirectConversationMemberEntity> DirectConversationMembers => Set<DirectConversationMemberEntity>();
     public DbSet<DirectMessageEntity> DirectMessages => Set<DirectMessageEntity>();
@@ -236,6 +238,29 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserPersonalizationEntity>(b =>
+        {
+            b.ToTable("UserPersonalizations");
+            b.HasKey(x => x.UserId);
+            b.Property(x => x.StatusTag).HasMaxLength(30).IsRequired();
+            b.Property(x => x.HeaderBadge).HasMaxLength(64).IsRequired();
+            b.Property(x => x.HeaderMotif).HasMaxLength(64).IsRequired();
+            b.Property(x => x.BackgroundTile).HasMaxLength(64).IsRequired();
+            b.Property(x => x.ChimeTheme).HasMaxLength(32).IsRequired();
+            b.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SystemSettingEntity>(b =>
+        {
+            b.ToTable("SystemSettings");
+            b.HasKey(x => x.Key);
+            b.Property(x => x.Key).HasMaxLength(64).IsRequired();
+            b.Property(x => x.ValueCipher).IsRequired();
         });
     }
 }

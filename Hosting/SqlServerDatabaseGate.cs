@@ -25,6 +25,11 @@ public sealed class SqlServerDatabaseGate(
 
     public bool DeferBackgroundWork => true;
 
+    public void ResetState()
+    {
+        Volatile.Write(ref _state, NotChecked);
+    }
+
     public Task WaitForRealUseAsync(CancellationToken cancellationToken) =>
         _realUse.Task.WaitAsync(cancellationToken);
 
@@ -173,7 +178,7 @@ public sealed class SqlServerDatabaseGate(
         || path.StartsWithSegments("/favicon.ico")
         || path.StartsWithSegments("/favicon.svg");
 
-    private static bool IsPausing(Exception exception)
+    public static bool IsPausing(Exception exception)
     {
         for (var current = exception; current is not null; current = current.InnerException)
         {

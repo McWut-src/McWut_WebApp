@@ -59,6 +59,122 @@ public class FileLifecycleTests
         }
     }
 
+    [Fact]
+    public async Task SweepAbandonedUploads_purges_unlinked_chat_files_older_than_24h()
+    {
+        await using var fx = new SqliteFixture();
+        await fx.SeedMembersAsync();
+        var now = DateTimeOffset.Parse("2026-06-02T00:00:00Z");
+        var time = new TestTimeProvider(now);
+        var root = Directory.CreateTempSubdirectory();
+        try
+        {
+            var options = Options.Create(new FilesOptions
+            {
+                Local = new LocalFilesOptions { RootPath = root.FullName },
+                SoftDeleteGraceDays = 7
+            });
+            var store = new LocalDiskObjectStore(options, new TestEnv());
+
+            // 1. Unlinked chat photo older than 24h -> should be purged
+            var unlinkedOld = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "doodle.png",
+                ContentType = "image/png",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-25)
+            };
+
+            // 2. Unlinked chat photo under 24h -> should NOT be purged
+            var unlinkedFresh = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "recent.png",
+                ContentType = "image/png",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-2)
+            };
+
+            // 3. Linked chat photo older than 24h -> should NOT be purged
+            var linkedOld = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "sent.png",
+                ContentType = "image/png",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-48)
+            };
+
+            // 4. Custom sticker older than 24h -> should NOT be purged
+            var stickerOld = new StoredFileEntity
+            {
+                Id = Guid.NewGuid(),
+                OwnerUserId = SqliteFixture.OwnerId,
+                OriginalFileName = "sticker.svg",
+                ContentType = "image/svg+xml;sticker=1",
+                SizeBytes = 10,
+                StorageKey = $"{SqliteFixture.OwnerId:N}/{Guid.NewGuid():N}",
+                Status = FileStatus.Ready,
+                IsChatOnly = true,
+                CreatedAt = now.AddHours(-48)
+            };
+
+            fx.Db.StoredFiles.AddRange(unlinkedOld, unlinkedFresh, linkedOld, stickerOld);
+
+            var conv = new DirectConversationEntity
+            {
+                Id = Guid.NewGuid(),
+                LowUserId = SqliteFixture.OwnerId,
+                HighUserId = SqliteFixture.OtherId,
+                CreatedAt = now.AddHours(-50)
+            };
+            fx.Db.DirectConversations.Add(conv);
+
+            var msg = new DirectMessageEntity
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = conv.Id,
+                SenderUserId = SqliteFixture.OwnerId,
+                AttachmentFileId = linkedOld.Id,
+                AttachmentType = "image",
+                SentAt = now.AddHours(-48),
+                Sequence = 1
+            };
+            fx.Db.DirectMessages.Add(msg);
+            await fx.Db.SaveChangesAsync();
+
+            var lifecycle = new FileLifecycle(fx.Db, store, time, options);
+            await lifecycle.SweepAbandonedUploadsAsync();
+
+            var file1 = await fx.Db.StoredFiles.FindAsync(unlinkedOld.Id);
+            var file2 = await fx.Db.StoredFiles.FindAsync(unlinkedFresh.Id);
+            var file3 = await fx.Db.StoredFiles.FindAsync(linkedOld.Id);
+            var file4 = await fx.Db.StoredFiles.FindAsync(stickerOld.Id);
+
+            Assert.NotNull(file1!.DeletedAt); // purged
+            Assert.Null(file2!.DeletedAt);    // kept (fresh)
+            Assert.Null(file3!.DeletedAt);    // kept (linked to message)
+            Assert.Null(file4!.DeletedAt);    // kept (sticker)
+        }
+        finally
+        {
+            root.Delete(true);
+        }
+    }
+
     private sealed class TestEnv : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = "Development";
