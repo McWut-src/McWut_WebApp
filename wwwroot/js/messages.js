@@ -92,105 +92,20 @@
 
     const NOTIFY_KEY = "mcwut-msg-notify";
     const SOUND_KEY = "mcwut-msg-sound";
-    const REACTIONS = ["❤️", "💀", "😭", "🔥", "👍", "🗿", "👀", "🫡"];
-    const QUICK_EMOJIS = ["💀", "😭", "🔥", "🗿", "👀", "🫡", "🧢", "🤡", "🥋", "🛹", "✨", "❤️", "👍", "🍕", "🎮", "💯"];
-    const STICKERS = [
-        // Featured Memes & Emotions
-        { slug: "meme-rock-side-eye", label: "Bombastic Side-Eye" },
-        { slug: "meme-six-seven", label: "Six Seven (67)" },
-        { slug: "meme-lol", label: "LOL" },
-        { slug: "meme-lmao", label: "LMAO" },
-        { slug: "meme-big-w", label: "Big W" },
-        { slug: "meme-take-l", label: "Take the L" },
-        { slug: "meme-bruh", label: "BRUH" },
-        { slug: "meme-this-is-fine", label: "This Is Fine" },
-        { slug: "meme-head-empty", label: "Head Empty" },
-        { slug: "meme-im-dead", label: "I'm Dead" },
-        { slug: "emotion-rage-mode", label: "Rage Mode" },
-        { slug: "emotion-ugly-cry", label: "Ugly Cry" },
-        { slug: "emotion-eye-roll", label: "Eye Roll" },
-
-        // Classic Memes & Reactions
-        { slug: "meme-skull", label: "Dead / Skull" },
-        { slug: "meme-side-eye", label: "Side Eye" },
-        { slug: "meme-crying-laughing", label: "Sobbing Laugh" },
-        { slug: "meme-chad-stone", label: "Moyai Chad" },
-        { slug: "meme-cap", label: "No Cap" },
-        { slug: "meme-fire", label: "Straight Fire" },
-        { slug: "meme-clown", label: "Clown" },
-        { slug: "meme-salute", label: "Salute" },
-        { slug: "meme-shades", label: "Deal With It" },
-        { slug: "meme-dizzy", label: "Dizzy Melt" },
-
-        // Karate & Skate
-        { slug: "karate-kick", label: "Flying Kick" },
-        { slug: "karate-board-break", label: "Board Break" },
-        { slug: "karate-headband", label: "Rising Spirit" },
-        { slug: "karate-trophy", label: "Martial Arts Trophy" },
-        { slug: "skate-deck", label: "Street Deck" },
-        { slug: "skate-halfpipe", label: "Big Air Halfpipe" },
-        { slug: "skate-sneaker", label: "Skater Sneaker" },
-        { slug: "skate-cone-ollie", label: "Cone Ollie" },
-        { slug: "roller-skate", label: "Rink Rats" },
-
-        // Quebec, Montreal & Val-David
-        { slug: "valdavid-climb", label: "Val-David Bouldering" },
-        { slug: "valdavid-pine", label: "Laurentian Pines" },
-        { slug: "valdavid-chalet", label: "Val-David Chalet" },
-        { slug: "mtl-cone", label: "Montreal Orange Cone" },
-        { slug: "mtl-bagel", label: "Wood-Fired Bagel" },
-        { slug: "mtl-metro", label: "Montreal Metro" },
-        { slug: "mtl-poutine", label: "Epic Poutine" },
-        { slug: "mtl-farine", label: "Farine Five Roses" },
-        { slug: "qc-fleurdelis", label: "Fleur-de-lis" },
-        { slug: "qc-sirop", label: "Sirop d'Érable" },
-
-        // Y2K, Grunge & Street Aesthetics
-        { slug: "patched-heart", label: "Patched Heart" },
-        { slug: "flame-heart", label: "Flame Heart" },
-        { slug: "barbed-heart", label: "Barbed Heart" },
-        { slug: "chrome-bolt", label: "Chrome Bolt" },
-        { slug: "skull-cans", label: "Skull Cans" },
-        { slug: "cherry-bomb", label: "Cherry Bomb" },
-        { slug: "halo-horn-smiley", label: "Halo & Horn" },
-        { slug: "shades-smiley", label: "Too Cool" },
-        { slug: "chain-smiley", label: "Chain Smile" },
-        { slug: "iridescent-cd", label: "Iridescent Disc" },
-        { slug: "spiked-flail", label: "Spiked Flail" },
-        { slug: "area-alien", label: "Area 51" },
-        { slug: "ufo-beam", label: "Beam It Up" },
-        { slug: "toxic-slime", label: "Toxic Slime" },
-        { slug: "toxic-potion", label: "Toxic Potion" },
-        { slug: "flip-phone", label: "Y2K Flip" },
-        { slug: "cyber-pocket", label: "Cyber Pocket" },
-        { slug: "vibe-controller", label: "Pro Controller" },
-        { slug: "vibe-headphones", label: "Street Cans" },
-        { slug: "boombox", label: "Boombox" },
-        { slug: "vhs-tape", label: "Rewind Time" },
-        { slug: "vibe-cassette", label: "Lofi Tape" },
-        { slug: "doom-cassette", label: "Doom Cassette" },
-        { slug: "glitch-tv", label: "No Signal" },
-        { slug: "glitch-eye", label: "Glitch Eye" },
-        { slug: "vibe-boba", label: "Iced Matcha / Boba" },
-        { slug: "vibe-polaroid", label: "Instant Polaroid" },
-        { slug: "vibe-star", label: "Cyber Starburst" },
-        { slug: "crying-star", label: "Crying Star" },
-        { slug: "sleepy-moon", label: "Sleepy Moon" },
-        { slug: "storm-cloud", label: "Temper Cloud" },
-        { slug: "spooky-cutie", label: "Spooky Cutie" },
-        { slug: "mushroom-charm", label: "Shroom Charm" },
-        { slug: "cyber-butterfly", label: "Cyber Butterfly" },
-        { slug: "wired-rose", label: "Wired Rose" },
-        { slug: "rhinestone-crown", label: "Royalty" },
-        { slug: "magic-8ball", label: "Ask Again" },
-        { slug: "fuzzy-dice", label: "Fuzzy Dice" },
-        { slug: "safety-pin", label: "Punk Pin" },
-        { slug: "rocket-blast", label: "Rocket Blast" },
-        { slug: "vibe-battery", label: "2% Battery / DND" },
-        { slug: "vibe-spraycan", label: "Graffiti Spray" }
-    ];
+    if (!window.McWutMessagesCatalog) {
+        console.error("[McWut] Missing dependency: messages-stickers.js must load before messages.js");
+    }
+    if (!window.McWutMessagesAudio) {
+        console.error("[McWut] Missing dependency: messages-audio.js must load before messages.js");
+    }
+    if (!window.McWutMessagesDoodle) {
+        console.error("[McWut] Missing dependency: messages-doodle.js must load before messages.js");
+    }
+    const catalog = window.McWutMessagesCatalog || { REACTIONS: [], QUICK_EMOJIS: [], STICKERS: [] };
+    const REACTIONS = catalog.REACTIONS;
+    const QUICK_EMOJIS = catalog.QUICK_EMOJIS;
+    const STICKERS = catalog.STICKERS;
     const STICKER_SET = new Set(STICKERS.map(s => s.slug));
-    const DOODLE_COLORS = ["#142033", "#e53935", "#fb8c00", "#fdd835", "#43a047", "#1e88e5", "#8e24aa", "#ec407a"];
 
     let conversations = [];
     let members = [];
@@ -378,95 +293,28 @@
 
     // --- Sound Chimes (Web Audio API, zero external assets) ---
     function soundActive() {
-        try {
-            return localStorage.getItem(SOUND_KEY) !== "0";
-        } catch {
-            return true;
-        }
+        return window.McWutMessagesAudio ? window.McWutMessagesAudio.soundActive() : true;
     }
 
     function paintSoundButton() {
-        if (!soundBtn) {
-            return;
+        if (window.McWutMessagesAudio) {
+            window.McWutMessagesAudio.paintSoundButton(soundBtn, icon);
         }
-        const on = soundActive();
-        soundBtn.setAttribute("aria-pressed", on ? "true" : "false");
-        soundBtn.classList.toggle("active", on);
-        soundBtn.innerHTML = `${icon(on ? "volume" : "mute")}<span>${on ? "Sound on" : "Sound off"}</span>`;
     }
 
     function ensureAudioContext() {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) {
-            return null;
-        }
-        if (!audioCtx) {
-            try {
-                audioCtx = new Ctx();
-            } catch {
-                return null;
-            }
-        }
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume().catch(() => {});
-        }
-        return audioCtx;
+        return window.McWutMessagesAudio ? window.McWutMessagesAudio.ensureAudioContext() : null;
     }
 
     function playChime(kind) {
-        if (!soundActive()) {
-            return;
-        }
-        if (window.mcwut && typeof window.mcwut.playChime === "function") {
-            window.mcwut.playChime(kind);
-            return;
-        }
-        const ctx = ensureAudioContext();
-        if (!ctx || ctx.state !== "running") {
-            return;
-        }
-        try {
-            const now = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = kind === "send" ? "triangle" : "sine";
-            if (kind === "send") {
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
-                gain.gain.setValueAtTime(0.07, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.14);
-            } else {
-                osc.frequency.setValueAtTime(783.99, now);
-                osc.frequency.setValueAtTime(1046.5, now + 0.07);
-                gain.gain.setValueAtTime(0.09, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.19);
-            }
-        } catch {
-            /* Ignore audio synthesis issues */
+        if (window.McWutMessagesAudio) {
+            window.McWutMessagesAudio.playChime(kind);
         }
     }
 
-    document.addEventListener("pointerdown", () => {
-        if (soundActive()) {
-            ensureAudioContext();
-        }
-    }, { passive: true, once: true });
-
     soundBtn?.addEventListener("click", () => {
-        const next = !soundActive();
-        try { localStorage.setItem(SOUND_KEY, next ? "1" : "0"); } catch {}
-        paintSoundButton();
-        if (next) {
-            ensureAudioContext();
-            playChime("send");
+        if (window.McWutMessagesAudio) {
+            window.McWutMessagesAudio.toggleSound(soundBtn, icon);
         }
     });
 
@@ -739,91 +587,11 @@
 
     // --- Inline Voice Player Builder ---
     function buildAudioPlayer(attachment) {
+        if (window.McWutMessagesAudio) {
+            return window.McWutMessagesAudio.buildAudioPlayer(attachment, { icon, formatSec });
+        }
         const wrap = document.createElement("div");
         wrap.className = "message-audio";
-
-        const audio = document.createElement("audio");
-        audio.preload = "metadata";
-        audio.src = `/api/files/${encodeURIComponent(attachment.fileId)}/content?preview=true`;
-
-        const playBtn = document.createElement("button");
-        playBtn.type = "button";
-        playBtn.className = "message-audio-play";
-        playBtn.title = "Play voice note";
-        playBtn.setAttribute("aria-label", "Play voice note");
-        playBtn.innerHTML = icon("play");
-
-        const seek = document.createElement("input");
-        seek.type = "range";
-        seek.className = "message-audio-seek";
-        seek.min = "0";
-        seek.max = "100";
-        seek.value = "0";
-        seek.setAttribute("aria-label", "Seek voice note");
-
-        const timeLabel = document.createElement("span");
-        timeLabel.className = "message-audio-time";
-        timeLabel.textContent = "0:00";
-
-        const ttlBadge = document.createElement("span");
-        ttlBadge.className = "message-audio-ttl";
-        ttlBadge.title = "Voice notes auto-delete after 7 days";
-        ttlBadge.textContent = "7d";
-
-        playBtn.addEventListener("click", () => {
-            if (audio.paused) {
-                document.querySelectorAll(".message-audio audio").forEach(other => {
-                    if (other !== audio && !other.paused) {
-                        other.pause();
-                    }
-                });
-                audio.play().catch(() => {});
-            } else {
-                audio.pause();
-            }
-        });
-
-        audio.addEventListener("play", () => {
-            playBtn.innerHTML = icon("pause");
-            playBtn.title = "Pause voice note";
-            playBtn.setAttribute("aria-label", "Pause voice note");
-        });
-
-        audio.addEventListener("pause", () => {
-            playBtn.innerHTML = icon("play");
-            playBtn.title = "Play voice note";
-            playBtn.setAttribute("aria-label", "Play voice note");
-        });
-
-        audio.addEventListener("ended", () => {
-            seek.value = "0";
-            playBtn.innerHTML = icon("play");
-            if (Number.isFinite(audio.duration) && audio.duration > 0) {
-                timeLabel.textContent = formatSec(audio.duration);
-            }
-        });
-
-        audio.addEventListener("loadedmetadata", () => {
-            if (Number.isFinite(audio.duration) && audio.duration > 0) {
-                timeLabel.textContent = formatSec(audio.duration);
-            }
-        });
-
-        audio.addEventListener("timeupdate", () => {
-            const dur = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
-            if (dur > 0) {
-                seek.value = String(Math.min(100, Math.round((audio.currentTime / dur) * 100)));
-            }
-            timeLabel.textContent = formatSec(audio.currentTime || dur);
-        });
-
-        seek.addEventListener("input", () => {
-            if (Number.isFinite(audio.duration) && audio.duration > 0) {
-                audio.currentTime = (Number(seek.value) / 100) * audio.duration;
-            }
-        });
-
-        wrap.append(audio, playBtn, seek, timeLabel, ttlBadge);
         return wrap;
     }
 
@@ -1728,192 +1496,34 @@
     });
 
     // --- 2-Layer Touch Doodle Pad ---
-    let doodleColor = DOODLE_COLORS[0];
-    let doodleSize = 5;
-    let doodleErasing = false;
-    let doodleDrawing = false;
-    let doodleLast = null;
-    let doodleHistory = [];
-
     function initDoodlePad() {
-        if (!doodleBgCanvas || !doodleDrawCanvas || !doodleModalEl) {
-            return;
-        }
-        const bgCtx = doodleBgCanvas.getContext("2d");
-        const drawCtx = doodleDrawCanvas.getContext("2d");
-
-        function fillWhiteBg() {
-            bgCtx.fillStyle = "#ffffff";
-            bgCtx.fillRect(0, 0, doodleBgCanvas.width, doodleBgCanvas.height);
-        }
-        fillWhiteBg();
-
-        if (doodleSwatchesEl) {
-            DOODLE_COLORS.forEach((hex, idx) => {
-                const sw = document.createElement("button");
-                sw.type = "button";
-                sw.className = "doodle-swatch" + (idx === 0 ? " active" : "");
-                sw.style.background = hex;
-                sw.setAttribute("aria-label", `Color ${hex}`);
-                sw.addEventListener("click", () => {
-                    doodleColor = hex;
-                    doodleErasing = false;
-                    doodleEraserBtn?.classList.remove("active");
-                    doodleSwatchesEl.querySelectorAll(".doodle-swatch").forEach(b => b.classList.remove("active"));
-                    sw.classList.add("active");
-                });
-                doodleSwatchesEl.append(sw);
+        if (window.McWutMessagesDoodle) {
+            window.McWutMessagesDoodle.init({
+                doodleModalEl,
+                doodleBgCanvas,
+                doodleDrawCanvas,
+                doodleSwatchesEl,
+                doodleSizesEl,
+                doodleEraserBtn,
+                doodleUndoBtn,
+                doodleBgBtn,
+                doodleBgInput,
+                doodleClearBtn,
+                doodleSendBtn,
+                doodleBtn,
+                canSend: () => Boolean(selectedId),
+                onError: showError,
+                onSend: async (blob) => {
+                    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+                    const stored = await uploadChatBlob(blob, "doodle-" + stamp + ".png", "image/png", 0);
+                    await sendPayload({
+                        body: "",
+                        attachmentFileId: stored.id,
+                        attachmentType: "drawing"
+                    });
+                }
             });
         }
-
-        doodleSizesEl?.addEventListener("click", (ev) => {
-            const btn = ev.target.closest("[data-size]");
-            if (!btn) return;
-            doodleSize = Number(btn.getAttribute("data-size")) || 5;
-            doodleSizesEl.querySelectorAll(".doodle-size-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-        });
-
-        doodleEraserBtn?.addEventListener("click", () => {
-            doodleErasing = !doodleErasing;
-            doodleEraserBtn.classList.toggle("active", doodleErasing);
-            if (doodleErasing) {
-                doodleSwatchesEl?.querySelectorAll(".doodle-swatch").forEach(b => b.classList.remove("active"));
-            }
-        });
-
-        function saveUndoState() {
-            try {
-                if (doodleHistory.length >= 12) {
-                    doodleHistory.shift();
-                }
-                doodleHistory.push(drawCtx.getImageData(0, 0, doodleDrawCanvas.width, doodleDrawCanvas.height));
-            } catch {}
-        }
-
-        doodleUndoBtn?.addEventListener("click", () => {
-            const prev = doodleHistory.pop();
-            if (prev) {
-                drawCtx.putImageData(prev, 0, 0);
-            } else {
-                drawCtx.clearRect(0, 0, doodleDrawCanvas.width, doodleDrawCanvas.height);
-            }
-        });
-
-        doodleClearBtn?.addEventListener("click", () => {
-            saveUndoState();
-            drawCtx.clearRect(0, 0, doodleDrawCanvas.width, doodleDrawCanvas.height);
-            fillWhiteBg();
-        });
-
-        doodleBgBtn?.addEventListener("click", () => doodleBgInput?.click());
-        doodleBgInput?.addEventListener("change", () => {
-            const file = doodleBgInput.files && doodleBgInput.files[0];
-            if (!file) return;
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = () => {
-                fillWhiteBg();
-                const scale = Math.min(doodleBgCanvas.width / img.width, doodleBgCanvas.height / img.height);
-                const w = img.width * scale;
-                const h = img.height * scale;
-                const x = (doodleBgCanvas.width - w) / 2;
-                const y = (doodleBgCanvas.height - h) / 2;
-                bgCtx.drawImage(img, x, y, w, h);
-                URL.revokeObjectURL(url);
-            };
-            img.onerror = () => URL.revokeObjectURL(url);
-            img.src = url;
-            doodleBgInput.value = "";
-        });
-
-        function canvasCoords(ev) {
-            const rect = doodleDrawCanvas.getBoundingClientRect();
-            const scaleX = doodleDrawCanvas.width / (rect.width || 1);
-            const scaleY = doodleDrawCanvas.height / (rect.height || 1);
-            return {
-                x: (ev.clientX - rect.left) * scaleX,
-                y: (ev.clientY - rect.top) * scaleY
-            };
-        }
-
-        function strokeSegment(from, to) {
-            drawCtx.save();
-            drawCtx.lineCap = "round";
-            drawCtx.lineJoin = "round";
-            drawCtx.lineWidth = doodleErasing ? doodleSize * 2.2 : doodleSize;
-            drawCtx.globalCompositeOperation = doodleErasing ? "destination-out" : "source-over";
-            drawCtx.strokeStyle = doodleColor;
-            drawCtx.beginPath();
-            drawCtx.moveTo(from.x, from.y);
-            drawCtx.lineTo(to.x, to.y);
-            drawCtx.stroke();
-            drawCtx.restore();
-        }
-
-        doodleDrawCanvas.addEventListener("pointerdown", (ev) => {
-            ev.preventDefault();
-            try { doodleDrawCanvas.setPointerCapture(ev.pointerId); } catch {}
-            saveUndoState();
-            doodleDrawing = true;
-            const pt = canvasCoords(ev);
-            doodleLast = pt;
-            strokeSegment(pt, { x: pt.x + 0.1, y: pt.y + 0.1 });
-        });
-
-        doodleDrawCanvas.addEventListener("pointermove", (ev) => {
-            if (!doodleDrawing || !doodleLast) return;
-            ev.preventDefault();
-            const pt = canvasCoords(ev);
-            strokeSegment(doodleLast, pt);
-            doodleLast = pt;
-        });
-
-        function endStroke() {
-            doodleDrawing = false;
-            doodleLast = null;
-        }
-        doodleDrawCanvas.addEventListener("pointerup", endStroke);
-        doodleDrawCanvas.addEventListener("pointercancel", endStroke);
-
-        doodleBtn?.addEventListener("click", () => {
-            if (!window.bootstrap) return;
-            window.bootstrap.Modal.getOrCreateInstance(doodleModalEl).show();
-        });
-
-        doodleSendBtn?.addEventListener("click", async () => {
-            if (!selectedId) return;
-            doodleSendBtn.disabled = true;
-            try {
-                const out = document.createElement("canvas");
-                out.width = doodleBgCanvas.width;
-                out.height = doodleBgCanvas.height;
-                const outCtx = out.getContext("2d");
-                outCtx.drawImage(doodleBgCanvas, 0, 0);
-                outCtx.drawImage(doodleDrawCanvas, 0, 0);
-
-                const blob = await new Promise((resolve, reject) => {
-                    out.toBlob(b => b ? resolve(b) : reject(new Error("Could not export drawing.")), "image/png");
-                });
-
-                window.bootstrap?.Modal.getInstance(doodleModalEl)?.hide();
-                const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-                const stored = await uploadChatBlob(blob, `doodle-${stamp}.png`, "image/png", 0);
-                await sendPayload({
-                    body: "",
-                    attachmentFileId: stored.id,
-                    attachmentType: "drawing"
-                });
-
-                drawCtx.clearRect(0, 0, doodleDrawCanvas.width, doodleDrawCanvas.height);
-                fillWhiteBg();
-                doodleHistory = [];
-            } catch (err) {
-                showError(err.message);
-            } finally {
-                doodleSendBtn.disabled = false;
-            }
-        });
     }
     initDoodlePad();
 

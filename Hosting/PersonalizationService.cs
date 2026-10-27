@@ -9,34 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace McWutWebApp.Hosting;
 
-public sealed record PersonalizationSettings(
-    string StatusTag = "",
-    string HeaderBadge = "none",
-    string HeaderMotif = "none",
-    string BackgroundTile = "none",
-    string ChimeTheme = "classic");
-
-public sealed record CustomSvgItemView(
-    Guid Id,
-    string Kind,
-    string Value,
-    string Label,
-    string Url);
-
-public sealed record PresetOption(string Value, string Label, string Url);
-
-public sealed record PaletteSwatch(string Hex, string Label);
-
-public sealed record TeenColorSwatch(string Hex, string Label);
-
-public sealed record PersonalizationStateView(
-    PersonalizationSettings Settings,
-    IReadOnlyList<CustomSvgItemView> CustomItems,
-    string? BadgeUrl,
-    string? MotifUrl,
-    string? TileUrl);
-
-public sealed class PersonalizationService(
+public sealed partial class PersonalizationService(
     ApplicationDbContext db,
     IObjectStore store,
     IUploadSessionService uploads,
@@ -58,64 +31,6 @@ public sealed class PersonalizationService(
         new Guid("464c4149-5253-4554-5449-4e4753563130").ToByteArray();
 
     private const string FreeModelsCacheKey = "openrouter-sticker-free-models";
-
-    public static readonly IReadOnlyList<PaletteSwatch> Swatches =
-    [
-        new("#0b1f3a", "Navy"),
-        new("#334155", "Slate"),
-        new("#1e3a8a", "Oxford"),
-        new("#065f46", "Forest"),
-        new("#881337", "Burgundy"),
-        new("#b45309", "Cognac"),
-        new("#581c87", "Plum"),
-        new("#78350f", "Espresso")
-    ];
-
-    public static readonly IReadOnlyList<TeenColorSwatch> TeenSwatches =
-        Swatches.Select(s => new TeenColorSwatch(s.Hex, s.Label)).ToList();
-
-    public static readonly IReadOnlyList<(string Id, string Label)> ChimeThemes =
-    [
-        ("classic", "Classic"),
-        ("soft-bell", "Bell"),
-        ("acoustic-wood", "Acoustic Wood"),
-        ("executive-pulse", "Executive Pulse"),
-        ("minimal-tap", "Minimal Tap")
-    ];
-
-    public static readonly IReadOnlyList<PresetOption> BadgePresets =
-    [
-        new("none", "None", ""),
-        new("preset:crest-shield", "Crest", "/api/personalization/preset/badge/crest-shield.svg"),
-        new("preset:compass-star", "Compass", "/api/personalization/preset/badge/compass-star.svg"),
-        new("preset:quill-pen", "Quill", "/api/personalization/preset/badge/quill-pen.svg"),
-        new("preset:anchor-seal", "Anchor", "/api/personalization/preset/badge/anchor-seal.svg"),
-        new("preset:crown-regal", "Crown", "/api/personalization/preset/badge/crown-regal.svg"),
-        new("preset:monogram-seal", "Monogram", "/api/personalization/preset/badge/monogram-seal.svg"),
-        new("preset:summit-peak", "Summit", "/api/personalization/preset/badge/summit-peak.svg"),
-        new("preset:geometric-gem", "Geometric Gem", "/api/personalization/preset/badge/geometric-gem.svg")
-    ];
-
-    public static readonly IReadOnlyList<PresetOption> MotifPresets =
-    [
-        new("none", "Solid Bar (Default)", ""),
-        new("preset:metro-grid", "Architectural Grid", "/api/personalization/preset/motif/metro-grid.svg"),
-        new("preset:horizon-waves", "Serene Waves", "/api/personalization/preset/motif/horizon-waves.svg"),
-        new("preset:summit-ridge", "Alpine Horizon", "/api/personalization/preset/motif/summit-ridge.svg"),
-        new("preset:herringbone", "Herringbone Weave", "/api/personalization/preset/motif/herringbone.svg"),
-        new("preset:constellation", "Night Constellation", "/api/personalization/preset/motif/constellation.svg")
-    ];
-
-    public static readonly IReadOnlyList<PresetOption> TilePresets =
-    [
-        new("none", "Clean Solid (Default)", ""),
-        new("preset:linen-weave", "Fine Linen Texture", "/api/personalization/preset/tile/linen-weave.svg"),
-        new("preset:architect-dots", "Architectural Dot Matrix", "/api/personalization/preset/tile/architect-dots.svg"),
-        new("preset:diamond-lattice", "Diamond Lattice", "/api/personalization/preset/tile/diamond-lattice.svg"),
-        new("preset:isometric-cubes", "Isometric Tessellation", "/api/personalization/preset/tile/isometric-cubes.svg"),
-        new("preset:art-deco", "Art Deco Geometry", "/api/personalization/preset/tile/art-deco.svg"),
-        new("preset:botanical-leaf", "Botanical Laurel", "/api/personalization/preset/tile/botanical-leaf.svg")
-    ];
 
     public static Guid DeriveFlairKeyId(Guid userId)
     {
@@ -284,132 +199,6 @@ public sealed class PersonalizationService(
                     $"/api/personalization/svg/{f.Id:N}.svg");
             })
             .ToList();
-    }
-
-    public async Task<CustomSvgItemView> GenerateCustomSvgAsync(
-        Guid userId,
-        string? kind,
-        string? themeId,
-        string? prompt,
-        CancellationToken cancellationToken)
-    {
-        var cleanKind = (kind ?? "badge").Trim().ToLowerInvariant();
-        if (cleanKind is not ("badge" or "motif" or "tile"))
-        {
-            throw new DirectMessageValidationException("Choose badge, motif, or tile.");
-        }
-
-        var theme = StickerGeneratorRules.NormalizeTheme(themeId);
-        var cleanPrompt = StickerGeneratorRules.NormalizePrompt(prompt);
-        var (apiKey, provider) = await adminKeyService.RequireKeyAsync(cancellationToken);
-
-        var (messages, viewBox, contentType) = cleanKind switch
-        {
-            "badge" => (StickerGeneratorRules.BuildBadgeMessages(theme, cleanPrompt), "0 0 64 64", BadgeContentType),
-            "motif" => (StickerGeneratorRules.BuildHeaderMotifMessages(theme, cleanPrompt), "0 0 120 56", MotifContentType),
-            _ => (StickerGeneratorRules.BuildBackgroundTileMessages(theme, cleanPrompt), "0 0 80 80", TileContentType)
-        };
-
-        string? cleanSvg = null;
-        if (string.Equals(provider, "Google Gemini", StringComparison.OrdinalIgnoreCase))
-        {
-            try
-            {
-                var raw = await geminiClient.GenerateStickerSvgAsync(apiKey, messages, cancellationToken);
-                cleanSvg = StickerGeneratorRules.SanitizeSvg(
-                    raw,
-                    viewBox,
-                    StickerGeneratorRules.MaxSmallSvgBytes,
-                    StickerGeneratorRules.MaxSmallSvgElements);
-            }
-            catch (GoogleGeminiRejectedException ex)
-            {
-                throw new DirectMessageValidationException(ex.Message);
-            }
-        }
-        else
-        {
-            var candidates = await GetCandidateFreeModelsAsync(apiKey, cancellationToken);
-            if (candidates.Count == 0)
-            {
-                throw new DirectMessageValidationException("No free AI models are currently available on OpenRouter.");
-            }
-
-            Exception? lastError = null;
-            foreach (var candidate in candidates.Take(3))
-            {
-                try
-                {
-                    var sb = new StringBuilder();
-                    await foreach (var delta in openRouter.StreamAsync(apiKey, candidate.Id, messages, cancellationToken))
-                    {
-                        sb.Append(delta);
-                    }
-
-                    cleanSvg = StickerGeneratorRules.SanitizeSvg(
-                        sb.ToString(),
-                        viewBox,
-                        StickerGeneratorRules.MaxSmallSvgBytes,
-                        StickerGeneratorRules.MaxSmallSvgElements);
-                    break;
-                }
-                catch (Exception ex) when (ex is OpenRouterRejectedException or DirectMessageValidationException)
-                {
-                    lastError = ex;
-                }
-            }
-
-            if (string.IsNullOrEmpty(cleanSvg))
-            {
-                if (lastError is not null)
-                {
-                    throw lastError;
-                }
-
-                throw new DirectMessageValidationException("Could not generate the SVG right now. Try again in a moment.");
-            }
-        }
-
-        var label = $"{cleanPrompt} · {theme.Label}";
-        var fileName = $"{label}.svg";
-        var bytes = Encoding.UTF8.GetBytes(cleanSvg);
-
-        var session = await uploads.BeginAsync(
-            new BeginUploadRequest(
-                userId,
-                fileName,
-                contentType,
-                bytes.Length,
-                null,
-                Retention.Forever(),
-                null,
-                IsChatOnly: true),
-            cancellationToken);
-
-        await using (var stream = new MemoryStream(bytes))
-        {
-            await uploads.PutAsync(session.SessionId, userId, stream, cancellationToken);
-        }
-
-        var stored = await uploads.CompleteAsync(session.SessionId, userId, cancellationToken);
-        var item = new CustomSvgItemView(
-            stored.Id,
-            cleanKind,
-            "custom:" + stored.Id.ToString("N"),
-            label,
-            $"/api/personalization/svg/{stored.Id:N}.svg");
-
-        // Auto-apply the newly generated item to the user's profile
-        var current = await GetSettingsAsync(userId, cancellationToken);
-        var updated = cleanKind switch
-        {
-            "badge" => current with { HeaderBadge = item.Value },
-            "motif" => current with { HeaderMotif = item.Value },
-            _ => current with { BackgroundTile = item.Value }
-        };
-        await SaveSettingsAsync(userId, updated, cancellationToken);
-
-        return item;
     }
 
     public async Task<Stream> OpenCustomSvgAsync(Guid id, CancellationToken cancellationToken)
@@ -700,29 +489,5 @@ public sealed class PersonalizationService(
         }
 
         return "classic";
-    }
-
-    private async Task<IReadOnlyList<OpenRouterListedModel>> GetCandidateFreeModelsAsync(
-        string apiKey,
-        CancellationToken cancellationToken)
-    {
-        if (cache.TryGetValue(FreeModelsCacheKey, out IReadOnlyList<OpenRouterListedModel>? cached)
-            && cached is { Count: > 0 })
-        {
-            return cached;
-        }
-
-        var models = await openRouter.ListFreeAsync(apiKey, cancellationToken);
-        var ranked = models
-            .OrderByDescending(m => m.Id.Contains("gemini", StringComparison.OrdinalIgnoreCase) ? 100 : 50)
-            .ThenByDescending(m => m.ContextLength ?? 0)
-            .ToList();
-
-        if (ranked.Count > 0)
-        {
-            cache.Set(FreeModelsCacheKey, (IReadOnlyList<OpenRouterListedModel>)ranked, TimeSpan.FromMinutes(15));
-        }
-
-        return ranked;
     }
 }

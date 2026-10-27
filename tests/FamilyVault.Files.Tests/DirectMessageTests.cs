@@ -186,4 +186,32 @@ public class DirectMessageServiceTests
         Assert.Equal(m2.Id, delta.Messages[0].Id);
         Assert.Equal(m3.Id, delta.Messages[1].Id);
     }
+
+    [Fact]
+    public void Messages_page_loads_scripts_in_correct_dependency_order()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (!string.IsNullOrEmpty(dir) && !File.Exists(Path.Combine(dir, "Pages", "Messages", "Index.cshtml")))
+        {
+            var parent = Directory.GetParent(dir);
+            dir = parent?.FullName;
+        }
+
+        Assert.NotNull(dir);
+        var pageText = File.ReadAllText(Path.Combine(dir, "Pages", "Messages", "Index.cshtml"));
+
+        var stickersIdx = pageText.IndexOf("messages-stickers.js", StringComparison.Ordinal);
+        var audioIdx = pageText.IndexOf("messages-audio.js", StringComparison.Ordinal);
+        var doodleIdx = pageText.IndexOf("messages-doodle.js", StringComparison.Ordinal);
+        var mainIdx = pageText.IndexOf("messages.js", StringComparison.Ordinal);
+
+        Assert.True(stickersIdx > 0, "messages-stickers.js must be referenced in Index.cshtml");
+        Assert.True(audioIdx > 0, "messages-audio.js must be referenced in Index.cshtml");
+        Assert.True(doodleIdx > 0, "messages-doodle.js must be referenced in Index.cshtml");
+        Assert.True(mainIdx > 0, "messages.js must be referenced in Index.cshtml");
+
+        Assert.True(stickersIdx < mainIdx, "messages-stickers.js must be included before messages.js");
+        Assert.True(audioIdx < mainIdx, "messages-audio.js must be included before messages.js");
+        Assert.True(doodleIdx < mainIdx, "messages-doodle.js must be included before messages.js");
+    }
 }
