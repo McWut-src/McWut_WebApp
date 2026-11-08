@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000032`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000033`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**8 November 2026, 22:53 UTC.** Production was moved on purpose to data-saving category folding and on-demand pagination in My files: each category (Stories, Chats, Photos, Files) is folded by default to prevent eager image preview fetches and bandwidth consumption; unfolding loads items on demand with per-category pagination (default 8 items per page, selectable 4/8/12/24) and loaded byte size indicators; global search automatically unfolds matching categories and resets pagination; deep links into stories and files unfold and jump to target items.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000032` | `ghcr.io/mcwut-src/mcwut_webapp:f73803bac6bb6f7e13cb8cd59b7f285098b9e679` |
+| Live | `ca-mcwut--0000033` | `ghcr.io/mcwut-src/mcwut_webapp:bf8fb0946b96b917be156a7514328e12a44f814b` |
+
+`0000033` has 100% of the traffic and is Healthy. `0000032` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000033`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` redirects to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. Sign-in with the production password was not tried.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000032
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000032=100
+```
 
 **26 October 2026, 23:44 UTC.** Production was moved on purpose to compact and minimalist profile controls: pure visual color dots without color name copy, label-free emblem/motif/pattern selector tiles, compact layout without empty label height, and generic dropdown options (`Style 1`..`Style 8`, `Tone 1`..`Tone 5`) with zero predefined intention.
 
