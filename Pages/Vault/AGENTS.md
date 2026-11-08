@@ -10,6 +10,12 @@ Home dashboard's first card. Six places, in order: **My files** (`/files`), **Va
 - **Options**: keep for 1/7/30 days and/or set a password (asked when opening a share link). The owner still opens the file.
 - Composer field is **Story**. Words alone stay a text file; with no title they save as `note`; words saved with one or more files become one story. My files lists sections: **Stories**, then **Chats**, then **Photos**, then **Files**. Files in a story are not listed again as loose photos/files.
 
+## Category Folding, On-Demand Loading & Paging (`wwwroot/js/vault.js`)
+- Each non-empty category (**Stories**, **Chats**, **Photos**, **Files**, in both `#my-files` and `#from-others-list`) renders as a collapsible `.vault-category` card **folded by default** (`open: false`), with a `.vault-summary-bar` showing total count, total byte footprint, data-saver status, and **Unfold all** / **Fold all** actions.
+- **Data-saving / on-unfold loading**: While a category is folded, its `.vault-category-body` stays empty and `hidden` so zero `<img>` tags or `/api/files/{id}/content?preview=true` requests are mounted or fetched until the category is unfolded.
+- **Per-category paging**: Each unfolded category slices its items to the active page (`default 8 / page`, selectable `4`, `8`, `12`, `24` per page) and renders a `.vault-pager` footer showing the loaded item range, loaded page byte size, page-size selector, and `Prev` / page number / `Next` controls. Only the current page's items (and image previews) are mounted in the DOM.
+- **Global search (`#file-search`)**: Typing a search query automatically unfolds all matching categories and resets search pagination to page 1; clearing the search restores each category's manual fold state. Deep links (`#file={id}`, `#story={id}`) also automatically unfold and jump to the target item's category page.
+
 ## Sharing
 - A people icon shares a file/story with another signed-in member (see `LATER-MEMBER-SHARING.md`). The other person can open and download only; the owner keeps the file. Their name shows as a pill in their profile color (`AccentColor`, or navy `#0b1f3a`); no name → email-before-`@`.
 - When someone shared a file with you, My files shows a **From others** group (only when non-empty). The URLs page lists those member shares with the same pill, no public address, Quick open back to `/files#file={id}`, and Remove share. Permission is always Download.

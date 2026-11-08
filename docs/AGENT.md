@@ -36,10 +36,11 @@ az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorag
 ## How Vince wants changes shipped
 
 1. Change the smallest thing that does the job. Match the surrounding code.
-2. `dotnet test tests\FamilyVault.Files.Tests\FamilyVault.Files.Tests.csproj`
-3. Click through a web change in a browser before calling it done. There is no browser test project.
-4. Commit and push when he asks. Leave `grokSessionExport.md` untracked. It is a chat dump.
-5. Promote only when he asks, using the feature commit’s full SHA:
+2. When creating or modifying files or features, update (or create) the nearest `AGENTS.md` along that path so project guidelines and area rules stay fresh for future agents.
+3. `dotnet test tests\FamilyVault.Files.Tests\FamilyVault.Files.Tests.csproj`
+4. Click through a web change in a browser before calling it done. There is no browser test project.
+5. Commit and push when he asks. Leave `grokSessionExport.md` untracked. It is a chat dump.
+6. Promote only when he asks, using the feature commit’s full SHA:
 
 ```powershell
 az account set --subscription 28c232c7-c74d-47a1-9fe2-e290de1e6b47

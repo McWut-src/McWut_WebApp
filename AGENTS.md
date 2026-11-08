@@ -10,5 +10,6 @@ Operating notes for Vince are in [docs/HANDOFF.md](docs/HANDOFF.md). What is shi
 
 - **Always load first:** this file + `docs/AGENT.md`. That pair is the constitution — live site state and the promote rule.
 - **Before editing anything in a folder, check for a nested AGENTS.md along that path** (e.g. `Pages/Ai/AGENTS.md`). It holds only rules unique to that area; it defers to `docs/AGENT.md` for shared rules. Load it before work there.
+- **Maintain nearest AGENTS.md:** Whenever files or features are created or modified, update (or create) the nearest `AGENTS.md` along that path so project knowledge and area rules stay up to date for future agents.
 - **Reference-only (read on demand, never every turn):** `docs/HANDOFF.md` (deploy/run notes), `docs/SCOPE.md` (living product list), `docs/IDEAS.md` (future ideas). They are large — loading all of them each call wastes budget and dilutes focus.
 - Shared rules live in `docs/AGENT.md`, not duplicated here. If an area file looks like it is repeating the promote rule or naming conventions, move it up instead.

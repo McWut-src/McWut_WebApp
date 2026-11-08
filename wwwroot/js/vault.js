@@ -41,9 +41,11 @@
     }
 
     function formatSize(bytes) {
-        if (bytes < 1024) return bytes + " B";
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+        const value = Number(bytes) || 0;
+        if (value < 1024) return value + " B";
+        if (value < 1024 * 1024) return (value / 1024).toFixed(1) + " KB";
+        if (value < 1024 * 1024 * 1024) return (value / (1024 * 1024)).toFixed(1) + " MB";
+        return (value / (1024 * 1024 * 1024)).toFixed(2) + " GB";
     }
 
     function isKidUser() {
@@ -665,7 +667,103 @@
             </div>`;
     }
 
-    function paintLibrary(target, files, stories, sourceCount, photoActions, rowBuilder, emptyText) {
+    const DEFAULT_PAGE_SIZE = 8;
+    const PAGE_SIZE_OPTIONS = [4, 8, 12, 24];
+    const categoryStates = Object.create(null);
+    let searchOpenOverrides = Object.create(null);
+    let lastSearchQuery = "";
+
+    function getCategoryState(scope, key) {
+        const id = `${scope}:${key}`;
+        if (!categoryStates[id]) {
+            categoryStates[id] = {
+                open: false,
+                page: 1,
+                searchPage: 1,
+                pageSize: DEFAULT_PAGE_SIZE
+            };
+        }
+        return categoryStates[id];
+    }
+
+    function storyBytes(story) {
+        const bodySize = story && story.body ? (Number(story.body.sizeBytes) || 0) : 0;
+        const attachSize = ((story && story.attachments) || []).reduce((sum, file) => sum + (Number(file.sizeBytes) || 0), 0);
+        return bodySize + attachSize;
+    }
+
+    function storyHasPhotos(story) {
+        return ((story && story.attachments) || []).some(file => isImage(file.contentType));
+    }
+
+    function sumFileBytes(files) {
+        return (files || []).reduce((sum, file) => sum + (Number(file.sizeBytes) || 0), 0);
+    }
+
+    function sumStoryBytes(stories) {
+        return (stories || []).reduce((sum, story) => sum + storyBytes(story), 0);
+    }
+
+    function buildPageNumbers(current, total) {
+        if (total <= 5) {
+            const pages = [];
+            for (let i = 1; i <= total; i += 1) {
+                pages.push(i);
+            }
+            return pages;
+        }
+        const pages = [1];
+        const start = Math.max(2, current - 1);
+        const end = Math.min(total - 1, current + 1);
+        if (start > 2) {
+            pages.push("...");
+        }
+        for (let i = start; i <= end; i += 1) {
+            pages.push(i);
+        }
+        if (end < total - 1) {
+            pages.push("...");
+        }
+        pages.push(total);
+        return pages;
+    }
+
+    function renderCategoryPager(scope, catKey, catLabel, activePage, totalPages, pageSize, startIdx, shownCount, totalItems, pageBytes) {
+        const pageButtons = buildPageNumbers(activePage, totalPages).map(item => {
+            if (item === "...") {
+                return `<span class="vault-page-ellipsis" aria-hidden="true">…</span>`;
+            }
+            const currentAttr = item === activePage ? ' aria-current="page"' : "";
+            const activeClass = item === activePage ? " is-active" : "";
+            return `<button type="button" class="btn btn-sm btn-outline-secondary vault-page-btn${activeClass}" data-pager-action="page" data-page="${item}" data-scope="${esc(scope)}" data-category="${esc(catKey)}" aria-label="Page ${item}"${currentAttr}>${item}</button>`;
+        }).join("");
+        const sizeOptions = PAGE_SIZE_OPTIONS.map(opt => {
+            const selected = opt === pageSize ? " selected" : "";
+            return `<option value="${opt}"${selected}>${opt} / page</option>`;
+        }).join("");
+        const prevDisabled = activePage <= 1 ? " disabled" : "";
+        const nextDisabled = activePage >= totalPages ? " disabled" : "";
+        return `
+            <div class="vault-pager" data-scope="${esc(scope)}" data-category="${esc(catKey)}">
+                <div class="vault-pager-info">
+                    Showing <strong>${startIdx + 1}–${startIdx + shownCount}</strong> of <strong>${totalItems}</strong> · <span class="vault-pager-loaded">${formatSize(pageBytes)} loaded on page</span>
+                </div>
+                <div class="vault-pager-controls">
+                    <label class="vault-pager-limit">
+                        <select class="form-select form-select-sm vault-page-size" data-pager-action="size" data-scope="${esc(scope)}" data-category="${esc(catKey)}" aria-label="${esc(catLabel)} items per page">
+                            ${sizeOptions}
+                        </select>
+                    </label>
+                    <div class="vault-pager-nav" role="navigation" aria-label="${esc(catLabel)} pagination">
+                        <button type="button" class="btn btn-sm btn-outline-secondary vault-page-btn" data-pager-action="prev" data-scope="${esc(scope)}" data-category="${esc(catKey)}" aria-label="Previous page"${prevDisabled}>Prev</button>
+                        ${pageButtons}
+                        <button type="button" class="btn btn-sm btn-outline-secondary vault-page-btn" data-pager-action="next" data-scope="${esc(scope)}" data-category="${esc(catKey)}" aria-label="Next page"${nextDisabled}>Next</button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function paintLibrary(target, scope, files, stories, sourceCount, photoActions, rowBuilder, emptyText) {
         if (sourceCount === 0) {
             target.innerHTML = `<p class="empty">${emptyText}</p>`;
             return;
@@ -680,27 +778,156 @@
         const chats = shownFiles.filter(f => isChat(f.contentType));
         const photos = shownFiles.filter(f => isImage(f.contentType));
         const others = shownFiles.filter(f => !isImage(f.contentType) && !isChat(f.contentType));
-        const storyHtml = shownStories.length === 0 ? "" : `
-            <div class="section-label">Stories</div>
-            ${shownStories.map(story => storyCard(story, Array.isArray(story.sharedWith))).join("")}`;
-        const chatHtml = chats.length === 0 ? "" : `
-            <div class="section-label">Chats</div>
-            ${chats.map(rowBuilder).join("")}`;
-        const grid = photos.length === 0 ? "" : `
-            <div class="section-label">Photos</div>
-            <div class="photo-grid" aria-label="Photos">
-                ${photos.map(f => photoCard(f, photoActions(f))).join("")}
+
+        const query = fileQuery("file-search");
+        const isSearching = query.length > 0;
+
+        const definitions = [
+            {
+                key: "stories",
+                label: "Stories",
+                iconName: "story",
+                items: shownStories,
+                totalBytes: sumStoryBytes(shownStories),
+                hasImages: shownStories.some(storyHasPhotos),
+                itemBytes: storyBytes,
+                renderSlice: (slice) => slice.map(story => storyCard(story, Array.isArray(story.sharedWith))).join("")
+            },
+            {
+                key: "chats",
+                label: "Chats",
+                iconName: "spark",
+                items: chats,
+                totalBytes: sumFileBytes(chats),
+                hasImages: false,
+                itemBytes: (f) => Number(f.sizeBytes) || 0,
+                renderSlice: (slice) => slice.map(rowBuilder).join("")
+            },
+            {
+                key: "photos",
+                label: "Photos",
+                iconName: "image",
+                items: photos,
+                totalBytes: sumFileBytes(photos),
+                hasImages: true,
+                itemBytes: (f) => Number(f.sizeBytes) || 0,
+                renderSlice: (slice) => `<div class="photo-grid" aria-label="Photos">${slice.map(f => photoCard(f, photoActions(f))).join("")}</div>`
+            },
+            {
+                key: "files",
+                label: "Files",
+                iconName: "files",
+                items: others,
+                totalBytes: sumFileBytes(others),
+                hasImages: false,
+                itemBytes: (f) => Number(f.sizeBytes) || 0,
+                renderSlice: (slice) => slice.map(rowBuilder).join("")
+            }
+        ].filter(cat => cat.items.length > 0);
+
+        let openCount = 0;
+        let totalVisibleCount = 0;
+        let totalVisibleBytes = 0;
+
+        const sectionsHtml = definitions.map(cat => {
+            const stateKey = `${scope}:${cat.key}`;
+            const state = getCategoryState(scope, cat.key);
+            const isOpen = isSearching
+                ? (searchOpenOverrides[stateKey] !== undefined ? searchOpenOverrides[stateKey] : true)
+                : state.open;
+            if (isOpen) {
+                openCount += 1;
+            }
+            const totalItems = cat.items.length;
+            totalVisibleCount += totalItems;
+            totalVisibleBytes += cat.totalBytes;
+
+            const totalPages = Math.max(1, Math.ceil(totalItems / state.pageSize));
+            let activePage = isSearching ? state.searchPage : state.page;
+            if (activePage > totalPages) {
+                activePage = totalPages;
+            }
+            if (activePage < 1) {
+                activePage = 1;
+            }
+            if (isSearching) {
+                state.searchPage = activePage;
+            } else {
+                state.page = activePage;
+            }
+
+            const countLabel = totalItems === 1 ? "1 item" : `${totalItems} items`;
+            let subText = "";
+            let bodyHtml = "";
+
+            if (isOpen) {
+                const startIdx = (activePage - 1) * state.pageSize;
+                const pageSlice = cat.items.slice(startIdx, startIdx + state.pageSize);
+                const pageBytes = pageSlice.reduce((sum, item) => sum + cat.itemBytes(item), 0);
+                subText = isSearching
+                    ? `Search matches · Page ${activePage} of ${totalPages}`
+                    : `Unfolded · Page ${activePage} of ${totalPages} (${formatSize(pageBytes)} loaded)`;
+                bodyHtml = `
+                    <div class="vault-category-body">
+                        ${cat.renderSlice(pageSlice)}
+                        ${renderCategoryPager(scope, cat.key, cat.label, activePage, totalPages, state.pageSize, startIdx, pageSlice.length, totalItems, pageBytes)}
+                    </div>`;
+            } else {
+                subText = cat.hasImages
+                    ? "Folded · Image previews deferred until unfolded"
+                    : "Folded · Click to load category";
+                bodyHtml = `<div class="vault-category-body" hidden></div>`;
+            }
+
+            return `
+                <section class="vault-category${isOpen ? " is-open" : ""}" data-scope="${esc(scope)}" data-category="${esc(cat.key)}">
+                    <button type="button" class="vault-category-header" data-category-toggle="${esc(cat.key)}" data-scope="${esc(scope)}" aria-expanded="${isOpen ? "true" : "false"}">
+                        <span class="vault-category-lead">
+                            <span class="vault-category-chevron" aria-hidden="true">${icon("right")}</span>
+                            <span class="vault-category-glyph" aria-hidden="true">${icon(cat.iconName)}</span>
+                            <span class="vault-category-title-wrap">
+                                <span class="section-label">${esc(cat.label)}</span>
+                                <span class="vault-category-sub">${esc(subText)}</span>
+                            </span>
+                        </span>
+                        <span class="vault-category-meta">
+                            <span class="vault-meta-pill">${esc(countLabel)}</span>
+                            <span class="vault-meta-pill is-size">${esc(formatSize(cat.totalBytes))}</span>
+                        </span>
+                    </button>
+                    ${bodyHtml}
+                </section>`;
+        }).join("");
+
+        const allOpen = openCount === definitions.length;
+        const allFolded = openCount === 0;
+        const statusBadge = isSearching
+            ? `<span class="vault-datasaver-pill is-active">Search unfolded (${definitions.length} ${definitions.length === 1 ? "category" : "categories"})</span>`
+            : (allFolded
+                ? `<span class="vault-datasaver-pill">Data saver · On-demand load</span>`
+                : `<span class="vault-datasaver-pill is-active">${openCount} of ${definitions.length} unfolded</span>`);
+
+        const summaryHtml = `
+            <div class="vault-summary-bar" data-scope="${esc(scope)}">
+                <div class="vault-summary-stats">
+                    <span><strong>${totalVisibleCount} ${totalVisibleCount === 1 ? "item" : "items"}</strong> · ${formatSize(totalVisibleBytes)} total</span>
+                    ${statusBadge}
+                </div>
+                <div class="vault-summary-actions">
+                    <button type="button" class="vault-link-btn" data-library-action="unfold-all" data-scope="${esc(scope)}"${allOpen ? " disabled" : ""}>Unfold all</button>
+                    <span class="vault-summary-sep" aria-hidden="true">·</span>
+                    <button type="button" class="vault-link-btn" data-library-action="fold-all" data-scope="${esc(scope)}"${allFolded ? " disabled" : ""}>Fold all</button>
+                </div>
             </div>`;
-        const rows = others.length === 0 ? "" : `
-            <div class="section-label">Files</div>
-            ${others.map(rowBuilder).join("")}`;
-        target.innerHTML = storyHtml + chatHtml + grid + rows;
+
+        target.innerHTML = summaryHtml + sectionsHtml;
     }
 
     function paintOwned() {
         if (!myFiles) return;
         paintLibrary(
             myFiles,
+            "owned",
             ownedFiles,
             ownedStories,
             ownedFiles.length + ownedStories.length,
@@ -723,6 +950,7 @@
         root.hidden = false;
         paintLibrary(
             list,
+            "incoming",
             incomingFiles,
             incomingStories,
             incomingFiles.length + incomingStories.length,
@@ -732,6 +960,14 @@
     }
 
     function paintLibraries() {
+        const currentQuery = fileQuery("file-search");
+        if (currentQuery !== lastSearchQuery) {
+            lastSearchQuery = currentQuery;
+            searchOpenOverrides = Object.create(null);
+            Object.keys(categoryStates).forEach(key => {
+                categoryStates[key].searchPage = 1;
+            });
+        }
         paintOwned();
         paintIncoming();
     }
@@ -1670,12 +1906,34 @@
         }
     }
 
+    function revealCategoryItem(scope, catKey, items, itemId) {
+        const stateKey = `${scope}:${catKey}`;
+        const state = getCategoryState(scope, catKey);
+        const idx = (items || []).findIndex(item => sameId(item.id, itemId));
+        state.open = true;
+        searchOpenOverrides[stateKey] = true;
+        if (idx >= 0) {
+            const targetPage = Math.floor(idx / state.pageSize) + 1;
+            state.page = targetPage;
+            state.searchPage = targetPage;
+        }
+        if (scope === "incoming") {
+            paintIncoming();
+        } else {
+            paintOwned();
+        }
+    }
+
     function openFromHash() {
         const storyMatch = /^#story=([0-9a-f-]{36})$/i.exec(location.hash || "");
         if (storyMatch) {
             const story = findStory(storyMatch[1]);
-            if (story && !sameId(storyOpenId, story.id)) {
-                openStory(story, null);
+            if (story) {
+                const isIncomingStory = incomingStories.some(s => sameId(s.id, story.id));
+                revealCategoryItem(isIncomingStory ? "incoming" : "owned", "stories", isIncomingStory ? incomingStories : ownedStories, story.id);
+                if (!sameId(storyOpenId, story.id)) {
+                    openStory(story, null);
+                }
             }
             return;
         }
@@ -1686,6 +1944,8 @@
         const id = match[1];
         const holding = storyForFile(id);
         if (holding && !sameId(holding.id, id)) {
+            const isIncomingStory = incomingStories.some(s => sameId(s.id, holding.id));
+            revealCategoryItem(isIncomingStory ? "incoming" : "owned", "stories", isIncomingStory ? incomingStories : ownedStories, holding.id);
             if (!sameId(storyOpenId, holding.id)) {
                 openStory(holding, null);
             }
@@ -1697,9 +1957,19 @@
         if (!file) {
             return;
         }
+        const scope = owned ? "owned" : "incoming";
         const pool = owned
             ? withoutStories(ownedFiles, ownedStories)
             : withoutStories(incomingFiles, incomingStories);
+        const catKey = isChat(file.contentType)
+            ? "chats"
+            : (isImage(file.contentType) ? "photos" : "files");
+        const catItems = pool.filter(f => {
+            if (catKey === "chats") return isChat(f.contentType);
+            if (catKey === "photos") return isImage(f.contentType);
+            return !isImage(f.contentType) && !isChat(f.contentType);
+        });
+        revealCategoryItem(scope, catKey, catItems, file.id);
         const row = document.querySelector(`[data-id="${file.id}"]`);
         if (isImage(file.contentType)) {
             openViewer(pool, file.id, row ? row.querySelector("[data-action='view']") : null);
@@ -1718,7 +1988,97 @@
         }
     }
 
+    function repaintScope(scope) {
+        if (scope === "incoming") {
+            paintIncoming();
+        } else {
+            paintOwned();
+        }
+    }
+
+    function onLibraryChange(e) {
+        const select = e.target.closest("select[data-pager-action='size']");
+        if (!select) {
+            return;
+        }
+        const scope = select.getAttribute("data-scope") || "owned";
+        const catKey = select.getAttribute("data-category") || "files";
+        const nextSize = Number(select.value) || DEFAULT_PAGE_SIZE;
+        const state = getCategoryState(scope, catKey);
+        state.pageSize = PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : DEFAULT_PAGE_SIZE;
+        state.page = 1;
+        state.searchPage = 1;
+        repaintScope(scope);
+    }
+
     async function onLibraryClick(e) {
+        const libActionBtn = e.target.closest("button[data-library-action]");
+        if (libActionBtn) {
+            const scope = libActionBtn.getAttribute("data-scope") || "owned";
+            const libAction = libActionBtn.getAttribute("data-library-action");
+            const shouldOpen = libAction === "unfold-all";
+            const isSearching = fileQuery("file-search").length > 0;
+            ["stories", "chats", "photos", "files"].forEach(key => {
+                const stateKey = `${scope}:${key}`;
+                const state = getCategoryState(scope, key);
+                if (isSearching) {
+                    searchOpenOverrides[stateKey] = shouldOpen;
+                } else {
+                    state.open = shouldOpen;
+                }
+            });
+            repaintScope(scope);
+            return;
+        }
+
+        const toggleBtn = e.target.closest("button[data-category-toggle]");
+        if (toggleBtn) {
+            const scope = toggleBtn.getAttribute("data-scope") || "owned";
+            const catKey = toggleBtn.getAttribute("data-category-toggle");
+            if (!catKey) {
+                return;
+            }
+            const stateKey = `${scope}:${catKey}`;
+            const state = getCategoryState(scope, catKey);
+            const isSearching = fileQuery("file-search").length > 0;
+            if (isSearching) {
+                const currentlyOpen = searchOpenOverrides[stateKey] !== undefined ? searchOpenOverrides[stateKey] : true;
+                searchOpenOverrides[stateKey] = !currentlyOpen;
+            } else {
+                state.open = !state.open;
+            }
+            repaintScope(scope);
+            return;
+        }
+
+        const pagerBtn = e.target.closest("button[data-pager-action]");
+        if (pagerBtn) {
+            const scope = pagerBtn.getAttribute("data-scope") || "owned";
+            const catKey = pagerBtn.getAttribute("data-category");
+            const pagerAction = pagerBtn.getAttribute("data-pager-action");
+            if (!catKey || !pagerAction) {
+                return;
+            }
+            const state = getCategoryState(scope, catKey);
+            const isSearching = fileQuery("file-search").length > 0;
+            const current = isSearching ? state.searchPage : state.page;
+            let nextPage = current;
+            if (pagerAction === "prev") {
+                nextPage = Math.max(1, current - 1);
+            } else if (pagerAction === "next") {
+                nextPage = current + 1;
+            } else if (pagerAction === "page") {
+                nextPage = Math.max(1, Number(pagerBtn.getAttribute("data-page")) || 1);
+            }
+            if (isSearching) {
+                state.searchPage = nextPage;
+            } else {
+                state.page = nextPage;
+            }
+            repaintScope(scope);
+            return;
+        }
+
         const button = e.target.closest("button[data-action]");
         if (!button) return;
         const row = button.closest("[data-id]");
@@ -1815,7 +2175,9 @@
     }
 
     myFiles?.addEventListener("click", onLibraryClick);
+    myFiles?.addEventListener("change", onLibraryChange);
     document.getElementById("from-others")?.addEventListener("click", onLibraryClick);
+    document.getElementById("from-others")?.addEventListener("change", onLibraryChange);
 
     document.addEventListener("click", (event) => {
         const viewerShare = event.target.closest("[data-share]");
