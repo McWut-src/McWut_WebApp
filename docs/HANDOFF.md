@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000034`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000035`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**10 November 2026, 22:55 UTC.** Production was moved on purpose to add the `/games` arcade hub with **Stack 3D** (vendored Three.js 3D isometric tower builder with overhang slicing physics, 3+ combo slab expansion, synthesized Web Audio sound effects, and automatic 2D isometric canvas fallback) and a global high-score leaderboard (`GameScores` table via `AddGameScores` migration, `GameScoreService`, and `GamesController`) showing member color pills, emblems, status tags, and combo streaks.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000034` | `ghcr.io/mcwut-src/mcwut_webapp:c674c61ca2e6c6103605a634fc2dc29ce73a0d18` |
+| Live | `ca-mcwut--0000035` | `ghcr.io/mcwut-src/mcwut_webapp:5811fd462a1ce035119d0de88f18c88954843e6c` |
+
+`0000035` has 100% of the traffic and is Healthy. `0000034` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000035`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` and `/games` redirect to sign-in. This build adds migration `AddGameScores`. That migration runs on the first request that needs the database, and only if `sql-mcwut` already exists.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000034
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000034=100
+```
 
 **10 November 2026, 22:03 UTC.** Production was moved on purpose to fix modal dialog layering over profile background wallpaper: removed the `z-index: 1` stacking context restriction from `.app-main` on profiles with active background tiles, transitioned the wallpaper pseudo-element to `body.has-bg-tile::before` with non-blocking pointer events, and ensured `#message-doodle-modal` and `#message-files-modal` mount directly to `document.body` so Bootstrap's `.modal-backdrop` stays behind dialogs and never blocks canvas drawing or file selection.
 
