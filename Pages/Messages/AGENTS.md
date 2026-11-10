@@ -14,3 +14,4 @@ A private note between two members. **New** picks another member; the same pair 
 `GET /api/messages` lists conversations; `POST /api/messages` opens one (`userId`); `GET /api/messages/{id}` reads the latest 200 with `?before=`/`?after=`; `POST /api/messages/{id}` sends; `POST /api/messages/{id}/read` marks read through a message id.
 - SQLite cannot `ORDER BY` a `DateTimeOffset`; sort the conversation list after load. Message order uses a number, `Sequence`.
 - Rules are `DirectMessageRules`; service is `DirectMessageService`, both in `src/FamilyVault.Files`. See `docs/AGENT.md`.
+- Modals (`#message-doodle-modal` and `#message-files-modal`) must mount at top-level under `document.body` to ensure Bootstrap's `.modal-backdrop` stays behind the dialog and never blocks drawing/interaction.

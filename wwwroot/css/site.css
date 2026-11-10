@@ -3440,16 +3440,11 @@ html.is-rail .sidebar .side-label {
   color: var(--ink);
 }
 
-.has-bg-tile .app-main {
-  position: relative;
-  z-index: 1;
-}
-
-.has-bg-tile .app-main::before {
+body.has-bg-tile::before {
   content: "";
   position: fixed;
   inset: 56px 0 0 0;
-  z-index: -1;
+  z-index: 0;
   background-image: var(--bg-tile);
   background-repeat: repeat;
   background-size: 84px 84px;
@@ -3457,7 +3452,7 @@ html.is-rail .sidebar .side-label {
   pointer-events: none;
 }
 
-html[data-theme="dark"] .has-bg-tile .app-main::before {
+html[data-theme="dark"] body.has-bg-tile::before {
   opacity: 0.11;
 }
 

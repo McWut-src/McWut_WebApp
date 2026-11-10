@@ -25,6 +25,10 @@
             return;
         }
 
+        if (doodleModalEl.parentElement !== document.body) {
+            document.body.appendChild(doodleModalEl);
+        }
+
         let doodleColor = DOODLE_COLORS[0];
         let doodleSize = 5;
         let doodleErasing = false;

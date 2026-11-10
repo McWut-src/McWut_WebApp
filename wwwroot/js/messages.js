@@ -1389,6 +1389,9 @@
 
     filesBtn?.addEventListener("click", async () => {
         if (!filesModalEl || !window.bootstrap) return;
+        if (filesModalEl.parentElement !== document.body) {
+            document.body.appendChild(filesModalEl);
+        }
         const modal = window.bootstrap.Modal.getOrCreateInstance(filesModalEl);
         modal.show();
         if (filesListEl) filesListEl.innerHTML = '<p class="empty">Loading…</p>';
