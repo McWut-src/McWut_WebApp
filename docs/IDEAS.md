@@ -141,3 +141,23 @@ When picking candidate libraries to adopt in future cycles, prioritize:
 - **Skeleton Placeholders**: Pulsing skeleton cards (`@keyframes pulse`) during async loading or SQL wake-up cycles instead of blank white frames.
 - **Canvas Confetti**: Celebratory micro-bursts upon saving stories, sending invites, or clearing unread threads.
 
+---
+
+## 🎮 Arcade Games & Standalone Single-Player Mini-Games
+
+The `/games` arcade hub brings single-player gaming to McWut with shared global competition. All games must strictly adhere to **Four Golden Rules**:
+1. **HTML / JS Standalone:** Pure single-player client-side game loop. Zero server gameplay calculations; executes fully in the player's browser.
+2. **Global Leaderboard Required:** Must report score and combo to the shared backend (`GameScores` table, `GameScoreService`, `GamesController`), showcasing player profile flair (name, accent color pill, emblem badge, status tag).
+3. **Flexible Lightweight JS Engine/Vendors:** Three.js (`tree.js`), Alpine.js, HTML5 2D Canvas, or other lightweight JS vendors (vendored locally in `wwwroot/lib/`, zero CDN dependency at runtime, with 2D fallback for headless/restricted browsers).
+4. **Phone & Tablet Touch-Playable:** Responsive, touch-first mobile controls (tap, drag, swipe) alongside keyboard/mouse on desktop, with fluid adaptive viewports.
+
+### Live & Candidate Games Roadmap
+
+| Game | Tech / Vendor | Gameplay Loop & Scoring | Status |
+|---|---|---|---|
+| **Stack 3D** | Three.js (3D Isometric WebGL) | Precision slab stacking, overhang slicing physics, 3+ perfect-drop expansion, synthesized pentatonic chimes. | **Live** on `/games` |
+| **Neon Slope** | Three.js (3D Perspective WebGL) | High-speed endless tunnel runner; dodge red obstacles, take ramps, speed scales over time. Touch steer / A-D. | Teaser card active |
+| **2048 Neon** | Alpine.js + CSS Grid | Reactive number-merging 4×4 puzzle with smooth CSS animations. Touch swipe / arrows. | Teaser card active |
+| **Cyber Breakout** | HTML5 2D Canvas / LittleJS | Retro brick breaker with paddle ball physics, laser blasters, and multiball power-ups. | Teaser card active |
+
+
