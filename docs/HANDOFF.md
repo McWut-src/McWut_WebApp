@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000033`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI and Messages are there too. The live revision is `ca-mcwut--0000034`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**10 November 2026, 22:03 UTC.** Production was moved on purpose to fix modal dialog layering over profile background wallpaper: removed the `z-index: 1` stacking context restriction from `.app-main` on profiles with active background tiles, transitioned the wallpaper pseudo-element to `body.has-bg-tile::before` with non-blocking pointer events, and ensured `#message-doodle-modal` and `#message-files-modal` mount directly to `document.body` so Bootstrap's `.modal-backdrop` stays behind dialogs and never blocks canvas drawing or file selection.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000033` | `ghcr.io/mcwut-src/mcwut_webapp:bf8fb0946b96b917be156a7514328e12a44f814b` |
+| Live | `ca-mcwut--0000034` | `ghcr.io/mcwut-src/mcwut_webapp:c674c61ca2e6c6103605a634fc2dc29ce73a0d18` |
+
+`0000034` has 100% of the traffic and is Healthy. `0000033` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000034`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` redirects to sign-in. The sign-in page shows McWut, and the title is Sign in - McWut. Sign-in with the production password was not tried.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000033
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000033=100
+```
 
 **8 November 2026, 22:53 UTC.** Production was moved on purpose to data-saving category folding and on-demand pagination in My files: each category (Stories, Chats, Photos, Files) is folded by default to prevent eager image preview fetches and bandwidth consumption; unfolding loads items on demand with per-category pagination (default 8 items per page, selectable 4/8/12/24) and loaded byte size indicators; global search automatically unfolds matching categories and resets pagination; deep links into stories and files unfold and jump to target items.
 
