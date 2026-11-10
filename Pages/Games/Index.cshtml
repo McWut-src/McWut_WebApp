@@ -1,0 +1,205 @@
+@page "/games"
+@model McWutWebApp.Pages.Games.IndexModel
+@{
+    ViewData["Title"] = "Games";
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Games</h1>
+        <p class="page-kicker">Play solo in this browser and chase the global high score.</p>
+    </div>
+</div>
+
+<div class="game-hub-strip" id="game-hub-strip" role="tablist" aria-label="Arcade games">
+    <button type="button" class="game-hub-card is-active" data-game-key="stack-3d" role="tab" aria-selected="true">
+        <div class="game-hub-icon is-stack" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <polygon points="16,4 28,10 16,16 4,10" fill="#38bdf8" />
+                <polygon points="4,10 16,16 16,21 4,15" fill="#0284c7" />
+                <polygon points="28,10 16,16 16,21 28,15" fill="#0369a1" />
+                <polygon points="16,13 26,18 16,23 6,18" fill="#a855f7" opacity="0.9" />
+                <polygon points="6,18 16,23 16,28 6,23" fill="#7e22ce" />
+                <polygon points="26,18 16,23 16,28 26,23" fill="#6b21a8" />
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Stack 3D</strong>
+                <span class="game-hub-tag is-live">Three.js 3D</span>
+            </div>
+            <span>Slice overhangs, land perfect drops, and build the highest tower.</span>
+        </div>
+    </button>
+
+    <div class="game-hub-card is-soon" aria-disabled="true">
+        <div class="game-hub-icon is-slope" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <path d="M4 26L13 8h6l9 18" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="16" cy="19" r="4.5" fill="#f43f5e"/>
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Neon Slope</strong>
+                <span class="game-hub-tag">Soon</span>
+            </div>
+            <span>High-speed 3D endless tunnel dodge.</span>
+        </div>
+    </div>
+
+    <div class="game-hub-card is-soon" aria-disabled="true">
+        <div class="game-hub-icon is-2048" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <rect x="5" y="5" width="10" height="10" rx="2.5" fill="#f59e0b"/>
+                <rect x="17" y="5" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.65"/>
+                <rect x="5" y="17" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.4"/>
+                <rect x="17" y="17" width="10" height="10" rx="2.5" fill="#10b981"/>
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>2048 Neon</strong>
+                <span class="game-hub-tag">Soon</span>
+            </div>
+            <span>Reactive number-merging grid puzzle.</span>
+        </div>
+    </div>
+
+    <div class="game-hub-card is-soon" aria-disabled="true">
+        <div class="game-hub-icon is-breakout" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <rect x="5" y="6" width="6" height="3.5" rx="1" fill="#ec4899"/>
+                <rect x="13" y="6" width="6" height="3.5" rx="1" fill="#8b5cf6"/>
+                <rect x="21" y="6" width="6" height="3.5" rx="1" fill="#06b6d4"/>
+                <circle cx="16" cy="17" r="2.5" fill="#facc15"/>
+                <rect x="9" y="24" width="14" height="3.5" rx="1.75" fill="#38bdf8"/>
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Cyber Breakout</strong>
+                <span class="game-hub-tag">Soon</span>
+            </div>
+            <span>Classic brick breaker with multiball power-ups.</span>
+        </div>
+    </div>
+</div>
+
+<div class="games-workspace">
+    <section class="card game-stage-card" aria-label="Stack 3D Game">
+        <div class="game-stage-header">
+            <div class="game-stage-title-wrap">
+                <h2 class="h6 mb-0" id="game-active-title">Stack 3D</h2>
+                <span class="game-stage-hint">Click, tap, or press <kbd>Space</kbd> to drop</span>
+            </div>
+            <div class="game-stage-controls">
+                <span class="game-stat-pill" id="game-my-best" title="Your personal high score">Best: <strong>0</strong></span>
+                <span class="game-stat-pill" id="game-my-rank" title="Your global rank">Rank: <strong>—</strong></span>
+                <button type="button" class="icon-btn" id="game-mute-btn" title="Mute sound" aria-label="Mute sound" aria-pressed="false"></button>
+                <button type="button" class="icon-btn" id="game-restart-btn" title="Restart game (R)" aria-label="Restart game"></button>
+            </div>
+        </div>
+
+        <div class="game-viewport-wrap" id="stack-viewport">
+            <canvas id="stack-canvas" aria-label="Stack 3D interactive canvas"></canvas>
+
+            <div class="game-hud" aria-live="polite">
+                <div class="game-hud-top">
+                    <div class="game-hud-target" id="hud-target" hidden>
+                        <span class="game-hud-target-label" id="hud-target-label">Leader</span>
+                        <span class="game-hud-target-pill" id="hud-target-pill"></span>
+                    </div>
+                    <div class="game-hud-speed" id="hud-speed-pill">1.0× Speed</div>
+                </div>
+
+                <div class="game-hud-center">
+                    <div class="game-hud-score" id="hud-score">0</div>
+                    <div class="game-hud-combo" id="hud-combo" hidden>PERFECT ×1</div>
+                    <div class="game-hud-pop" id="hud-pop" hidden>PERFECT!</div>
+                </div>
+            </div>
+
+            <div class="game-overlay" id="stack-start-overlay">
+                <div class="game-overlay-card">
+                    <div class="game-overlay-badge">THREE.JS ARCADE</div>
+                    <h3 class="game-overlay-title">Stack 3D</h3>
+                    <p class="game-overlay-desc">
+                        Time your drop to stack moving neon slabs. Overhanging edges get sliced off!
+                        Land <strong>3+ Perfect Drops</strong> in a row to expand your slab back out.
+                    </p>
+                    <button type="button" class="btn btn-primary game-play-btn" id="stack-start-btn">
+                        Play Stack 3D
+                    </button>
+                    <div class="game-overlay-keys">
+                        <span><kbd>Space</kbd> / <kbd>Click</kbd> / <kbd>Tap</kbd> Drop</span>
+                        <span><kbd>R</kbd> Quick Restart</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-overlay" id="stack-over-overlay" hidden>
+                <div class="game-overlay-card is-gameover">
+                    <div class="game-record-banner" id="over-record-banner" hidden>
+                        NEW PERSONAL RECORD!
+                    </div>
+                    <h3 class="game-overlay-title">Tower Complete</h3>
+                    <div class="game-over-grid">
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Score</span>
+                            <strong class="game-over-val is-primary" id="over-score">0</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Max Combo</span>
+                            <strong class="game-over-val" id="over-combo">×0</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Your Best</span>
+                            <strong class="game-over-val" id="over-best">0</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Global Rank</span>
+                            <strong class="game-over-val" id="over-rank">—</strong>
+                        </div>
+                    </div>
+                    <p class="game-save-status" id="over-save-status">Saving score…</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-primary game-play-btn" id="stack-again-btn">
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <aside class="card game-board-card" aria-label="Global High Scores">
+        <div class="card-body">
+            <div class="game-board-head">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="game-trophy-icon" aria-hidden="true">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </span>
+                    <div>
+                        <h2 class="h6 mb-0">Global High Scores</h2>
+                        <span class="game-board-sub" id="board-summary">Loading leaderboard…</span>
+                    </div>
+                </div>
+                <button type="button" class="icon-btn" id="board-refresh-btn" title="Refresh scores" aria-label="Refresh scores">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.2-5.5"/><path d="M20 4v5h-5"/></svg>
+                </button>
+            </div>
+
+            <div id="board-alert" class="alert alert-danger py-2 px-3 small mb-2" role="alert" hidden></div>
+
+            <div class="game-board-list" id="board-list">
+                <p class="empty">Loading high scores…</p>
+            </div>
+        </div>
+    </aside>
+</div>
+
+@section Scripts {
+    <script src="~/lib/three/three.min.js" asp-append-version="true"></script>
+    <script src="~/js/games.js" asp-append-version="true"></script>
+}

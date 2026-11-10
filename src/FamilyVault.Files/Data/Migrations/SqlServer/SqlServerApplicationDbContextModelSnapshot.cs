@@ -350,6 +350,47 @@ namespace FamilyVault.Files.Data.Migrations.SqlServer
                     b.ToTable("FileGrants", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AchievedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("BestCombo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BestScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GameKey")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("GamesPlayed")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("LastPlayedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GameKey", "BestScore");
+
+                    b.HasIndex("GameKey", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GameScores", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.InviteEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -974,6 +1015,15 @@ namespace FamilyVault.Files.Data.Migrations.SqlServer
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.StoredFileEntity", b =>

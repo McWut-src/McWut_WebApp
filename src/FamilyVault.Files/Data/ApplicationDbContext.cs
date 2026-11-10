@@ -30,6 +30,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<DirectConversationMemberEntity> DirectConversationMembers => Set<DirectConversationMemberEntity>();
     public DbSet<DirectMessageEntity> DirectMessages => Set<DirectMessageEntity>();
     public DbSet<DirectMessageReactionEntity> DirectMessageReactions => Set<DirectMessageReactionEntity>();
+    public DbSet<GameScoreEntity> GameScores => Set<GameScoreEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -261,6 +262,19 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.HasKey(x => x.Key);
             b.Property(x => x.Key).HasMaxLength(64).IsRequired();
             b.Property(x => x.ValueCipher).IsRequired();
+        });
+
+        modelBuilder.Entity<GameScoreEntity>(b =>
+        {
+            b.ToTable("GameScores");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.GameKey).HasMaxLength(32).IsRequired();
+            b.HasIndex(x => new { x.GameKey, x.UserId }).IsUnique();
+            b.HasIndex(x => new { x.GameKey, x.BestScore });
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

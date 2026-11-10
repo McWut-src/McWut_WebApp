@@ -83,6 +83,7 @@ public static class DependencyInjection
         services.AddScoped<IFileLifecycle, FileLifecycle>();
         services.AddSingleton<TypingPresenceService>();
         services.AddScoped<DirectMessageService>();
+        services.AddScoped<GameScoreService>();
         services.TryAddSingleton<IStartupDatabaseContact, ImmediateStartupDatabaseContact>();
         services.AddHostedService<FileLifecycleWorker>();
 

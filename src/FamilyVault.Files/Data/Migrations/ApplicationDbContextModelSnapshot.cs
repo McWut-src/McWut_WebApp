@@ -345,6 +345,47 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("FileGrants", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("AchievedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BestCombo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BestScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("GameKey")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("GamesPlayed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("LastPlayedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GameKey", "BestScore");
+
+                    b.HasIndex("GameKey", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GameScores", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.InviteEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -963,6 +1004,15 @@ namespace FamilyVault.Files.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.StoredFileEntity", b =>

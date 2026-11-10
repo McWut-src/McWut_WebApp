@@ -89,6 +89,7 @@ Wait until the new revision is Healthy and has the traffic. Signed-out checks: b
 | Password vault UI | `Pages/Passwords/`, `wwwroot/js/passwords.js` |
 | Messages | `Pages/Messages/` at `/messages`, `wwwroot/js/messages.js`, `Controllers/MessagesController.cs`. Rules are `DirectMessageRules`. The service is `DirectMessageService`. |
 | AI | `Pages/Ai/` at `/ai`, `wwwroot/js/ai.js`. The key form is `wwwroot/js/ai-key.js` on Profile. `Controllers/AiController.cs`. Key rules are `OpenRouterRules` in `src/FamilyVault.Files`. |
+| Games | `Pages/Games/` at `/games`, `wwwroot/js/games.js`, Three.js at `wwwroot/lib/three/three.min.js`, `Controllers/GamesController.cs`. Rules are `GameScoreRules` and service is `GameScoreService` in `src/FamilyVault.Files`. |
 | Admin | `Pages/Admin/` |
 
 Migrations: generate them. Do not hand-edit a Designer or a snapshot. The startup project must be the Files project. SQLite and SQL Server each have a folder.

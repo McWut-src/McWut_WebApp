@@ -10,6 +10,7 @@
     var urls = On("/urls");
     var messages = On("/messages");
     var ai = On("/ai");
+    var games = On("/games");
     var profile = On("/profile");
     var invites = On("/admin/invites");
     var people = On("/admin/people");
@@ -48,6 +49,10 @@
             <span>AI</span>
         </a>
     }
+    <a class="side-link is-primary @(games ? "active" : null)" asp-page="/Games/Index" title="Games" aria-current="@(games ? "page" : null)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15" cy="11" r="1"/><circle cx="17" cy="13" r="1"/></svg>
+        <span>Games</span>
+    </a>
     <a class="side-link is-primary @(profile ? "active" : null)" asp-page="/Profile/Index" title="Profile" aria-current="@(profile ? "page" : null)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 19a7 7 0 0 1 14 0"/></svg>
         <span>Profile</span>
