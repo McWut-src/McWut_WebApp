@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000041`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000042`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 17:19 UTC.** Production was moved on purpose to fix inverted steering controls in **Neon Slope** (`neon-slope`) — aligning Three.js 3D camera coordinate mapping (+Z forward, camera at -6.8 looking at +16.0) with screen-space steering so Left steers left (positive target velocity `targetVx = 14.5`) and Right steers right (negative target velocity `targetVx = -14.5`), while updating the 2D canvas wireframe fallback projection (`sx = width / 2 - (x - camX) * scale`) and rail/grid endpoints to guarantee coordinate parity across desktop keyboard, on-screen touch buttons, and direct viewport taps.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000041` | `ghcr.io/mcwut-src/mcwut_webapp:8309a3e392e571d352cdd2b3004cca3964a3e449` |
+| Live | `ca-mcwut--0000042` | `ghcr.io/mcwut-src/mcwut_webapp:dfbab575adb4defa423f40109b70d944561f81e3` |
+
+`0000042` has 100% of the traffic and is Healthy. `0000041` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000042`: both hosts `/health` return `ok`, Register is 404, and `/files` and `/games` redirect to sign-in. Static asset `/js/games.js` serves the verified Neon Slope steering fix (`if (slopeInput.left) targetVx = 14.5;`).
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000041
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000041=100
+```
 
 **11 November 2026, 15:46 UTC.** Production was moved on purpose to add the **Interactive Visual Level Editor** and **Community Member Levels** to **Wacky Wheels** (`wacky-wheels`) — enabling members to sketch custom courses directly on the canvas (rolling hills, boost launch ramps, 360° Sonic stunt loops, springboards, swinging wrecking balls, breakable crates, stars, and finish gate with 25-step Undo and live test drive), publish and share them across the family with shareable deep links (`/games?game=wacky-wheels&level={id}`), remix courses, and compete for Course Champion records (score & fastest clear time) backed by `GameCustomLevels` table, `GameLevelRules`, and `GameCustomLevelService`.
 
