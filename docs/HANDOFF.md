@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000043`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000044`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 18:48 UTC.** Production was moved on purpose to unlock and release **Cyber Breakout** (`brick-breaker`) — an ultra-juicy synthwave brick-breaker in pure Canvas 2D with deflection physics, multi-hit reinforced bricks, real-time powerup drops (twin lasers, wide paddle, multiball, extra lives), screen trauma shake, hitstop micro-pauses, Web Audio effects, full keyboard/mouse/touch controls, and global high-score leaderboard integration backed by `GameScoreRules`.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000043` | `ghcr.io/mcwut-src/mcwut_webapp:f7e07c976e67725722751746fc28df2eab4fab84` |
+| Live | `ca-mcwut--0000044` | `ghcr.io/mcwut-src/mcwut_webapp:e037050496dcb9a4ba9ab66da996ddbe31cbb8e7` |
+
+`0000044` has 100% of the traffic and is Healthy. `0000043` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000044`: both hosts `/health` return `ok`, Register is 404, and `/files` and `/games` redirect to sign-in. Static asset `/js/games.js` serves the live Cyber Breakout configuration (`"brick-breaker": { ... available: true }`).
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000043
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000043=100
+```
 
 **11 November 2026, 18:31 UTC.** Production was moved on purpose for the **Arcade Games Hub UI/UX Refactor** — delivering a mobile-first (390×844) responsive 2-column icon-centric catalog grid (`.game-catalog-grid`), eliminating text bloat, adding member personal best score pills (`GET /api/games/me/bests`) directly on game tiles, guarding unreleased Cyber Breakout with a SOON pill and non-blocking toast, replacing bulky text pills with compact `.game-hall-chip` icon buttons in Hall of Fame, introducing a reusable toast notification framework (`window.mcwut.toast`), and condensing stage game strips on mobile viewports.
 
