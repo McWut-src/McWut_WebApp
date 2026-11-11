@@ -209,6 +209,62 @@ window.mcwut = window.mcwut || {
                 osc.stop(now + 0.26);
             }
         } catch (e) {}
+    },
+    toast: function (text, options) {
+        if (!text) return null;
+        options = options || {};
+        var kind = options.kind || "info";
+        var duration = typeof options.duration === "number" ? options.duration : 2800;
+
+        var host = document.getElementById("mcwut-toast-host");
+        if (!host) {
+            host = document.createElement("div");
+            host.id = "mcwut-toast-host";
+            host.className = "mcwut-toast-host";
+            host.setAttribute("aria-live", "polite");
+            host.setAttribute("role", "status");
+            document.body.appendChild(host);
+        }
+
+        while (host.children.length >= 3) {
+            host.removeChild(host.firstElementChild);
+        }
+
+        var el = document.createElement("div");
+        el.className = "mcwut-toast is-" + kind;
+
+        var iconSvg = options.icon;
+        if (!iconSvg && window.mcwutIcon) {
+            if (kind === "ok") iconSvg = window.mcwutIcon("spark");
+            else if (kind === "warn" || kind === "err") iconSvg = window.mcwutIcon("activity");
+            else if (kind === "info") iconSvg = window.mcwutIcon("bell");
+        }
+
+        var iconHtml = iconSvg
+            ? '<span class="mcwut-toast-icon" aria-hidden="true">' + iconSvg + '</span>'
+            : "";
+
+        el.innerHTML = iconHtml + '<span class="mcwut-toast-text">' + window.mcwut.esc(text) + '</span>';
+
+        var dismissed = false;
+        function dismiss() {
+            if (dismissed) return;
+            dismissed = true;
+            el.classList.add("is-leaving");
+            setTimeout(function () {
+                if (el.parentNode === host) {
+                    host.removeChild(el);
+                }
+            }, 180);
+        }
+
+        el.addEventListener("click", dismiss);
+        host.appendChild(el);
+
+        if (duration > 0) {
+            setTimeout(dismiss, duration);
+        }
+        return el;
     }
 };
 

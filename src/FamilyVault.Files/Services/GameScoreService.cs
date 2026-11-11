@@ -86,6 +86,30 @@ public sealed class GameScoreService(ApplicationDbContext db, TimeProvider time)
             topEntries);
     }
 
+    public async Task<IReadOnlyDictionary<string, int>> GetMyBestScoresAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        if (userId == Guid.Empty)
+        {
+            return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var scores = await db.GameScores.AsNoTracking()
+            .Where(x => x.UserId == userId && x.BestScore > 0)
+            .Select(x => new { x.GameKey, x.BestScore })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in scores)
+        {
+            result[item.GameKey] = item.BestScore;
+        }
+
+        return result;
+    }
+
     public async Task<GameScoreSubmissionView> SubmitScoreAsync(
         Guid userId,
         string gameKey,

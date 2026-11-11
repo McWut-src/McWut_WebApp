@@ -120,4 +120,24 @@ public class GameScoreTests
         Assert.Equal(4250, wheelsSub.BestScore);
         Assert.Equal(6, wheelsSub.BestCombo);
     }
+
+    [Fact]
+    public async Task GetMyBestScoresAsync_returns_best_score_per_game()
+    {
+        await using var fx = new SqliteFixture();
+        await fx.SeedMembersAsync();
+        var clock = new TestTimeProvider(Now);
+        var service = new GameScoreService(fx.Db, clock);
+
+        await service.SubmitScoreAsync(SqliteFixture.OwnerId, "stack-3d", score: 42, maxCombo: 3);
+        await service.SubmitScoreAsync(SqliteFixture.OwnerId, "mini-crossword", score: 100, maxCombo: 5);
+
+        var bests = await service.GetMyBestScoresAsync(SqliteFixture.OwnerId);
+        Assert.Equal(42, bests["stack-3d"]);
+        Assert.Equal(100, bests["mini-crossword"]);
+        Assert.False(bests.ContainsKey("minesweeper"));
+
+        var emptyBests = await service.GetMyBestScoresAsync(Guid.Empty);
+        Assert.Empty(emptyBests);
+    }
 }

@@ -4,297 +4,49 @@
     ViewData["Title"] = "Games";
 }
 
-<div class="page-head">
-    <div>
-        <h1 class="page-title" id="games-page-title">Games Hub</h1>
-        <p class="page-kicker" id="games-page-kicker">Choose a game, beat personal records, and climb the global leaderboards.</p>
+<div class="page-head game-page-head">
+    <div class="game-head-info">
+        <h1 class="page-title mb-0" id="games-page-title">Games</h1>
+        <p class="page-kicker d-none d-md-block" id="games-page-kicker">Solo arcade games & global high scores.</p>
     </div>
     <div id="games-hub-actions" hidden>
-        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-back-to-hub">
+        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-back-to-hub" title="Back to All Games" aria-label="Back to All Games">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            All Games
+            <span class="game-back-label">All Games</span>
         </button>
     </div>
 </div>
 
 <div class="game-hub-view" id="game-hub-view">
     <div class="game-catalog-grid">
-        <!-- 1. Stack 3D -->
-        <div class="game-tile-card is-stack" data-game-key="stack-3d" tabindex="0" role="button" aria-label="Launch Stack 3D">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">Three.js 3D</span>
-                <span class="game-tile-pill">Top Played</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-stack" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <polygon points="16,4 28,10 16,16 4,10" fill="#38bdf8" />
-                        <polygon points="4,10 16,16 16,21 4,15" fill="#0284c7" />
-                        <polygon points="28,10 16,16 16,21 28,15" fill="#0369a1" />
-                        <polygon points="16,13 26,18 16,23 6,18" fill="#a855f7" opacity="0.9" />
-                        <polygon points="6,18 16,23 16,28 6,23" fill="#7e22ce" />
-                        <polygon points="26,18 16,23 16,28 26,23" fill="#6b21a8" />
-                    </svg>
+        @foreach (var game in Model.Games)
+        {
+            <button type="button"
+                    class="game-tile @(game.IsAvailable ? "" : "is-soon")"
+                    data-game-key="@game.Key"
+                    data-available="@(game.IsAvailable ? "true" : "false")"
+                    title="@game.Description"
+                    aria-label="@(game.IsAvailable ? $"Play {game.Title}" : $"{game.Title} (Coming Soon)")">
+                @if (game.IsNew)
+                {
+                    <span class="game-tile-badge is-new">NEW</span>
+                }
+                else if (!game.IsAvailable)
+                {
+                    <span class="game-tile-badge is-soon">SOON</span>
+                }
+                <div class="game-tile-icon-wrap" style="--tile-color: @game.AccentColor;">
+                    <partial name="_GameIcon" model="game.Key" />
                 </div>
-                <div>
-                    <h2 class="game-tile-title">Stack 3D</h2>
-                    <span class="text-muted small">Isometric Precision Builder</span>
+                <div class="game-tile-meta">
+                    <span class="game-tile-title">@game.Title</span>
+                    <span class="game-tile-best" data-best-for="@game.Key" title="Personal best">
+                        <span class="best-star" aria-hidden="true">★</span>
+                        <span class="best-val">—</span>
+                    </span>
                 </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    Slice overhangs, land perfect drops, and build the highest tower. Perfect streaks expand your slab back out!
-                </p>
-                <div class="game-tile-features">
-                    <span>3D Arcade</span>
-                    <span>Combo Multiplier</span>
-                    <span>Sound FX</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="stack-3d">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play Stack 3D
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. Mini Crossword -->
-        <div class="game-tile-card is-crossword" data-game-key="mini-crossword" tabindex="0" role="button" aria-label="Launch Mini Crossword">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">5×5 Daily Grid</span>
-                <span class="game-tile-pill">Speed Bonus</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-crossword" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <rect x="4" y="4" width="11" height="11" rx="2.5" fill="#f43f5e" />
-                        <rect x="17" y="4" width="11" height="11" rx="2.5" fill="#fb7185" opacity="0.85" />
-                        <rect x="4" y="17" width="11" height="11" rx="2.5" fill="#1e293b" stroke="#475569" stroke-width="1.2" />
-                        <rect x="17" y="17" width="11" height="11" rx="2.5" fill="#f59e0b" />
-                        <text x="9.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">A</text>
-                        <text x="22.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">B</text>
-                        <text x="22.5" y="25.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">C</text>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">Mini Crossword</h2>
-                    <span class="text-muted small">Daily 5×5 Word Grid</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    Bite-sized crossword pack with live clue navigation, pencil draft mode, keyboard shortcuts, and speedrun timing.
-                </p>
-                <div class="game-tile-features">
-                    <span>Word Puzzle</span>
-                    <span>Pencil Mode</span>
-                    <span>Touch Keyboard</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="mini-crossword">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play Crossword
-                </button>
-            </div>
-        </div>
-
-        <!-- 3. Minesweeper -->
-        <div class="game-tile-card is-minesweeper" data-game-key="minesweeper" tabindex="0" role="button" aria-label="Launch Minesweeper">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">Canvas 2D</span>
-                <span class="game-tile-pill">Classic Logic</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-minesweeper" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <path d="M4 10h24M4 16h24M4 22h24M10 4v24M16 4v24M22 4v24" stroke="#38bdf8" stroke-width="0.8" opacity="0.14" />
-                        <circle cx="16" cy="18" r="5.6" fill="#111c2e" stroke="#fb7185" stroke-width="1.7" />
-                        <path d="M16 9.6V6.4M16 29.6v-3.2M6.4 18H3.2M28.8 18h-3.2M9.3 11.3l-2.2-2.2M22.7 11.3l2.2-2.2M9.3 24.7l-2.2 2.2M22.7 24.7l2.2 2.2" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" />
-                        <circle cx="16" cy="18" r="2.2" fill="#f43f5e" />
-                        <path d="M19.2 14.8l2-2" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
-                        <circle cx="21.8" cy="12.2" r="1.1" fill="#fbbf24" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">Minesweeper</h2>
-                    <span class="text-muted small">Neon Minefield Sweeper</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    Clear the minefield without tripping a blast. Features guaranteed safe first clicks, chord reveals, and zero-guess cascades.
-                </p>
-                <div class="game-tile-features">
-                    <span>3 Difficulties</span>
-                    <span>Chord Reveal</span>
-                    <span>Fast Cascades</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="minesweeper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play Minesweeper
-                </button>
-            </div>
-        </div>
-
-        <!-- 4. Neon Slope -->
-        <div class="game-tile-card is-slope" data-game-key="neon-slope" tabindex="0" role="button" aria-label="Launch Neon Slope">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">Three.js 3D</span>
-                <span class="game-tile-pill">High Velocity</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-slope" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <path d="M4 26L13 8h6l9 18" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="16" cy="19" r="4.5" fill="#f43f5e"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">Neon Slope</h2>
-                    <span class="text-muted small">Endless Cyber Tunnel</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    High-speed 3D tunnel runner. Steer left and right to dodge cyber barricades and obstacles as speed accelerates endlessly.
-                </p>
-                <div class="game-tile-features">
-                    <span>Endless Speed</span>
-                    <span>Touch / Keys</span>
-                    <span>Synthwave 3D</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="neon-slope">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play Neon Slope
-                </button>
-            </div>
-        </div>
-
-        <!-- 5. 2048 Neon -->
-        <div class="game-tile-card is-2048" data-game-key="merge-2048" tabindex="0" role="button" aria-label="Launch 2048 Neon">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">Neon Grid</span>
-                <span class="game-tile-pill">Number Strategy</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-2048" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <rect x="5" y="5" width="10" height="10" rx="2.5" fill="#f59e0b"/>
-                        <rect x="17" y="5" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.65"/>
-                        <rect x="5" y="17" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.4"/>
-                        <rect x="17" y="17" width="10" height="10" rx="2.5" fill="#10b981"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">2048 Neon</h2>
-                    <span class="text-muted small">Sliding Tile Puzzle</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    Slide matching neon tiles to merge 2s into 4s, 8s, and beyond to 2048. Includes undo support and smooth swipe controls.
-                </p>
-                <div class="game-tile-features">
-                    <span>Swipe & Keys</span>
-                    <span>Undo Move</span>
-                    <span>Reactive Colors</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="merge-2048">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play 2048 Neon
-                </button>
-            </div>
-        </div>
-
-        <!-- 6. Wacky Wheels -->
-        <div class="game-tile-card is-wheels" data-game-key="wacky-wheels" tabindex="0" role="button" aria-label="Launch Wacky Wheels">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag is-live">Canvas 2D / Physics</span>
-                <span class="game-tile-pill">Ragdoll Stunts</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-wheels" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <path d="M3 26c5 0 7-4 13-4s8 4 13 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-                        <circle cx="10" cy="21" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
-                        <circle cx="22" cy="19" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
-                        <path d="M9 19l5-4h7l2 3" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-                        <circle cx="15" cy="9.5" r="3" fill="#fde047" stroke="#38bdf8" stroke-width="1.4" />
-                        <path d="M15 12.5l-1 4.5M14.5 14l4.5 1" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
-                        <polygon points="26,5 27,7.4 29.6,7.6 27.6,9.2 28.2,11.7 26,10.3 23.8,11.7 24.4,9.2 22.4,7.6 25,7.4" fill="#facc15" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">Wacky Wheels</h2>
-                    <span class="text-muted small">Ragdoll Obstacle Course</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    Slapstick ragdoll obstacle course. Balance, boost, and flip your way across ramps, loops, springboards, and wrecking balls to the finish line.
-                </p>
-                <div class="game-tile-features">
-                    <span>Ragdoll Physics</span>
-                    <span>Flip Combos</span>
-                    <span>Eject Boost</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="wacky-wheels" data-game-key="wacky-wheels">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play Wacky Wheels
-                </button>
-            </div>
-        </div>
-
-        <!-- 7. Cyber Breakout (Coming Soon) -->
-        <div class="game-tile-card is-soon" aria-label="Cyber Breakout (Coming Soon)">
-            <div class="game-tile-badge-strip">
-                <span class="game-hub-tag">In Development</span>
-                <span class="game-tile-pill">Retro Classic</span>
-            </div>
-            <div class="game-tile-visual">
-                <div class="game-hub-icon is-breakout" aria-hidden="true">
-                    <svg viewBox="0 0 32 32" fill="none">
-                        <rect x="4" y="6" width="6" height="3" rx="1" fill="#ec4899" />
-                        <rect x="13" y="6" width="6" height="3" rx="1" fill="#a855f7" />
-                        <rect x="22" y="6" width="6" height="3" rx="1" fill="#6366f1" />
-                        <rect x="4" y="11" width="6" height="3" rx="1" fill="#38bdf8" />
-                        <rect x="13" y="11" width="6" height="3" rx="1" fill="#22c55e" />
-                        <rect x="22" y="11" width="6" height="3" rx="1" fill="#eab308" />
-                        <circle cx="16" cy="18" r="2" fill="#ffffff" />
-                        <rect x="10" y="24" width="12" height="3" rx="1.5" fill="#38bdf8" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="game-tile-title">Cyber Breakout</h2>
-                    <span class="text-muted small">Neon Brick Breaker</span>
-                </div>
-            </div>
-            <div class="game-tile-body">
-                <p class="game-tile-desc">
-                    High-energy neon brick-breaker with multiballs, lasers, paddle powerups, and synthwave visuals coming soon.
-                </p>
-                <div class="game-tile-features">
-                    <span>Powerups</span>
-                    <span>Multi-Ball</span>
-                    <span>Coming Soon</span>
-                </div>
-            </div>
-            <div class="game-tile-foot">
-                <button type="button" class="btn btn-secondary game-tile-launch-btn" disabled>
-                    Coming Soon
-                </button>
-            </div>
-        </div>
+            </button>
+        }
     </div>
 
     <!-- Hub Hall of Fame / Leaderboard Section -->
@@ -311,20 +63,30 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-primary btn-sm game-hall-launch-btn" id="hub-hall-play-btn" data-launch-game="stack-3d">
-                        <span>Play Stack 3D</span>
+                    <button type="button" class="btn btn-primary btn-sm game-hall-launch-btn" id="hub-hall-play-btn" data-launch-game="stack-3d" title="Play Stack 3D" aria-label="Play Stack 3D">
+                        <span>Play</span>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     </button>
                 </div>
             </div>
 
-            <div class="game-hub-hall-pills mb-3" role="tablist" aria-label="Hall of fame games">
-                <button type="button" class="game-hall-pill is-active" data-hall-game="stack-3d" role="tab" aria-selected="true">Stack 3D</button>
-                <button type="button" class="game-hall-pill" data-hall-game="mini-crossword" role="tab" aria-selected="false">Mini Crossword</button>
-                <button type="button" class="game-hall-pill" data-hall-game="minesweeper" role="tab" aria-selected="false">Minesweeper</button>
-                <button type="button" class="game-hall-pill" data-hall-game="neon-slope" role="tab" aria-selected="false">Neon Slope</button>
-                <button type="button" class="game-hall-pill" data-hall-game="merge-2048" role="tab" aria-selected="false">2048 Neon</button>
-                <button type="button" class="game-hall-pill" data-hall-game="wacky-wheels" role="tab" aria-selected="false">Wacky Wheels</button>
+            <div class="game-hub-hall-chips mb-3" role="tablist" aria-label="Hall of fame games">
+                @foreach (var game in Model.Games.Where(g => g.IsAvailable))
+                {
+                    <button type="button"
+                            class="game-hall-chip @(game.Key == "stack-3d" ? "is-active" : "")"
+                            data-hall-game="@game.Key"
+                            role="tab"
+                            aria-selected="@(game.Key == "stack-3d" ? "true" : "false")"
+                            aria-label="@game.Title"
+                            title="@game.Title"
+                            style="--chip-color: @game.AccentColor;">
+                        <span class="game-hall-chip-icon" aria-hidden="true">
+                            <partial name="_GameIcon" model="game.Key" />
+                        </span>
+                        <span class="game-hall-chip-label">@game.Title</span>
+                    </button>
+                }
             </div>
 
             <div class="game-board-list" id="hub-hall-list">
@@ -336,128 +98,28 @@
 
 <div class="game-stage-view" id="game-stage-view" hidden>
     <div class="game-stage-nav-bar">
-        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-stage-back">
+        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-stage-back" title="Back to All Games" aria-label="Back to All Games">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            All Games
+            <span class="game-back-label">All Games</span>
         </button>
         <div class="game-hub-strip" id="game-hub-strip" role="tablist" aria-label="Arcade games">
-    <button type="button" class="game-hub-card is-active" data-game-key="stack-3d" role="tab" aria-selected="true">
-        <div class="game-hub-icon is-stack" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <polygon points="16,4 28,10 16,16 4,10" fill="#38bdf8" />
-                <polygon points="4,10 16,16 16,21 4,15" fill="#0284c7" />
-                <polygon points="28,10 16,16 16,21 28,15" fill="#0369a1" />
-                <polygon points="16,13 26,18 16,23 6,18" fill="#a855f7" opacity="0.9" />
-                <polygon points="6,18 16,23 16,28 6,23" fill="#7e22ce" />
-                <polygon points="26,18 16,23 16,28 26,23" fill="#6b21a8" />
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Stack 3D</strong>
-                <span class="game-hub-tag is-live">Three.js 3D</span>
-            </div>
-            <span>Slice overhangs, land perfect drops, and build the highest tower.</span>
-        </div>
-    </button>
-
-    <button type="button" class="game-hub-card" data-game-key="mini-crossword" role="tab" aria-selected="false">
-        <div class="game-hub-icon is-crossword" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <rect x="4" y="4" width="11" height="11" rx="2.5" fill="#f43f5e" />
-                <rect x="17" y="4" width="11" height="11" rx="2.5" fill="#fb7185" opacity="0.85" />
-                <rect x="4" y="17" width="11" height="11" rx="2.5" fill="#1e293b" stroke="#475569" stroke-width="1.2" />
-                <rect x="17" y="17" width="11" height="11" rx="2.5" fill="#f59e0b" />
-                <text x="9.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">A</text>
-                <text x="22.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">B</text>
-                <text x="22.5" y="25.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">C</text>
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Mini Crossword</strong>
-                <span class="game-hub-tag is-live">5×5 Grid</span>
-            </div>
-            <span>Bite-sized 5×5 crossword pack with smart clues, pencil mode, and speed bonuses.</span>
-        </div>
-    </button>
-
-    <button type="button" class="game-hub-card" data-game-key="minesweeper" role="tab" aria-selected="false">
-        <div class="game-hub-icon is-minesweeper" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <path d="M4 10h24M4 16h24M4 22h24M10 4v24M16 4v24M22 4v24" stroke="#38bdf8" stroke-width="0.8" opacity="0.14" />
-                <circle cx="16" cy="18" r="5.6" fill="#111c2e" stroke="#fb7185" stroke-width="1.7" />
-                <path d="M16 9.6V6.4M16 29.6v-3.2M6.4 18H3.2M28.8 18h-3.2M9.3 11.3l-2.2-2.2M22.7 11.3l2.2-2.2M9.3 24.7l-2.2 2.2M22.7 24.7l2.2 2.2" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" />
-                <circle cx="16" cy="18" r="2.2" fill="#f43f5e" />
-                <path d="M19.2 14.8l2-2" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
-                <circle cx="21.8" cy="12.2" r="1.1" fill="#fbbf24" />
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Minesweeper</strong>
-                <span class="game-hub-tag is-live">Canvas 2D</span>
-            </div>
-            <span>Clear the neon minefield. Chain cascades, dodge explosions, and top the board.</span>
-        </div>
-    </button>
-
-    <button type="button" class="game-hub-card" data-game-key="neon-slope" role="tab" aria-selected="false">
-        <div class="game-hub-icon is-slope" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <path d="M4 26L13 8h6l9 18" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="16" cy="19" r="4.5" fill="#f43f5e"/>
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Neon Slope</strong>
-                <span class="game-hub-tag is-live">Three.js 3D</span>
-            </div>
-            <span>High-speed 3D endless tunnel dodge.</span>
-        </div>
-    </button>
-
-    <button type="button" class="game-hub-card" data-game-key="merge-2048" role="tab" aria-selected="false">
-        <div class="game-hub-icon is-2048" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <rect x="5" y="5" width="10" height="10" rx="2.5" fill="#f59e0b"/>
-                <rect x="17" y="5" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.65"/>
-                <rect x="5" y="17" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.4"/>
-                <rect x="17" y="17" width="10" height="10" rx="2.5" fill="#10b981"/>
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>2048 Neon</strong>
-                <span class="game-hub-tag is-live">Neon Grid</span>
-            </div>
-            <span>Reactive number-merging grid puzzle.</span>
-        </div>
-    </button>
-
-    <button type="button" class="game-hub-card" data-game-key="wacky-wheels" role="tab" aria-selected="false">
-        <div class="game-hub-icon is-wheels" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <path d="M3 26c5 0 7-4 13-4s8 4 13 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-                <circle cx="10" cy="21" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
-                <circle cx="22" cy="19" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
-                <path d="M9 19l5-4h7l2 3" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-                <circle cx="15" cy="9.5" r="3" fill="#fde047" stroke="#38bdf8" stroke-width="1.4" />
-                <path d="M15 12.5l-1 4.5M14.5 14l4.5 1" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Wacky Wheels</strong>
-                <span class="game-hub-tag is-live">Canvas 2D / Physics</span>
-            </div>
-            <span>Slapstick ragdoll stunt buggy obstacle course.</span>
-        </div>
-    </button>
+            @foreach (var game in Model.Games.Where(g => g.IsAvailable))
+            {
+                <button type="button" class="game-hub-card @(game.Key == "stack-3d" ? "is-active" : "")" data-game-key="@game.Key" role="tab" aria-selected="@(game.Key == "stack-3d" ? "true" : "false")">
+                    <div class="game-hub-icon" style="--icon-color: @game.AccentColor;" aria-hidden="true">
+                        <partial name="_GameIcon" model="game.Key" />
+                    </div>
+                    <div class="game-hub-info">
+                        <div class="game-hub-title-row">
+                            <strong>@game.Title</strong>
+                            <span class="game-hub-tag is-live">@game.ShortTag</span>
+                        </div>
+                        <span>@game.Description</span>
+                    </div>
+                </button>
+            }
         </div>
     </div>
-
     <div class="games-workspace">
     <section class="card game-stage-card" aria-label="Arcade Game Stage">
         <div class="game-stage-header">
@@ -467,7 +129,7 @@
             </div>
             <div class="game-stage-controls">
                 <span class="game-stat-pill" id="game-my-best" title="Your personal high score">Best: <strong>0</strong></span>
-                <span class="game-stat-pill" id="game-my-rank" title="Your global rank">Rank: <strong>—</strong></span>
+                <span class="game-stat-pill" id="game-my-rank" title="Your global rank">Rank: <strong>â€”</strong></span>
                 <button type="button" class="icon-btn" id="game-mute-btn" title="Mute sound" aria-label="Mute sound" aria-pressed="false"></button>
                 <button type="button" class="icon-btn" id="game-restart-btn" title="Restart game (R)" aria-label="Restart game"></button>
             </div>
@@ -482,12 +144,12 @@
                         <span class="game-hud-target-label" id="hud-target-label">Leader</span>
                         <span class="game-hud-target-pill" id="hud-target-pill"></span>
                     </div>
-                    <div class="game-hud-speed" id="hud-speed-pill">1.0× Speed</div>
+                    <div class="game-hud-speed" id="hud-speed-pill">1.0Ã— Speed</div>
                 </div>
 
                 <div class="game-hud-center">
                     <div class="game-hud-score" id="hud-score">0</div>
-                    <div class="game-hud-combo" id="hud-combo" hidden>PERFECT ×1</div>
+                    <div class="game-hud-combo" id="hud-combo" hidden>PERFECT Ã—1</div>
                     <div class="game-hud-pop" id="hud-pop" hidden>PERFECT!</div>
                 </div>
             </div>
@@ -523,7 +185,7 @@
                         </div>
                         <div class="game-over-stat">
                             <span class="game-over-label">Max Combo</span>
-                            <strong class="game-over-val" id="over-combo">×0</strong>
+                            <strong class="game-over-val" id="over-combo">Ã—0</strong>
                         </div>
                         <div class="game-over-stat">
                             <span class="game-over-label">Your Best</span>
@@ -531,10 +193,10 @@
                         </div>
                         <div class="game-over-stat">
                             <span class="game-over-label">Global Rank</span>
-                            <strong class="game-over-val" id="over-rank">—</strong>
+                            <strong class="game-over-val" id="over-rank">â€”</strong>
                         </div>
                     </div>
-                    <p class="game-save-status" id="over-save-status">Saving score…</p>
+                    <p class="game-save-status" id="over-save-status">Saving scoreâ€¦</p>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-primary game-play-btn" id="stack-again-btn">
                             Play Again
@@ -549,19 +211,19 @@
                 <div class="cw-puzzle-picker">
                     <label for="cw-puzzle-select" class="cw-picker-label">Puzzle</label>
                     <select id="cw-puzzle-select" class="form-select form-select-sm cw-select" aria-label="Choose crossword puzzle"></select>
-                    <span class="cw-solved-pill" id="cw-solved-pill" hidden>✓ Solved</span>
+                    <span class="cw-solved-pill" id="cw-solved-pill" hidden>âœ“ Solved</span>
                 </div>
                 <div class="cw-toolbar-right">
                     <span class="cw-timer-pill" id="cw-timer" title="Elapsed solve time">0:00</span>
                     <span class="cw-score-pill" id="cw-live-score" title="Projected speed + accuracy score">500 pts</span>
                     <button type="button" class="btn btn-sm cw-tool-btn" id="cw-pencil-btn" aria-pressed="false" title="Toggle pencil draft letters">
-                        ✎ Pencil
+                        âœŽ Pencil
                     </button>
                     <button type="button" class="btn btn-sm cw-tool-btn" id="cw-check-btn" title="Check filled letters">
-                        ✓ Check
+                        âœ“ Check
                     </button>
                     <button type="button" class="btn btn-sm cw-tool-btn" id="cw-hint-btn" title="Reveal active letter (-40 pts)">
-                        💡 Hint
+                        ðŸ’¡ Hint
                     </button>
                 </div>
             </div>
@@ -571,12 +233,12 @@
                     <div class="cw-grid" id="cw-grid" role="grid" aria-label="5 by 5 Mini Crossword Grid"></div>
 
                     <div class="cw-clue-bar" id="cw-clue-bar">
-                        <button type="button" class="cw-clue-nav" id="cw-prev-clue" aria-label="Previous clue" title="Previous clue">‹</button>
+                        <button type="button" class="cw-clue-nav" id="cw-prev-clue" aria-label="Previous clue" title="Previous clue">â€¹</button>
                         <button type="button" class="cw-active-clue" id="cw-active-clue" title="Tap to switch Across / Down">
                             <span class="cw-active-clue-tag" id="cw-active-clue-tag">1A</span>
                             <span class="cw-active-clue-text" id="cw-active-clue-text">Select a square to begin</span>
                         </button>
-                        <button type="button" class="cw-clue-nav" id="cw-next-clue" aria-label="Next clue" title="Next clue">›</button>
+                        <button type="button" class="cw-clue-nav" id="cw-next-clue" aria-label="Next clue" title="Next clue">â€º</button>
                     </div>
 
                     <div class="cw-keyboard" id="cw-keyboard" aria-label="On-screen crossword keyboard">
@@ -604,7 +266,7 @@
                             <button type="button" class="cw-key" data-key="L">L</button>
                         </div>
                         <div class="cw-kb-row">
-                            <button type="button" class="cw-key is-wide" data-key="DIR" title="Switch Across / Down">⇄ Dir</button>
+                            <button type="button" class="cw-key is-wide" data-key="DIR" title="Switch Across / Down">â‡„ Dir</button>
                             <button type="button" class="cw-key" data-key="Z">Z</button>
                             <button type="button" class="cw-key" data-key="X">X</button>
                             <button type="button" class="cw-key" data-key="C">C</button>
@@ -612,7 +274,7 @@
                             <button type="button" class="cw-key" data-key="B">B</button>
                             <button type="button" class="cw-key" data-key="N">N</button>
                             <button type="button" class="cw-key" data-key="M">M</button>
-                            <button type="button" class="cw-key is-wide" data-key="BACKSPACE" aria-label="Backspace">⌫</button>
+                            <button type="button" class="cw-key is-wide" data-key="BACKSPACE" aria-label="Backspace">âŒ«</button>
                         </div>
                     </div>
                 </div>
@@ -651,13 +313,13 @@
                         </div>
                         <div class="game-over-stat">
                             <span class="game-over-label">Global Rank</span>
-                            <strong class="game-over-val" id="cw-win-rank">—</strong>
+                            <strong class="game-over-val" id="cw-win-rank">â€”</strong>
                         </div>
                     </div>
-                    <p class="game-save-status" id="cw-save-status">Saving score…</p>
+                    <p class="game-save-status" id="cw-save-status">Saving scoreâ€¦</p>
                     <div class="d-flex gap-2 justify-content-center flex-wrap">
                         <button type="button" class="btn btn-primary game-play-btn" id="cw-next-puzzle-btn">
-                            Next Puzzle →
+                            Next Puzzle â†’
                         </button>
                         <button type="button" class="btn btn-outline-light" id="cw-replay-btn">
                             Replay
@@ -671,13 +333,13 @@
             <div class="ms-toolbar">
                 <div class="ms-diff-group" id="ms-diff-group" role="group" aria-label="Minefield difficulty">
                     <button type="button" class="ms-diff-btn is-active" data-ms-diff="easy" aria-pressed="true">
-                        Easy <span>9×9</span>
+                        Easy <span>9Ã—9</span>
                     </button>
                     <button type="button" class="ms-diff-btn" data-ms-diff="medium" aria-pressed="false">
-                        Medium <span>14×18</span>
+                        Medium <span>14Ã—18</span>
                     </button>
                     <button type="button" class="ms-diff-btn" data-ms-diff="hard" aria-pressed="false">
-                        Hard <span>16×24</span>
+                        Hard <span>16Ã—24</span>
                     </button>
                 </div>
 
@@ -752,14 +414,14 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Best Cascade</span>
-                                <strong class="game-over-val" id="ms-over-combo">—</strong>
+                                <strong class="game-over-val" id="ms-over-combo">â€”</strong>
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Global Rank</span>
-                                <strong class="game-over-val" id="ms-over-rank">—</strong>
+                                <strong class="game-over-val" id="ms-over-rank">â€”</strong>
                             </div>
                         </div>
-                        <p class="game-save-status" id="ms-save-status">Saving score…</p>
+                        <p class="game-save-status" id="ms-save-status">Saving scoreâ€¦</p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap">
                             <button type="button" class="btn btn-primary game-play-btn" id="ms-again-btn">
                                 Play Again
@@ -785,21 +447,21 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="slope-gem-icon"><polygon points="12,2 22,8.5 12,22 2,8.5" fill="#22d3ee" fill-opacity="0.3"/></svg>
                                 <strong id="slope-gems-count">0</strong>
                             </span>
-                            <div class="game-hud-speed" id="slope-speed-pill">1.0× Speed</div>
+                            <div class="game-hud-speed" id="slope-speed-pill">1.0Ã— Speed</div>
                         </div>
                     </div>
 
                     <div class="game-hud-center">
                         <div class="game-hud-score" id="slope-score">0</div>
-                        <div class="game-hud-combo" id="slope-combo" hidden>DODGE ×1</div>
+                        <div class="game-hud-combo" id="slope-combo" hidden>DODGE Ã—1</div>
                         <div class="game-hud-pop" id="slope-pop" hidden>SPEED BOOST!</div>
                     </div>
                 </div>
 
                 <div class="slope-touch-zones" aria-hidden="true">
-                    <button type="button" class="slope-touch-btn is-left" id="slope-touch-left" title="Steer Left">◀</button>
-                    <button type="button" class="slope-touch-btn is-jump" id="slope-touch-jump" title="Jump">▲ Jump</button>
-                    <button type="button" class="slope-touch-btn is-right" id="slope-touch-right" title="Steer Right">▶</button>
+                    <button type="button" class="slope-touch-btn is-left" id="slope-touch-left" title="Steer Left">â—€</button>
+                    <button type="button" class="slope-touch-btn is-jump" id="slope-touch-jump" title="Jump">â–² Jump</button>
+                    <button type="button" class="slope-touch-btn is-right" id="slope-touch-right" title="Steer Right">â–¶</button>
                 </div>
 
                 <div class="game-overlay" id="slope-start-overlay">
@@ -813,8 +475,8 @@
                             Play Neon Slope
                         </button>
                         <div class="game-overlay-keys">
-                            <span><kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> / Touch Steer</span>
-                            <span><kbd>Space</kbd> / <kbd>↑</kbd> Jump</span>
+                            <span><kbd>â†</kbd> <kbd>â†’</kbd> or <kbd>A</kbd> <kbd>D</kbd> / Touch Steer</span>
+                            <span><kbd>Space</kbd> / <kbd>â†‘</kbd> Jump</span>
                             <span><kbd>R</kbd> Restart</span>
                         </div>
                     </div>
@@ -834,7 +496,7 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Max Streak</span>
-                                <strong class="game-over-val" id="slope-over-combo">×0</strong>
+                                <strong class="game-over-val" id="slope-over-combo">Ã—0</strong>
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Your Best</span>
@@ -842,10 +504,10 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Global Rank</span>
-                                <strong class="game-over-val" id="slope-over-rank">—</strong>
+                                <strong class="game-over-val" id="slope-over-rank">â€”</strong>
                             </div>
                         </div>
-                        <p class="game-save-status" id="slope-save-status">Saving score…</p>
+                        <p class="game-save-status" id="slope-save-status">Saving scoreâ€¦</p>
                         <div class="d-flex gap-2 justify-content-center">
                             <button type="button" class="btn btn-primary game-play-btn" id="slope-again-btn">
                                 Play Again
@@ -871,10 +533,10 @@
                 </div>
                 <div class="n2048-toolbar-right">
                     <button type="button" class="btn btn-sm n2048-tool-btn" id="n2048-undo-btn" title="Undo last move" disabled>
-                        ↩ Undo
+                        â†© Undo
                     </button>
                     <button type="button" class="btn btn-sm n2048-tool-btn" id="n2048-reset-btn" title="New Game (R)">
-                        ↺ New
+                        â†º New
                     </button>
                 </div>
             </div>
@@ -886,18 +548,18 @@
                     </div>
 
                     <div class="n2048-dpad" aria-label="On-screen directional controls">
-                        <button type="button" class="n2048-dpad-btn is-up" data-dir="up" aria-label="Move Up">▲</button>
+                        <button type="button" class="n2048-dpad-btn is-up" data-dir="up" aria-label="Move Up">â–²</button>
                         <div class="n2048-dpad-row">
-                            <button type="button" class="n2048-dpad-btn is-left" data-dir="left" aria-label="Move Left">◀</button>
-                            <button type="button" class="n2048-dpad-btn is-down" data-dir="down" aria-label="Move Down">▼</button>
-                            <button type="button" class="n2048-dpad-btn is-right" data-dir="right" aria-label="Move Right">▶</button>
+                            <button type="button" class="n2048-dpad-btn is-left" data-dir="left" aria-label="Move Left">â—€</button>
+                            <button type="button" class="n2048-dpad-btn is-down" data-dir="down" aria-label="Move Down">â–¼</button>
+                            <button type="button" class="n2048-dpad-btn is-right" data-dir="right" aria-label="Move Right">â–¶</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="game-overlay" id="n2048-start-overlay">
                     <div class="game-overlay-card">
-                        <div class="game-overlay-badge">4×4 NEON GRID PUZZLE</div>
+                        <div class="game-overlay-badge">4Ã—4 NEON GRID PUZZLE</div>
                         <h3 class="game-overlay-title">2048 Neon</h3>
                         <p class="game-overlay-desc">
                             Slide glowing number tiles across the grid. Identical numbers fuse into higher powers of 2. Reach the legendary <strong>2048</strong> cyber tile!
@@ -906,7 +568,7 @@
                             Play 2048 Neon
                         </button>
                         <div class="game-overlay-keys">
-                            <span><kbd>Swipe</kbd> / <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Slide</span>
+                            <span><kbd>Swipe</kbd> / <kbd>â†‘</kbd> <kbd>â†“</kbd> <kbd>â†</kbd> <kbd>â†’</kbd> / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Slide</span>
                             <span><kbd>R</kbd> Restart</span>
                         </div>
                     </div>
@@ -935,7 +597,7 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Global Rank</span>
-                                <strong class="game-over-val" id="n2048-win-rank">—</strong>
+                                <strong class="game-over-val" id="n2048-win-rank">â€”</strong>
                             </div>
                         </div>
                         <div class="d-flex gap-2 justify-content-center">
@@ -971,10 +633,10 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Global Rank</span>
-                                <strong class="game-over-val" id="n2048-over-rank">—</strong>
+                                <strong class="game-over-val" id="n2048-over-rank">â€”</strong>
                             </div>
                         </div>
-                        <p class="game-save-status" id="n2048-save-status">Saving score…</p>
+                        <p class="game-save-status" id="n2048-save-status">Saving scoreâ€¦</p>
                         <div class="d-flex gap-2 justify-content-center">
                             <button type="button" class="btn btn-primary game-play-btn" id="n2048-again-btn">
                                 Play Again
@@ -989,13 +651,13 @@
             <div class="ww-mode-bar">
                 <div class="ww-mode-tabs" role="tablist" aria-label="Wacky Wheels modes">
                     <button type="button" class="ww-mode-tab is-active" id="ww-tab-official" data-ww-mode="official" role="tab" aria-selected="true">
-                        🏆 Official Track
+                        ðŸ† Official Track
                     </button>
                     <button type="button" class="ww-mode-tab" id="ww-tab-levels" data-ww-mode="levels" role="tab" aria-selected="false">
-                        🌐 Member Levels <span class="ww-count-badge" id="ww-levels-count">0</span>
+                        ðŸŒ Member Levels <span class="ww-count-badge" id="ww-levels-count">0</span>
                     </button>
                     <button type="button" class="ww-mode-tab" id="ww-tab-editor" data-ww-mode="editor" role="tab" aria-selected="false">
-                        🛠 Level Editor
+                        ðŸ›  Level Editor
                     </button>
                 </div>
                 <div class="ww-custom-playing-bar" id="ww-custom-playing-bar" hidden>
@@ -1004,52 +666,52 @@
                     </span>
                     <span id="ww-custom-author-slot"></span>
                     <button type="button" class="btn btn-sm ww-mini-btn" id="ww-share-level-btn" title="Copy direct link to share with members">
-                        🔗 Share
+                        ðŸ”— Share
                     </button>
                     <button type="button" class="btn btn-sm ww-mini-btn" id="ww-remix-active-btn" title="Open a copy in Level Editor">
-                        ⎘ Remix
+                        âŽ˜ Remix
                     </button>
                 </div>
             </div>
 
             <div class="ww-editor-toolbar" id="ww-editor-toolbar" hidden>
                 <div class="ww-tool-palette" id="ww-tool-palette" role="toolbar" aria-label="Level editor tools">
-                    <button type="button" class="ww-tool-btn is-active" data-ww-tool="road" title="Click and drag to draw hills, ramps, or floating roads">⛰ Road</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="boost" title="Draw glowing turbo-boosted road or launch ramps">⚡ Boost</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="loop" title="Tap to stamp a 360° Loop-the-Loop">🔄 Loop</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="spring" title="Tap to place a bouncy Springboard">⏫ Spring</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="ball" title="Tap to hang a Swinging Wrecking Ball">💣 Wrecking</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="crate" title="Tap to stack breakable wooden crates">📦 Crate</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="star" title="Tap to place +100 pt Bonus Stars">★ Star</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="finish" title="Tap to move the Checkered Finish Gate">🏁 Finish</button>
-                    <button type="button" class="ww-tool-btn" data-ww-tool="pan" title="Drag canvas to pan view">✋ Pan</button>
-                    <button type="button" class="ww-tool-btn is-danger" data-ww-tool="erase" title="Tap or drag to erase roads or obstacles">⌫ Erase</button>
+                    <button type="button" class="ww-tool-btn is-active" data-ww-tool="road" title="Click and drag to draw hills, ramps, or floating roads">â›° Road</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="boost" title="Draw glowing turbo-boosted road or launch ramps">âš¡ Boost</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="loop" title="Tap to stamp a 360Â° Loop-the-Loop">ðŸ”„ Loop</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="spring" title="Tap to place a bouncy Springboard">â« Spring</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="ball" title="Tap to hang a Swinging Wrecking Ball">ðŸ’£ Wrecking</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="crate" title="Tap to stack breakable wooden crates">ðŸ“¦ Crate</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="star" title="Tap to place +100 pt Bonus Stars">â˜… Star</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="finish" title="Tap to move the Checkered Finish Gate">ðŸ Finish</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="pan" title="Drag canvas to pan view">âœ‹ Pan</button>
+                    <button type="button" class="ww-tool-btn is-danger" data-ww-tool="erase" title="Tap or drag to erase roads or obstacles">âŒ« Erase</button>
                 </div>
                 <div class="ww-editor-actions">
-                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-left" title="Scroll Left" aria-label="Scroll Left">◀</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-right" title="Scroll Right" aria-label="Scroll Right">▶</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-undo-btn" title="Undo last edit" disabled>↩ Undo</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-clear-btn" title="Reset to blank starter track">🧹 Clear</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn is-test" id="ww-ed-test-btn" title="Test drive your custom course">▶ Test</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn is-publish" id="ww-ed-publish-btn" title="Publish for other members to play">🚀 Publish</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-left" title="Scroll Left" aria-label="Scroll Left">â—€</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-right" title="Scroll Right" aria-label="Scroll Right">â–¶</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-undo-btn" title="Undo last edit" disabled>â†© Undo</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-clear-btn" title="Reset to blank starter track">ðŸ§¹ Clear</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn is-test" id="ww-ed-test-btn" title="Test drive your custom course">â–¶ Test</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn is-publish" id="ww-ed-publish-btn" title="Publish for other members to play">ðŸš€ Publish</button>
                 </div>
             </div>
 
             <div class="ww-toolbar" id="ww-telemetry-bar" aria-live="off">
                 <div class="ww-toolbar-stats">
                     <span class="game-stat-pill ww-stat-pill" title="Elapsed Run Time">
-                        ⏱ <strong id="ww-hud-timer">0:00.0</strong>
+                        â± <strong id="ww-hud-timer">0:00.0</strong>
                     </span>
                     <span class="game-stat-pill ww-stat-pill is-dist" title="Course Progress & Distance">
-                        <span>🏁</span>
+                        <span>ðŸ</span>
                         <strong id="ww-hud-distance">0%</strong>
                         <span class="ww-mini-track" aria-hidden="true"><span class="ww-mini-fill" id="ww-hud-progress"></span></span>
                     </span>
                     <span class="game-stat-pill ww-stat-pill is-stars" title="Bonus Stars Collected (+100 pts each)">
-                        ★ <strong id="ww-hud-stars">0/15</strong>
+                        â˜… <strong id="ww-hud-stars">0/15</strong>
                     </span>
                     <span class="game-stat-pill ww-stat-pill is-combo" title="Flip & Airtime Combo Streak">
-                        Combo <strong id="ww-hud-combo">×0</strong>
+                        Combo <strong id="ww-hud-combo">Ã—0</strong>
                     </span>
                     <span class="game-stat-pill ww-stat-pill" title="Vehicle Speed">
                         <strong id="ww-hud-speed">0</strong> <span>km/h</span>
@@ -1057,10 +719,10 @@
                 </div>
                 <div class="ww-toolbar-actions">
                     <button type="button" class="btn btn-sm ww-restart-pill is-edit-return" id="ww-return-edit-btn" hidden title="Return to Level Editor">
-                        ✎ <span>Edit Track</span>
+                        âœŽ <span>Edit Track</span>
                     </button>
                     <button type="button" class="btn btn-sm ww-restart-pill" id="ww-restart-btn" title="Quick Restart (R)" aria-label="Quick Restart">
-                        ⟲ <span>Restart</span>
+                        âŸ² <span>Restart</span>
                     </button>
                 </div>
             </div>
@@ -1070,36 +732,36 @@
 
                 <div class="ww-center-hud" id="ww-center-hud" aria-live="polite">
                     <div class="ww-score-readout" id="ww-hud-score">0</div>
-                    <div class="game-hud-combo ww-streak-pill" id="ww-streak-pill" hidden>FLIP STREAK ×1</div>
+                    <div class="game-hud-combo ww-streak-pill" id="ww-streak-pill" hidden>FLIP STREAK Ã—1</div>
                     <div class="game-hud-pop ww-pop-banner" id="ww-pop-banner" hidden>BACKFLIP!</div>
                 </div>
 
                 <div class="ww-editor-hint-pill" id="ww-editor-hint" hidden>
-                    Drag on canvas to draw smooth roads & hills · Click <strong>▶ Test</strong> anytime to drive!
+                    Drag on canvas to draw smooth roads & hills Â· Click <strong>â–¶ Test</strong> anytime to drive!
                 </div>
 
                 <div class="ww-touch-pad" id="ww-touch-pad" role="group" aria-label="Touch vehicle controls">
                     <div class="ww-touch-cluster is-left">
                         <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-left" title="Lean Back / Wheelie (A or Left)" aria-label="Tilt Left">
-                            <span class="ww-btn-glyph">↺</span>
+                            <span class="ww-btn-glyph">â†º</span>
                             <span class="ww-btn-sub">Tilt L</span>
                         </button>
                         <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-right" title="Lean Forward (D or Right)" aria-label="Tilt Right">
-                            <span class="ww-btn-glyph">↻</span>
+                            <span class="ww-btn-glyph">â†»</span>
                             <span class="ww-btn-sub">Tilt R</span>
                         </button>
                     </div>
                     <div class="ww-touch-cluster is-right">
                         <button type="button" class="ww-touch-btn is-eject" id="ww-btn-eject" title="Eject Ragdoll / Super Boost (Space)" aria-label="Eject Ragdoll or Super Boost">
-                            <span class="ww-btn-glyph">🚀</span>
+                            <span class="ww-btn-glyph">ðŸš€</span>
                             <span class="ww-btn-sub">Eject</span>
                         </button>
                         <button type="button" class="ww-touch-btn is-brake" id="ww-btn-brake" title="Brake / Reverse (S or Down)" aria-label="Brake or Reverse">
-                            <span class="ww-btn-glyph">▼</span>
+                            <span class="ww-btn-glyph">â–¼</span>
                             <span class="ww-btn-sub">Brake</span>
                         </button>
                         <button type="button" class="ww-touch-btn is-gas" id="ww-btn-gas" title="Accelerate / Gas (W or Up)" aria-label="Accelerate">
-                            <span class="ww-btn-glyph">▲</span>
+                            <span class="ww-btn-glyph">â–²</span>
                             <span class="ww-btn-sub">Gas</span>
                         </button>
                     </div>
@@ -1110,7 +772,7 @@
                         <div class="game-overlay-badge" id="ww-start-badge">CANVAS 2D / PHYSICS</div>
                         <h3 class="game-overlay-title" id="ww-start-title">Wacky Wheels</h3>
                         <p class="game-overlay-desc" id="ww-start-desc">
-                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360° loop-the-loop, springboards, crates, and swinging wrecking balls! Land flips for combo multipliers — or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
+                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360Â° loop-the-loop, springboards, crates, and swinging wrecking balls! Land flips for combo multipliers â€” or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
                         </p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap mb-2">
                             <button type="button" class="btn btn-primary game-play-btn" id="ww-start-btn">
@@ -1119,16 +781,16 @@
                         </div>
                         <div class="d-flex gap-2 justify-content-center flex-wrap mb-2">
                             <button type="button" class="btn btn-sm btn-outline-light" id="ww-open-levels-btn">
-                                🌐 Member Levels
+                                ðŸŒ Member Levels
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-light" id="ww-open-editor-btn">
-                                🛠 Build a Level
+                                ðŸ›  Build a Level
                             </button>
                         </div>
                         <div class="game-overlay-keys">
-                            <span><kbd>W</kbd>/<kbd>↑</kbd> Gas · <kbd>S</kbd>/<kbd>↓</kbd> Brake</span>
-                            <span><kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> Lean / Flip</span>
-                            <span><kbd>Space</kbd> Eject / Boost · <kbd>R</kbd> Restart</span>
+                            <span><kbd>W</kbd>/<kbd>â†‘</kbd> Gas Â· <kbd>S</kbd>/<kbd>â†“</kbd> Brake</span>
+                            <span><kbd>A</kbd>/<kbd>D</kbd> or <kbd>â†</kbd>/<kbd>â†’</kbd> Lean / Flip</span>
+                            <span><kbd>Space</kbd> Eject / Boost Â· <kbd>R</kbd> Restart</span>
                         </div>
                     </div>
                 </div>
@@ -1148,7 +810,7 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label">Max Combo</span>
-                                <strong class="game-over-val" id="ww-over-combo">×0</strong>
+                                <strong class="game-over-val" id="ww-over-combo">Ã—0</strong>
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label" id="ww-over-best-label">Your Best</span>
@@ -1156,22 +818,22 @@
                             </div>
                             <div class="game-over-stat">
                                 <span class="game-over-label" id="ww-over-rank-label">Global Rank</span>
-                                <strong class="game-over-val" id="ww-over-rank">—</strong>
+                                <strong class="game-over-val" id="ww-over-rank">â€”</strong>
                             </div>
                         </div>
-                        <p class="game-save-status" id="ww-save-status">Saving score…</p>
+                        <p class="game-save-status" id="ww-save-status">Saving scoreâ€¦</p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap">
                             <button type="button" class="btn btn-primary game-play-btn" id="ww-again-btn">
                                 Play Again
                             </button>
                             <button type="button" class="btn btn-outline-light" id="ww-over-edit-btn" hidden>
-                                ✎ Back to Editor
+                                âœŽ Back to Editor
                             </button>
                             <button type="button" class="btn btn-success" id="ww-over-publish-btn" hidden>
-                                🚀 Publish Level
+                                ðŸš€ Publish Level
                             </button>
                             <button type="button" class="btn btn-outline-light" id="ww-over-levels-btn" hidden>
-                                🌐 Member Levels
+                                ðŸŒ Member Levels
                             </button>
                         </div>
                     </div>
@@ -1182,7 +844,7 @@
                     <div class="game-overlay-card ww-levels-card" role="dialog" aria-labelledby="ww-levels-heading">
                         <div class="ww-levels-head">
                             <div>
-                                <h3 class="h5 mb-0 text-white fw-bold" id="ww-levels-heading">🌐 Member Stunt Levels</h3>
+                                <h3 class="h5 mb-0 text-white fw-bold" id="ww-levels-heading">ðŸŒ Member Stunt Levels</h3>
                                 <span class="small text-white-50">Play obstacle courses created by members or build your own!</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
@@ -1190,12 +852,12 @@
                                     + Create Level
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-light" id="ww-levels-close-btn" aria-label="Close Member Levels">
-                                    ✕
+                                    âœ•
                                 </button>
                             </div>
                         </div>
                         <div class="ww-levels-list" id="ww-levels-list">
-                            <p class="text-white-50 small mb-0">Loading member levels…</p>
+                            <p class="text-white-50 small mb-0">Loading member levelsâ€¦</p>
                         </div>
                     </div>
                 </div>
@@ -1216,13 +878,88 @@
                         <div class="alert alert-danger py-1 px-2 small mb-2" id="ww-pub-error" hidden></div>
                         <div class="d-flex gap-2 justify-content-center flex-wrap">
                             <button type="button" class="btn btn-primary game-play-btn" id="ww-pub-submit-btn">
-                                🚀 Publish Level
+                                ðŸš€ Publish Level
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-info" id="ww-pub-copy-btn" hidden>
                                 Save as New Copy
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-light" id="ww-pub-cancel-btn">
                                 Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cb-stage" id="breakout-stage" hidden>
+            <div class="cb-toolbar">
+                <div class="cb-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill cb-stat-pill" title="Current Score">
+                        Score <strong id="cb-hud-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill cb-stat-pill" title="Combo Multiplier">
+                        Mult <strong id="cb-hud-mult">x1</strong>
+                    </span>
+                    <span class="game-stat-pill cb-stat-pill is-combo" title="Current Combo Streak">
+                        Combo <strong id="cb-hud-combo">0</strong>
+                    </span>
+                </div>
+                <div class="cb-toolbar-actions">
+                    <button type="button" class="btn btn-sm btn-outline-info cb-restart-btn" id="cb-btn-restart" title="Quick Restart (R)">
+                        âŸ² <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="cb-viewport" id="breakout-viewport">
+                <div class="game-overlay" id="breakout-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">SYNTHWAVE ARCADE</div>
+                        <h3 class="game-overlay-title">Cyber Breakout</h3>
+                        <p class="game-overlay-desc">
+                            Shatter neon brick matrices with arcade deflection physics. Trigger explosive chain reactions, collect multiballs, and unleash twin lasers!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="breakout-start-btn">
+                            Play Cyber Breakout
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>Mouse</kbd> / Touch / <kbd>A</kbd><kbd>D</kbd> Steer</span>
+                            <span><kbd>Space</kbd> / Tap Launch & Fire</span>
+                            <span><kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="breakout-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="breakout-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="breakout-over-badge">RUN COMPLETED</div>
+                        <h3 class="game-overlay-title" id="breakout-over-title">Game Over</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="breakout-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Combo</span>
+                                <strong class="game-over-val" id="breakout-over-combo">Ã—0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="breakout-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="breakout-over-rank">â€”</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="breakout-save-status">Saving scoreâ€¦</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="breakout-again-btn">
+                                Play Again
                             </button>
                         </div>
                     </div>
@@ -1240,7 +977,7 @@
                     </span>
                     <div>
                         <h2 class="h6 mb-0">Global High Scores</h2>
-                        <span class="game-board-sub" id="board-summary">Loading leaderboard…</span>
+                        <span class="game-board-sub" id="board-summary">Loading leaderboardâ€¦</span>
                     </div>
                 </div>
                 <button type="button" class="icon-btn" id="board-refresh-btn" title="Refresh scores" aria-label="Refresh scores">

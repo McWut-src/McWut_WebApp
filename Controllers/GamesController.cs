@@ -19,6 +19,15 @@ public sealed class GamesController(GameScoreService scores, GameCustomLevelServ
         return Ok(GameScoreRules.Catalog);
     }
 
+    [HttpGet("me/bests")]
+    public async Task<ActionResult<IReadOnlyDictionary<string, int>>> MyBests(
+        CancellationToken cancellationToken = default)
+    {
+        var userId = User.RequireVaultUserId();
+        var bests = await scores.GetMyBestScoresAsync(userId, cancellationToken);
+        return Ok(bests);
+    }
+
     [HttpGet("{gameKey}/leaderboard")]
     public async Task<ActionResult<GameLeaderboardView>> Leaderboard(
         string gameKey,
