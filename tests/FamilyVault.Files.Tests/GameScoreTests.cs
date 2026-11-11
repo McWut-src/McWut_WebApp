@@ -12,6 +12,7 @@ public class GameScoreTests
     public void Rules_normalize_stack_3d_and_reject_unavailable_or_unknown_games()
     {
         Assert.Equal("stack-3d", GameScoreRules.NormalizeGameKey("  STACK-3D "));
+        Assert.Equal("mini-crossword", GameScoreRules.NormalizeGameKey(" MINI-CROSSWORD "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("neon-slope"));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }

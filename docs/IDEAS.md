@@ -156,6 +156,7 @@ The `/games` arcade hub brings single-player gaming to McWut with shared global 
 | Game | Tech / Vendor | Gameplay Loop & Scoring | Status |
 |---|---|---|---|
 | **Stack 3D** | Three.js (3D Isometric WebGL) | Precision slab stacking, overhang slicing physics, 3+ perfect-drop expansion, synthesized pentatonic chimes. | **Live** on `/games` |
+| **Mini Crossword** | HTML5 / CSS Grid / Web Audio | Bite-sized 5×5 crossword pack with smart clues, on-screen touch QWERTY keyboard, pencil mode, hint/check helpers, clean-word combo scoring, and celebratory solve wave. | **Live** on `/games` |
 | **Neon Slope** | Three.js (3D Perspective WebGL) | High-speed endless tunnel runner; dodge red obstacles, take ramps, speed scales over time. Touch steer / A-D. | Teaser card active |
 | **2048 Neon** | Alpine.js + CSS Grid | Reactive number-merging 4×4 puzzle with smooth CSS animations. Touch swipe / arrows. | Teaser card active |
 | **Cyber Breakout** | HTML5 2D Canvas / LittleJS | Retro brick breaker with paddle ball physics, laser blasters, and multiball power-ups. | Teaser card active |

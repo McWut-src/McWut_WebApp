@@ -32,6 +32,27 @@
         </div>
     </button>
 
+    <button type="button" class="game-hub-card" data-game-key="mini-crossword" role="tab" aria-selected="false">
+        <div class="game-hub-icon is-crossword" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <rect x="4" y="4" width="11" height="11" rx="2.5" fill="#f43f5e" />
+                <rect x="17" y="4" width="11" height="11" rx="2.5" fill="#fb7185" opacity="0.85" />
+                <rect x="4" y="17" width="11" height="11" rx="2.5" fill="#1e293b" stroke="#475569" stroke-width="1.2" />
+                <rect x="17" y="17" width="11" height="11" rx="2.5" fill="#f59e0b" />
+                <text x="9.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">A</text>
+                <text x="22.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">B</text>
+                <text x="22.5" y="25.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">C</text>
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Mini Crossword</strong>
+                <span class="game-hub-tag is-live">5×5 Grid</span>
+            </div>
+            <span>Bite-sized 5×5 crossword pack with smart clues, pencil mode, and speed bonuses.</span>
+        </div>
+    </button>
+
     <div class="game-hub-card is-soon" aria-disabled="true">
         <div class="game-hub-icon is-slope" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -65,33 +86,14 @@
             <span>Reactive number-merging grid puzzle.</span>
         </div>
     </div>
-
-    <div class="game-hub-card is-soon" aria-disabled="true">
-        <div class="game-hub-icon is-breakout" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-                <rect x="5" y="6" width="6" height="3.5" rx="1" fill="#ec4899"/>
-                <rect x="13" y="6" width="6" height="3.5" rx="1" fill="#8b5cf6"/>
-                <rect x="21" y="6" width="6" height="3.5" rx="1" fill="#06b6d4"/>
-                <circle cx="16" cy="17" r="2.5" fill="#facc15"/>
-                <rect x="9" y="24" width="14" height="3.5" rx="1.75" fill="#38bdf8"/>
-            </svg>
-        </div>
-        <div class="game-hub-info">
-            <div class="game-hub-title-row">
-                <strong>Cyber Breakout</strong>
-                <span class="game-hub-tag">Soon</span>
-            </div>
-            <span>Classic brick breaker with multiball power-ups.</span>
-        </div>
-    </div>
 </div>
 
 <div class="games-workspace">
-    <section class="card game-stage-card" aria-label="Stack 3D Game">
+    <section class="card game-stage-card" aria-label="Arcade Game Stage">
         <div class="game-stage-header">
             <div class="game-stage-title-wrap">
                 <h2 class="h6 mb-0" id="game-active-title">Stack 3D</h2>
-                <span class="game-stage-hint">Click, tap, or press <kbd>Space</kbd> to drop</span>
+                <span class="game-stage-hint" id="game-stage-hint">Click, tap, or press <kbd>Space</kbd> to drop</span>
             </div>
             <div class="game-stage-controls">
                 <span class="game-stat-pill" id="game-my-best" title="Your personal high score">Best: <strong>0</strong></span>
@@ -166,6 +168,129 @@
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-primary game-play-btn" id="stack-again-btn">
                             Play Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cw-stage" id="crossword-stage" hidden>
+            <div class="cw-toolbar">
+                <div class="cw-puzzle-picker">
+                    <label for="cw-puzzle-select" class="cw-picker-label">Puzzle</label>
+                    <select id="cw-puzzle-select" class="form-select form-select-sm cw-select" aria-label="Choose crossword puzzle"></select>
+                    <span class="cw-solved-pill" id="cw-solved-pill" hidden>✓ Solved</span>
+                </div>
+                <div class="cw-toolbar-right">
+                    <span class="cw-timer-pill" id="cw-timer" title="Elapsed solve time">0:00</span>
+                    <span class="cw-score-pill" id="cw-live-score" title="Projected speed + accuracy score">500 pts</span>
+                    <button type="button" class="btn btn-sm cw-tool-btn" id="cw-pencil-btn" aria-pressed="false" title="Toggle pencil draft letters">
+                        ✎ Pencil
+                    </button>
+                    <button type="button" class="btn btn-sm cw-tool-btn" id="cw-check-btn" title="Check filled letters">
+                        ✓ Check
+                    </button>
+                    <button type="button" class="btn btn-sm cw-tool-btn" id="cw-hint-btn" title="Reveal active letter (-40 pts)">
+                        💡 Hint
+                    </button>
+                </div>
+            </div>
+
+            <div class="cw-layout">
+                <div class="cw-board-col">
+                    <div class="cw-grid" id="cw-grid" role="grid" aria-label="5 by 5 Mini Crossword Grid"></div>
+
+                    <div class="cw-clue-bar" id="cw-clue-bar">
+                        <button type="button" class="cw-clue-nav" id="cw-prev-clue" aria-label="Previous clue" title="Previous clue">‹</button>
+                        <button type="button" class="cw-active-clue" id="cw-active-clue" title="Tap to switch Across / Down">
+                            <span class="cw-active-clue-tag" id="cw-active-clue-tag">1A</span>
+                            <span class="cw-active-clue-text" id="cw-active-clue-text">Select a square to begin</span>
+                        </button>
+                        <button type="button" class="cw-clue-nav" id="cw-next-clue" aria-label="Next clue" title="Next clue">›</button>
+                    </div>
+
+                    <div class="cw-keyboard" id="cw-keyboard" aria-label="On-screen crossword keyboard">
+                        <div class="cw-kb-row">
+                            <button type="button" class="cw-key" data-key="Q">Q</button>
+                            <button type="button" class="cw-key" data-key="W">W</button>
+                            <button type="button" class="cw-key" data-key="E">E</button>
+                            <button type="button" class="cw-key" data-key="R">R</button>
+                            <button type="button" class="cw-key" data-key="T">T</button>
+                            <button type="button" class="cw-key" data-key="Y">Y</button>
+                            <button type="button" class="cw-key" data-key="U">U</button>
+                            <button type="button" class="cw-key" data-key="I">I</button>
+                            <button type="button" class="cw-key" data-key="O">O</button>
+                            <button type="button" class="cw-key" data-key="P">P</button>
+                        </div>
+                        <div class="cw-kb-row">
+                            <button type="button" class="cw-key" data-key="A">A</button>
+                            <button type="button" class="cw-key" data-key="S">S</button>
+                            <button type="button" class="cw-key" data-key="D">D</button>
+                            <button type="button" class="cw-key" data-key="F">F</button>
+                            <button type="button" class="cw-key" data-key="G">G</button>
+                            <button type="button" class="cw-key" data-key="H">H</button>
+                            <button type="button" class="cw-key" data-key="J">J</button>
+                            <button type="button" class="cw-key" data-key="K">K</button>
+                            <button type="button" class="cw-key" data-key="L">L</button>
+                        </div>
+                        <div class="cw-kb-row">
+                            <button type="button" class="cw-key is-wide" data-key="DIR" title="Switch Across / Down">⇄ Dir</button>
+                            <button type="button" class="cw-key" data-key="Z">Z</button>
+                            <button type="button" class="cw-key" data-key="X">X</button>
+                            <button type="button" class="cw-key" data-key="C">C</button>
+                            <button type="button" class="cw-key" data-key="V">V</button>
+                            <button type="button" class="cw-key" data-key="B">B</button>
+                            <button type="button" class="cw-key" data-key="N">N</button>
+                            <button type="button" class="cw-key" data-key="M">M</button>
+                            <button type="button" class="cw-key is-wide" data-key="BACKSPACE" aria-label="Backspace">⌫</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cw-clues-col">
+                    <div class="cw-clue-group">
+                        <h3 class="cw-clue-heading">Across</h3>
+                        <div class="cw-clue-list" id="cw-clues-across"></div>
+                    </div>
+                    <div class="cw-clue-group">
+                        <h3 class="cw-clue-heading">Down</h3>
+                        <div class="cw-clue-list" id="cw-clues-down"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-overlay" id="cw-win-overlay" hidden>
+                <div class="game-overlay-card is-gameover">
+                    <div class="game-record-banner" id="cw-record-banner" hidden>
+                        NEW PERSONAL RECORD!
+                    </div>
+                    <div class="game-overlay-badge">PUZZLE COMPLETE</div>
+                    <h3 class="game-overlay-title" id="cw-win-title">Mini Solved!</h3>
+                    <div class="game-over-grid">
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Score</span>
+                            <strong class="game-over-val is-primary" id="cw-win-score">0</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Solve Time</span>
+                            <strong class="game-over-val" id="cw-win-time">0:00</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Your Best</span>
+                            <strong class="game-over-val" id="cw-win-best">0</strong>
+                        </div>
+                        <div class="game-over-stat">
+                            <span class="game-over-label">Global Rank</span>
+                            <strong class="game-over-val" id="cw-win-rank">—</strong>
+                        </div>
+                    </div>
+                    <p class="game-save-status" id="cw-save-status">Saving score…</p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <button type="button" class="btn btn-primary game-play-btn" id="cw-next-puzzle-btn">
+                            Next Puzzle →
+                        </button>
+                        <button type="button" class="btn btn-outline-light" id="cw-replay-btn">
+                            Replay
                         </button>
                     </div>
                 </div>

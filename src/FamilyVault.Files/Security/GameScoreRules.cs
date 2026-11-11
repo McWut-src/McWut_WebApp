@@ -12,6 +12,7 @@ public sealed record GameCatalogEntry(
 public static class GameScoreRules
 {
     public const string Stack3dKey = "stack-3d";
+    public const string MiniCrosswordKey = "mini-crossword";
     public const string NeonSlopeKey = "neon-slope";
     public const string Merge2048Key = "merge-2048";
     public const string BrickBreakerKey = "brick-breaker";
@@ -22,6 +23,7 @@ public static class GameScoreRules
     public static IReadOnlyList<GameCatalogEntry> Catalog { get; } =
     [
         new(Stack3dKey, "Stack 3D", "Precision timing tower builder. Slice overhangs and chain perfect combos.", "Three.js 3D", true),
+        new(MiniCrosswordKey, "Mini Crossword", "Bite-sized 5×5 crossword pack with smart clues, pencil mode, and speed bonuses.", "Alpine / Grid", true),
         new(NeonSlopeKey, "Neon Slope", "High-speed endless 3D tunnel runner.", "Three.js 3D", false),
         new(Merge2048Key, "2048 Neon", "Slide and merge tiles to reach 2048 and beyond.", "Alpine.js", false),
         new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", false)

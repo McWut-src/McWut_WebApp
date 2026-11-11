@@ -3,7 +3,7 @@
 Load this before touching anything under `Pages/Games/`, `Controllers/GamesController.cs`, `wwwroot/js/games.js`, or `GameScoreService.cs`. Rules unique to this area; shared rules are in `docs/AGENT.md`.
 
 ## What it is
-A single-player browser arcade hub where signed-in members play standalone JS games (starting with **Stack 3D** built with Three.js) and compete on a global high-score leaderboard.
+A single-player browser arcade hub where signed-in members play standalone JS games — currently featuring **Stack 3D** (`stack-3d`, Three.js isometric slab stacker) and **Mini Crossword** (`mini-crossword`, responsive 5×5 crossword pack with on-screen QWERTY keyboard, pencil mode, hints, check, and clean-word combo scoring) — and compete on a global high-score leaderboard.
 
 ## Golden Rules for All Games
 1. **HTML / JS Standalone:** Pure single-player client-side execution. Zero server-side game simulation; the browser runs the complete game loop locally.
