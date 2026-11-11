@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000039`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000040`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 14:53 UTC.** Production was moved on purpose to add **Wacky Wheels** (`wacky-wheels`) to the `/games` arcade hub — expanding the arcade to 6 live playable games with a family-friendly Canvas 2D ragdoll physics stunt obstacle course featuring a 2-wheel spring/damper suspension buggy, 5-segment articulated Lego-style toy rider with breakable snap-joints and star/confetti bursts, rolling hills, turbo launch ramp, 360° loop-the-loop, springboards, swinging wrecking balls, breakable crates, 15 bonus stars, checkered finish gate, synthesized Web Audio effects, mobile touch controls, and global high scores.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000039` | `ghcr.io/mcwut-src/mcwut_webapp:2e7db963af69b8b2fb7d13a95660c669aa45a573` |
+| Live | `ca-mcwut--0000040` | `ghcr.io/mcwut-src/mcwut_webapp:31a05847441baf7da30b1bab9424447c56464b30` |
+
+`0000040` has 100% of the traffic and is Healthy. `0000039` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000040`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` and `/games` redirect to sign-in. Static assets `/js/games.js` and `/css/site.css` contain the verified Wacky Wheels ragdoll physics engine and styles.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000039
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000039=100
+```
 
 **11 November 2026, 11:28 UTC.** Production was moved on purpose to transform `/games` into a dedicated **Arcade Hub Landing Page** — replacing immediate Stack 3D boot with a modern game catalog grid featuring all 6 arcade titles (**Stack 3D**, **Mini Crossword**, **Minesweeper**, **Neon Slope**, **2048 Neon**, and **Cyber Breakout** [Coming Soon]) and an **Arcade Hall of Fame** leaderboard preview card with filter pills. Includes seamless stage routing, `All Games` back navigation, deep-link persistence (`/games?game=...`), browser `popstate` support, responsive mobile single-column layout, and 3D physics loop idling when off-stage.
 
