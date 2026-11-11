@@ -3934,10 +3934,10 @@
             var railMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
             var leftRail = new THREE.Mesh(railGeo, railMat);
             leftRail.rotation.x = SLOPE_ANGLE;
-            leftRail.position.set(-SLOPE_HALF_TRACK, midY + 0.2, midZ);
+            leftRail.position.set(SLOPE_HALF_TRACK, midY + 0.2, midZ);
             var rightRail = new THREE.Mesh(railGeo, railMat);
             rightRail.rotation.x = SLOPE_ANGLE;
-            rightRail.position.set(SLOPE_HALF_TRACK, midY + 0.2, midZ);
+            rightRail.position.set(-SLOPE_HALF_TRACK, midY + 0.2, midZ);
             mesh.add(leftRail);
             mesh.add(rightRail);
 
@@ -4144,8 +4144,8 @@
         ball.roll += slopeState.speed * dt * 2.2;
 
         var targetVx = 0;
-        if (slopeInput.left) targetVx = -14.5;
-        else if (slopeInput.right) targetVx = 14.5;
+        if (slopeInput.left) targetVx = 14.5;
+        else if (slopeInput.right) targetVx = -14.5;
 
         ball.vx += (targetVx - ball.vx) * Math.min(1.0, 14.0 * dt);
         ball.x += ball.vx * dt;
@@ -4310,16 +4310,16 @@
             var scale = fov / relZ;
             var camX = ball.x * 0.45;
             var camY = groundY + ball.y + 2.8;
-            var sx = width / 2 + (x - camX) * scale;
+            var sx = width / 2 - (x - camX) * scale;
             var sy = height / 2 - (y - camY) * scale;
             return { x: sx, y: sy, scale: scale };
         }
 
-        var pNearL = project(-SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
-        var pNearR = project(SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
+        var pNearL = project(SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
+        var pNearR = project(-SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
         var farZ = ball.z + 120.0;
-        var pFarL = project(-SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
-        var pFarR = project(SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
+        var pFarL = project(SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
+        var pFarR = project(-SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
 
         if (pNearL && pNearR && pFarL && pFarR) {
             ctx.beginPath();
@@ -4346,8 +4346,8 @@
             var startZ = Math.floor(ball.z / gridSpacing) * gridSpacing;
             for (var gz = startZ; gz < ball.z + 100; gz += gridSpacing) {
                 var gy = -gz * SLOPE_TAN;
-                var gL = project(-SLOPE_HALF_TRACK, gy, gz);
-                var gR = project(SLOPE_HALF_TRACK, gy, gz);
+                var gL = project(SLOPE_HALF_TRACK, gy, gz);
+                var gR = project(-SLOPE_HALF_TRACK, gy, gz);
                 if (gL && gR) {
                     ctx.beginPath();
                     ctx.moveTo(gL.x, gL.y);
