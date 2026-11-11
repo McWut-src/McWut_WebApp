@@ -17,7 +17,7 @@ public class GameScoreTests
         Assert.Equal("neon-slope", GameScoreRules.NormalizeGameKey(" NEON-SLOPE "));
         Assert.Equal("merge-2048", GameScoreRules.NormalizeGameKey(" MERGE-2048 "));
         Assert.Equal("wacky-wheels", GameScoreRules.NormalizeGameKey(" WACKY-WHEELS "));
-        Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("brick-breaker"));
+        Assert.Equal("brick-breaker", GameScoreRules.NormalizeGameKey(" BRICK-BREAKER "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
 

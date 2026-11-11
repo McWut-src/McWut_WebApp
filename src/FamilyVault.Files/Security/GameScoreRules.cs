@@ -30,7 +30,7 @@ public static class GameScoreRules
         new(NeonSlopeKey, "Neon Slope", "High-speed endless 3D tunnel runner.", "Three.js 3D", true),
         new(Merge2048Key, "2048 Neon", "Slide and merge tiles to reach 2048 and beyond.", "Neon Grid", true),
         new(WackyWheelsKey, "Wacky Wheels", "Slapstick ragdoll obstacle course. Balance, boost, and flip your way to the finish line.", "Canvas 2D / Physics", true),
-        new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", false)
+        new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", true)
     ];
 
     public static string NormalizeGameKey(string? gameKey)

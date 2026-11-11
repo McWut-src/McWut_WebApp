@@ -874,6 +874,7 @@
                     ? "New personal record saved to the global leaderboard!"
                     : "Score recorded on the global leaderboard.";
             }
+            return res;
         } catch (err) {
             if (overSaveStatus) {
                 overSaveStatus.textContent = "Could not save score: " + (err.message || "Network error");
@@ -896,14 +897,8 @@
             } else if (GAME_KEY === "merge-2048") {
                 n2048State.leaderboard = board;
             } else if (GAME_KEY === "brick-breaker") {
-            if (ev.key === "r" || ev.key === "R") {
-                ev.preventDefault();
-                cbStartGame();
-            }
-            return;
-        }
-
-        if (GAME_KEY === "wacky-wheels") {
+                cbState.leaderboard = board;
+            } else if (GAME_KEY === "wacky-wheels") {
                 wwState.leaderboard = board;
             }
             renderLeaderboard(board);
@@ -937,7 +932,7 @@
         "neon-slope": { name: "Neon Slope", comboLabel: "streak", available: true },
         "merge-2048": { name: "2048 Neon", comboLabel: "tile", available: true },
         "wacky-wheels": { name: "Wacky Wheels", comboLabel: "flips", available: true },
-        "brick-breaker": { name: "Cyber Breakout", comboLabel: "combo", available: false }
+        "brick-breaker": { name: "Cyber Breakout", comboLabel: "combo", available: true }
     };
 
     function getGameDisplayName(key) {
@@ -10529,7 +10524,7 @@
     window.addEventListener("popstate", function () {
         var sp = new URLSearchParams(window.location.search);
         var g = sp.get("game");
-        if (g === "stack-3d" || g === "mini-crossword" || g === "minesweeper" || g === "neon-slope" || g === "merge-2048" || g === "wacky-wheels") {
+        if (g && GAME_DEFS[g] && GAME_DEFS[g].available) {
             launchGame(g, false);
         } else {
             showHub(false);

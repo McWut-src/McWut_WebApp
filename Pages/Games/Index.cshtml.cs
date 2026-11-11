@@ -25,8 +25,8 @@ public class IndexModel : PageModel
             new("minesweeper", "Minesweeper", "#fb7185", "Neon Grid", "Safe first click, cascade combos, and chord reveals.", true),
             new("neon-slope", "Neon Slope", "#22d3ee", "3D Tunnel", "High-speed endless tunnel runner with gem streaks.", true),
             new("merge-2048", "2048 Neon", "#f59e0b", "Tile Puzzle", "Slide and merge matching tiles to reach 2048.", true),
-            new("wacky-wheels", "Wacky Wheels", "#22c55e", "Ragdoll Stunt", "Slapstick ragdoll physics buggy obstacle course.", true, IsNew: true),
-            new("brick-breaker", "Cyber Breakout", "#ec4899", "Laser Paddle", "Neon brick breaker with lasers and multiball.", false, IsNew: false)
+            new("wacky-wheels", "Wacky Wheels", "#22c55e", "Ragdoll Stunt", "Slapstick ragdoll physics buggy obstacle course.", true, IsNew: false),
+            new("brick-breaker", "Cyber Breakout", "#ec4899", "Laser Paddle", "Neon brick breaker with lasers and multiball.", true, IsNew: true)
         ];
     }
 }
