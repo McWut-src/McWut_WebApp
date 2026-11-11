@@ -214,7 +214,48 @@
             </div>
         </div>
 
-        <!-- 6. Cyber Breakout (Coming Soon) -->
+        <!-- 6. Wacky Wheels -->
+        <div class="game-tile-card is-wheels" data-game-key="wacky-wheels" tabindex="0" role="button" aria-label="Launch Wacky Wheels">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">Canvas 2D / Physics</span>
+                <span class="game-tile-pill">Ragdoll Stunts</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-wheels" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <path d="M3 26c5 0 7-4 13-4s8 4 13 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.55" />
+                        <circle cx="10" cy="21" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
+                        <circle cx="22" cy="19" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
+                        <path d="M9 19l5-4h7l2 3" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="15" cy="9.5" r="3" fill="#fde047" stroke="#38bdf8" stroke-width="1.4" />
+                        <path d="M15 12.5l-1 4.5M14.5 14l4.5 1" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+                        <polygon points="26,5 27,7.4 29.6,7.6 27.6,9.2 28.2,11.7 26,10.3 23.8,11.7 24.4,9.2 22.4,7.6 25,7.4" fill="#facc15" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Wacky Wheels</h2>
+                    <span class="text-muted small">Ragdoll Obstacle Course</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    Slapstick ragdoll obstacle course. Balance, boost, and flip your way across ramps, loops, springboards, and wrecking balls to the finish line.
+                </p>
+                <div class="game-tile-features">
+                    <span>Ragdoll Physics</span>
+                    <span>Flip Combos</span>
+                    <span>Eject Boost</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="wacky-wheels" data-game-key="wacky-wheels">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play Wacky Wheels
+                </button>
+            </div>
+        </div>
+
+        <!-- 7. Cyber Breakout (Coming Soon) -->
         <div class="game-tile-card is-soon" aria-label="Cyber Breakout (Coming Soon)">
             <div class="game-tile-badge-strip">
                 <span class="game-hub-tag">In Development</span>
@@ -283,6 +324,7 @@
                 <button type="button" class="game-hall-pill" data-hall-game="minesweeper" role="tab" aria-selected="false">Minesweeper</button>
                 <button type="button" class="game-hall-pill" data-hall-game="neon-slope" role="tab" aria-selected="false">Neon Slope</button>
                 <button type="button" class="game-hall-pill" data-hall-game="merge-2048" role="tab" aria-selected="false">2048 Neon</button>
+                <button type="button" class="game-hall-pill" data-hall-game="wacky-wheels" role="tab" aria-selected="false">Wacky Wheels</button>
             </div>
 
             <div class="game-board-list" id="hub-hall-list">
@@ -391,6 +433,26 @@
                 <span class="game-hub-tag is-live">Neon Grid</span>
             </div>
             <span>Reactive number-merging grid puzzle.</span>
+        </div>
+    </button>
+
+    <button type="button" class="game-hub-card" data-game-key="wacky-wheels" role="tab" aria-selected="false">
+        <div class="game-hub-icon is-wheels" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <path d="M3 26c5 0 7-4 13-4s8 4 13 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.55" />
+                <circle cx="10" cy="21" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
+                <circle cx="22" cy="19" r="4.2" fill="#0f172a" stroke="#facc15" stroke-width="2" />
+                <path d="M9 19l5-4h7l2 3" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="15" cy="9.5" r="3" fill="#fde047" stroke="#38bdf8" stroke-width="1.4" />
+                <path d="M15 12.5l-1 4.5M14.5 14l4.5 1" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Wacky Wheels</strong>
+                <span class="game-hub-tag is-live">Canvas 2D / Physics</span>
+            </div>
+            <span>Slapstick ragdoll stunt buggy obstacle course.</span>
         </div>
     </button>
         </div>
@@ -915,6 +977,125 @@
                         <p class="game-save-status" id="n2048-save-status">Saving score…</p>
                         <div class="d-flex gap-2 justify-content-center">
                             <button type="button" class="btn btn-primary game-play-btn" id="n2048-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ww-stage" id="wheels-stage" hidden>
+            <div class="ww-toolbar" aria-live="off">
+                <div class="ww-toolbar-stats">
+                    <span class="game-stat-pill ww-stat-pill" title="Elapsed Run Time">
+                        ⏱ <strong id="ww-hud-timer">0:00.0</strong>
+                    </span>
+                    <span class="game-stat-pill ww-stat-pill is-dist" title="Course Progress & Distance">
+                        <span>🏁</span>
+                        <strong id="ww-hud-distance">0%</strong>
+                        <span class="ww-mini-track" aria-hidden="true"><span class="ww-mini-fill" id="ww-hud-progress"></span></span>
+                    </span>
+                    <span class="game-stat-pill ww-stat-pill is-stars" title="Bonus Stars Collected (+100 pts each)">
+                        ★ <strong id="ww-hud-stars">0/15</strong>
+                    </span>
+                    <span class="game-stat-pill ww-stat-pill is-combo" title="Flip & Airtime Combo Streak">
+                        Combo <strong id="ww-hud-combo">×0</strong>
+                    </span>
+                    <span class="game-stat-pill ww-stat-pill" title="Vehicle Speed">
+                        <strong id="ww-hud-speed">0</strong> <span>km/h</span>
+                    </span>
+                </div>
+                <div class="ww-toolbar-actions">
+                    <button type="button" class="btn btn-sm ww-restart-pill" id="ww-restart-btn" title="Quick Restart (R)" aria-label="Quick Restart">
+                        ⟲ <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ww-viewport" id="ww-viewport">
+                <canvas id="ww-canvas" aria-label="Wacky Wheels 2D ragdoll physics obstacle course"></canvas>
+
+                <div class="ww-center-hud" aria-live="polite">
+                    <div class="ww-score-readout" id="ww-hud-score">0</div>
+                    <div class="game-hud-combo ww-streak-pill" id="ww-streak-pill" hidden>FLIP STREAK ×1</div>
+                    <div class="game-hud-pop ww-pop-banner" id="ww-pop-banner" hidden>BACKFLIP!</div>
+                </div>
+
+                <div class="ww-touch-pad" id="ww-touch-pad" role="group" aria-label="Touch vehicle controls">
+                    <div class="ww-touch-cluster is-left">
+                        <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-left" title="Lean Back / Wheelie (A or Left)" aria-label="Tilt Left">
+                            <span class="ww-btn-glyph">↺</span>
+                            <span class="ww-btn-sub">Tilt L</span>
+                        </button>
+                        <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-right" title="Lean Forward (D or Right)" aria-label="Tilt Right">
+                            <span class="ww-btn-glyph">↻</span>
+                            <span class="ww-btn-sub">Tilt R</span>
+                        </button>
+                    </div>
+                    <div class="ww-touch-cluster is-right">
+                        <button type="button" class="ww-touch-btn is-eject" id="ww-btn-eject" title="Eject Ragdoll / Super Boost (Space)" aria-label="Eject Ragdoll or Super Boost">
+                            <span class="ww-btn-glyph">🚀</span>
+                            <span class="ww-btn-sub">Eject</span>
+                        </button>
+                        <button type="button" class="ww-touch-btn is-brake" id="ww-btn-brake" title="Brake / Reverse (S or Down)" aria-label="Brake or Reverse">
+                            <span class="ww-btn-glyph">▼</span>
+                            <span class="ww-btn-sub">Brake</span>
+                        </button>
+                        <button type="button" class="ww-touch-btn is-gas" id="ww-btn-gas" title="Accelerate / Gas (W or Up)" aria-label="Accelerate">
+                            <span class="ww-btn-glyph">▲</span>
+                            <span class="ww-btn-sub">Gas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="ww-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">CANVAS 2D / PHYSICS</div>
+                        <h3 class="game-overlay-title">Wacky Wheels</h3>
+                        <p class="game-overlay-desc">
+                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360° loop-the-loop, springboards, crates, and swinging wrecking balls! Land flips for combo multipliers — or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="ww-start-btn">
+                            Play Wacky Wheels
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>W</kbd>/<kbd>↑</kbd> Gas · <kbd>S</kbd>/<kbd>↓</kbd> Brake</span>
+                            <span><kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd> Lean / Flip</span>
+                            <span><kbd>Space</kbd> Eject / Boost · <kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="ww-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover" role="dialog" aria-labelledby="ww-over-title">
+                        <div class="game-record-banner" id="ww-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="ww-over-badge">COURSE COMPLETE!</div>
+                        <h3 class="game-overlay-title" id="ww-over-title">Checkered Flag!</h3>
+                        <p class="game-overlay-desc mb-2" id="ww-over-breakdown"></p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="ww-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Combo</span>
+                                <strong class="game-over-val" id="ww-over-combo">×0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="ww-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="ww-over-rank">—</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="ww-save-status">Saving score…</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="ww-again-btn">
                                 Play Again
                             </button>
                         </div>

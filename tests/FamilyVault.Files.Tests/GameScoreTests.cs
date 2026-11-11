@@ -16,6 +16,7 @@ public class GameScoreTests
         Assert.Equal("minesweeper", GameScoreRules.NormalizeGameKey(" MINESWEEPER "));
         Assert.Equal("neon-slope", GameScoreRules.NormalizeGameKey(" NEON-SLOPE "));
         Assert.Equal("merge-2048", GameScoreRules.NormalizeGameKey(" MERGE-2048 "));
+        Assert.Equal("wacky-wheels", GameScoreRules.NormalizeGameKey(" WACKY-WHEELS "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("brick-breaker"));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
@@ -113,5 +114,10 @@ public class GameScoreTests
         Assert.True(mergeSub.IsNewBest);
         Assert.Equal(2048, mergeSub.BestScore);
         Assert.Equal(512, mergeSub.BestCombo);
+
+        var wheelsSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "wacky-wheels", score: 4250, maxCombo: 6);
+        Assert.True(wheelsSub.IsNewBest);
+        Assert.Equal(4250, wheelsSub.BestScore);
+        Assert.Equal(6, wheelsSub.BestCombo);
     }
 }

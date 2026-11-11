@@ -3766,6 +3766,11 @@ html[data-theme="dark"] body.has-bg-tile::before {
   box-shadow: 0 10px 28px rgba(245, 158, 11, 0.14);
 }
 
+.game-tile-card.is-wheels:hover {
+  border-color: #22c55e;
+  box-shadow: 0 10px 28px rgba(34, 197, 94, 0.16);
+}
+
 .game-tile-card.is-soon {
   opacity: 0.72;
   cursor: default;
@@ -5328,6 +5333,22 @@ html[data-theme="dark"] .ms-stat-pill.is-score strong {
     grid-template-columns: 1fr 1fr;
   }
 
+  .game-hub-card {
+    min-width: 0;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .game-hub-title-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .game-hub-card .game-hub-tag {
+    font-size: 0.58rem;
+    padding: 2px 5px;
+  }
+
   .game-hub-info > span {
     display: none;
   }
@@ -5750,6 +5771,355 @@ html[data-theme="dark"] .ms-stat-pill.is-score strong {
     width: 44px;
     height: 38px;
     font-size: 1rem;
+  }
+}
+
+/* --- Wacky Wheels Stage --- */
+.game-hub-icon.is-wheels {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.ww-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 16px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(34, 197, 94, 0.08), transparent 44%),
+    radial-gradient(circle at 88% 90%, rgba(250, 204, 21, 0.08), transparent 44%),
+    var(--card);
+}
+
+.ww-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ww-toolbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ww-stat-pill {
+  font-variant-numeric: tabular-nums;
+  gap: 5px;
+}
+
+.ww-stat-pill.is-stars strong {
+  color: #eab308;
+}
+
+html[data-theme="dark"] .ww-stat-pill.is-stars strong {
+  color: #facc15;
+}
+
+.ww-stat-pill.is-combo strong {
+  color: #16a34a;
+}
+
+html[data-theme="dark"] .ww-stat-pill.is-combo strong {
+  color: #4ade80;
+}
+
+.ww-mini-track {
+  display: inline-block;
+  width: 48px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.28);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.ww-mini-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #facc15);
+  transition: width 0.1s linear;
+}
+
+.ww-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ww-restart-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--fill);
+  color: var(--ink);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.ww-restart-pill:hover {
+  background: var(--chip);
+  border-color: var(--blue);
+}
+
+.ww-viewport {
+  position: relative;
+  width: 100%;
+  height: clamp(460px, 66vh, 580px);
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b1930 0%, #153154 55%, #1e4268 100%);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.ww-viewport .game-overlay {
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.ww-viewport .game-overlay-card {
+  padding: 20px 22px;
+}
+
+#ww-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.ww-center-hud {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.ww-score-readout {
+  font-size: 2.3rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.ww-streak-pill {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.9));
+  color: #ffffff;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.ww-pop-banner {
+  color: #fde047;
+  font-weight: 900;
+  font-size: 1.05rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+}
+
+/* Touch Control Pad */
+.ww-touch-pad {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.ww-touch-cluster {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ww-touch-cluster.is-right {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 8px;
+  justify-items: end;
+}
+
+.ww-touch-cluster.is-right .is-eject {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.ww-touch-cluster.is-right .is-brake {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.ww-touch-cluster.is-right .is-gas {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.ww-touch-btn {
+  pointer-events: auto;
+  width: 62px;
+  height: 54px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(15, 23, 42, 0.74);
+  backdrop-filter: blur(8px);
+  color: #f8fafc;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.36);
+  transition: transform 0.06s ease, background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.ww-touch-btn .ww-btn-glyph {
+  font-size: 1.2rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.ww-touch-btn .ww-btn-sub {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.ww-touch-btn:active,
+.ww-touch-btn.is-pressed {
+  transform: scale(0.92);
+  background: rgba(56, 189, 248, 0.42);
+  border-color: #38bdf8;
+}
+
+.ww-touch-btn.is-gas {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.82), rgba(21, 128, 61, 0.86));
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+.ww-touch-btn.is-gas:active,
+.ww-touch-btn.is-gas.is-pressed {
+  background: rgba(34, 197, 94, 0.98);
+  border-color: #bbf7d0;
+}
+
+.ww-touch-btn.is-brake {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.78), rgba(185, 28, 28, 0.84));
+  border-color: rgba(252, 165, 165, 0.5);
+}
+
+.ww-touch-btn.is-brake:active,
+.ww-touch-btn.is-brake.is-pressed {
+  background: rgba(239, 68, 68, 0.96);
+  border-color: #fecaca;
+}
+
+.ww-touch-btn.is-eject {
+  width: 62px;
+  height: 46px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.88), rgba(236, 72, 153, 0.88));
+  border-color: rgba(253, 224, 71, 0.65);
+}
+
+.ww-touch-btn.is-eject:active,
+.ww-touch-btn.is-eject.is-pressed {
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+}
+
+@media (max-width: 991.98px) {
+  .ww-viewport {
+    height: clamp(400px, 60vh, 500px);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ww-stage {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .ww-toolbar-stats {
+    gap: 4px;
+  }
+
+  .ww-stat-pill {
+    padding: 4px 7px;
+    font-size: 0.74rem;
+  }
+
+  .ww-mini-track {
+    width: 30px;
+  }
+
+  .ww-restart-pill span {
+    display: none;
+  }
+
+  .ww-viewport {
+    height: clamp(390px, 60vh, 470px);
+  }
+
+  .ww-score-readout {
+    font-size: 1.9rem;
+  }
+
+  .ww-touch-pad {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .ww-touch-cluster,
+  .ww-touch-cluster.is-right {
+    gap: 6px;
+  }
+
+  .ww-touch-btn {
+    width: 54px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .ww-touch-btn.is-eject {
+    width: 54px;
+    height: 42px;
   }
 }
 

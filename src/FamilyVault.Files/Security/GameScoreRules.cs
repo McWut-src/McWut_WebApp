@@ -16,6 +16,7 @@ public static class GameScoreRules
     public const string MinesweeperKey = "minesweeper";
     public const string NeonSlopeKey = "neon-slope";
     public const string Merge2048Key = "merge-2048";
+    public const string WackyWheelsKey = "wacky-wheels";
     public const string BrickBreakerKey = "brick-breaker";
 
     public const int MaxScore = 10_000;
@@ -28,6 +29,7 @@ public static class GameScoreRules
         new(MinesweeperKey, "Minesweeper", "Neon minefield with cascading reveals, touch flagging, and explosive particle chains.", "Canvas 2D", true),
         new(NeonSlopeKey, "Neon Slope", "High-speed endless 3D tunnel runner.", "Three.js 3D", true),
         new(Merge2048Key, "2048 Neon", "Slide and merge tiles to reach 2048 and beyond.", "Neon Grid", true),
+        new(WackyWheelsKey, "Wacky Wheels", "Slapstick ragdoll obstacle course. Balance, boost, and flip your way to the finish line.", "Canvas 2D / Physics", true),
         new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", false)
     ];
 
