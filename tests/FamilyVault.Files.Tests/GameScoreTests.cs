@@ -13,6 +13,7 @@ public class GameScoreTests
     {
         Assert.Equal("stack-3d", GameScoreRules.NormalizeGameKey("  STACK-3D "));
         Assert.Equal("mini-crossword", GameScoreRules.NormalizeGameKey(" MINI-CROSSWORD "));
+        Assert.Equal("minesweeper", GameScoreRules.NormalizeGameKey(" MINESWEEPER "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("neon-slope"));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }

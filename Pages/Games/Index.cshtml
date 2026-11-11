@@ -53,6 +53,26 @@
         </div>
     </button>
 
+    <button type="button" class="game-hub-card" data-game-key="minesweeper" role="tab" aria-selected="false">
+        <div class="game-hub-icon is-minesweeper" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+                <path d="M4 10h24M4 16h24M4 22h24M10 4v24M16 4v24M22 4v24" stroke="#38bdf8" stroke-width="0.8" opacity="0.14" />
+                <circle cx="16" cy="18" r="5.6" fill="#111c2e" stroke="#fb7185" stroke-width="1.7" />
+                <path d="M16 9.6V6.4M16 29.6v-3.2M6.4 18H3.2M28.8 18h-3.2M9.3 11.3l-2.2-2.2M22.7 11.3l2.2-2.2M9.3 24.7l-2.2 2.2M22.7 24.7l2.2 2.2" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" />
+                <circle cx="16" cy="18" r="2.2" fill="#f43f5e" />
+                <path d="M19.2 14.8l2-2" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
+                <circle cx="21.8" cy="12.2" r="1.1" fill="#fbbf24" />
+            </svg>
+        </div>
+        <div class="game-hub-info">
+            <div class="game-hub-title-row">
+                <strong>Minesweeper</strong>
+                <span class="game-hub-tag is-live">Canvas 2D</span>
+            </div>
+            <span>Clear the neon minefield. Chain cascades, dodge explosions, and top the board.</span>
+        </div>
+    </button>
+
     <div class="game-hub-card is-soon" aria-disabled="true">
         <div class="game-hub-icon is-slope" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -292,6 +312,109 @@
                         <button type="button" class="btn btn-outline-light" id="cw-replay-btn">
                             Replay
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ms-stage" id="minesweeper-stage" hidden>
+            <div class="ms-toolbar">
+                <div class="ms-diff-group" id="ms-diff-group" role="group" aria-label="Minefield difficulty">
+                    <button type="button" class="ms-diff-btn is-active" data-ms-diff="easy" aria-pressed="true">
+                        Easy <span>9×9</span>
+                    </button>
+                    <button type="button" class="ms-diff-btn" data-ms-diff="medium" aria-pressed="false">
+                        Medium <span>14×18</span>
+                    </button>
+                    <button type="button" class="ms-diff-btn" data-ms-diff="hard" aria-pressed="false">
+                        Hard <span>16×24</span>
+                    </button>
+                </div>
+
+                <div class="ms-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill ms-stat-pill" title="Mines remaining">
+                        <svg class="ms-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="12" cy="14" r="4.4" />
+                            <path d="M12 9.6V6.8M12 21.2v-2.8M7.6 14H4.8M19.2 14h-2.8M8.9 10.9 6.9 8.9M15.1 10.9l2-2M8.9 17.1l-2 2M15.1 17.1l2 2" />
+                        </svg>
+                        <strong id="ms-mines-left">10</strong>
+                    </span>
+                    <span class="game-stat-pill ms-stat-pill" title="Elapsed time">
+                        <svg class="ms-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="12" cy="13" r="7.2" />
+                            <path d="M12 9.5V13l2.4 1.6" />
+                            <path d="M9.5 3h5" />
+                        </svg>
+                        <strong id="ms-timer">0:00</strong>
+                    </span>
+                    <span class="game-stat-pill ms-stat-pill is-score" title="Current score">
+                        Score <strong id="ms-score">0</strong>
+                    </span>
+                </div>
+
+                <button type="button" class="btn btn-sm ms-flag-btn" id="ms-flag-btn" aria-pressed="false" title="Toggle flag mode (F)" aria-label="Toggle flag mode">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 21V4" />
+                        <path d="M5 4h13l-2.2 4.5L18 13H5" />
+                    </svg>
+                    <span>Flag</span>
+                </button>
+            </div>
+
+            <div class="ms-arena" id="ms-arena">
+                <canvas id="ms-canvas" tabindex="0" aria-label="Minesweeper minefield. Tap to reveal. Long press, right-click, or use flag mode to mark mines."></canvas>
+                <p class="visually-hidden" id="ms-live-status" aria-live="polite"></p>
+
+                <div class="game-overlay" id="ms-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">CANVAS 2D ARCADE</div>
+                        <h3 class="game-overlay-title">Minesweeper</h3>
+                        <p class="game-overlay-desc">
+                            Clear every safe tile without detonating the field. Wide-open cascades chain score,
+                            and one wrong tap sets off a full particle chain reaction.
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="ms-start-btn">
+                            Play Minesweeper
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>Tap</kbd> / <kbd>Click</kbd> Reveal</span>
+                            <span><kbd>Long press</kbd> / <kbd>Right-click</kbd> Flag</span>
+                            <span><kbd>F</kbd> Flag mode</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="ms-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover" role="dialog" aria-labelledby="ms-over-title">
+                        <div class="game-record-banner" id="ms-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="ms-over-badge">MINEFIELD CLEARED</div>
+                        <h3 class="game-overlay-title" id="ms-over-title">Swept Clean!</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="ms-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Time</span>
+                                <strong class="game-over-val" id="ms-over-time">0:00</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Best Cascade</span>
+                                <strong class="game-over-val" id="ms-over-combo">—</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="ms-over-rank">—</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="ms-save-status">Saving score…</p>
+                        <div class="d-flex gap-2 justify-content-center flex-wrap">
+                            <button type="button" class="btn btn-primary game-play-btn" id="ms-again-btn">
+                                Play Again
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

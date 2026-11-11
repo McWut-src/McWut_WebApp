@@ -3,7 +3,7 @@
 Load this before touching anything under `Pages/Games/`, `Controllers/GamesController.cs`, `wwwroot/js/games.js`, or `GameScoreService.cs`. Rules unique to this area; shared rules are in `docs/AGENT.md`.
 
 ## What it is
-A single-player browser arcade hub where signed-in members play standalone JS games — currently featuring **Stack 3D** (`stack-3d`, Three.js isometric slab stacker) and **Mini Crossword** (`mini-crossword`, responsive 5×5 crossword pack with on-screen QWERTY keyboard, pencil mode, hints, check, and clean-word combo scoring) — and compete on a global high-score leaderboard.
+A single-player browser arcade hub where signed-in members play standalone JS games — currently featuring **Stack 3D** (`stack-3d`, Three.js isometric slab stacker), **Mini Crossword** (`mini-crossword`, responsive 5×5 crossword pack with on-screen QWERTY keyboard, pencil mode, hints, check, and clean-word combo scoring), and **Minesweeper** (`minesweeper`, Canvas 2D neon minefield with tap/long-press touch controls, cascade combos, and first-click safety) — and compete on a global high-score leaderboard.
 
 ## Golden Rules for All Games
 1. **HTML / JS Standalone:** Pure single-player client-side execution. Zero server-side game simulation; the browser runs the complete game loop locally.
@@ -17,6 +17,7 @@ A single-player browser arcade hub where signed-in members play standalone JS ga
 - Leaderboard rows sort in memory (`BestScore` descending, then `BestCombo` descending, then earlier `AchievedAt` ascending) because SQLite cannot `ORDER BY` a `DateTimeOffset`.
 - Player rows render the member's `DisplayName` (resolved via `MemberLabel.Shown`), profile `AccentColor` pill (`#0b1f3a` fallback), optional `HeaderBadge` emblem, and `StatusTag`.
 - Three.js is vendored locally at `wwwroot/lib/three/three.min.js`. `wwwroot/js/games.js` uses `THREE.WebGLRenderer` with an automatic 2D isometric canvas projection fallback if WebGL context creation is unavailable on a headless or restricted device.
+- Minesweeper is pure Canvas 2D (no vendored library). Difficulties are Easy 9×9/10, Medium 14×18/40, and Hard 16×24/76. The first reveal is always safe (it excludes the clicked 3×3 plus any pre-placed flags). Tap reveals, long-press or right-click flags, and the Flag mode button makes tap flag on touch. Scoring is per-cell base + cascade bonus + win/time bonus, capped at 10000; `BestCombo` is the largest cascade. Keep the shared leaderboard, difficulty chips, result overlay, and `?game=minesweeper` deep link wired when changing it.
 
 ## Endpoints / files
 - `GET /api/games` returns the game catalog (`GameScoreRules.Catalog`).
