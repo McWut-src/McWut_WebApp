@@ -14,6 +14,17 @@
     var hubStrip = document.getElementById("game-hub-strip");
     var activeTitleEl = document.getElementById("game-active-title");
     var stageHintEl = document.getElementById("game-stage-hint");
+    var hubView = document.getElementById("game-hub-view");
+    var stageView = document.getElementById("game-stage-view");
+    var backToHubBtn = document.getElementById("btn-back-to-hub");
+    var stageBackBtn = document.getElementById("btn-stage-back");
+    var hubActions = document.getElementById("games-hub-actions");
+    var pageTitleEl = document.getElementById("games-page-title");
+    var pageKickerEl = document.getElementById("games-page-kicker");
+    var hubHallSummary = document.getElementById("hub-hall-summary");
+    var hubHallPlayBtn = document.getElementById("hub-hall-play-btn");
+    var hubHallList = document.getElementById("hub-hall-list");
+    var hubHallKey = "stack-3d";
     if (!canvas || !viewport) {
         return;
     }
@@ -896,43 +907,25 @@
         }
     }
 
-    function renderLeaderboard(board) {
-        if (!board) return;
+    function getGameDisplayName(key) {
+        if (key === "mini-crossword") return "Mini Crossword";
+        if (key === "minesweeper") return "Minesweeper";
+        if (key === "neon-slope") return "Neon Slope";
+        if (key === "merge-2048") return "2048 Neon";
+        return "Stack 3D";
+    }
 
-        var myRec = board.myRecord;
-        if (myBestEl) {
-            myBestEl.innerHTML = "Best: <strong>" + (myRec ? myRec.bestScore : 0) + "</strong>";
-        }
-        if (myRankEl) {
-            myRankEl.innerHTML = "Rank: <strong>" + (myRec ? "#" + myRec.rank : "—") + "</strong>";
-        }
-
-        if (boardSummary) {
-            var pCount = board.totalPlayers || 0;
-            var gCount = board.totalGamesPlayed || 0;
-            boardSummary.textContent =
-                pCount + (pCount === 1 ? " player" : " players") + " · " +
-                gCount + (gCount === 1 ? " run" : " runs");
-        }
-
-        if (!boardList) return;
+    function buildLeaderboardHtml(board, gameKey) {
+        if (!board) return "";
         var entries = board.entries || [];
         if (entries.length === 0) {
-            var emptyGameTitle = GAME_KEY === "mini-crossword"
-                ? "Mini Crossword"
-                : GAME_KEY === "minesweeper"
-                    ? "Minesweeper"
-                    : GAME_KEY === "neon-slope"
-                        ? "Neon Slope"
-                        : GAME_KEY === "merge-2048"
-                            ? "2048 Neon"
-                            : "Stack 3D";
-            boardList.innerHTML =
+            var emptyGameTitle = getGameDisplayName(gameKey);
+            return (
                 '<div class="game-board-empty">' +
-                "<p class=\"mb-1 fw-semibold\">No scores yet!</p>" +
-                "<p class=\"small text-muted mb-0\">Play a round of " + emptyGameTitle + " to claim the #1 global spot.</p>" +
-                "</div>";
-            return;
+                '<p class="mb-1 fw-semibold">No scores yet!</p>' +
+                '<p class="small text-muted mb-0">Play a round of ' + emptyGameTitle + ' to claim the #1 global spot.</p>' +
+                '</div>'
+            );
         }
 
         var esc = window.mcwut.esc;
@@ -949,20 +942,20 @@
                 : "";
 
             var statusHtml = e.statusTag
-                ? '<span class="game-board-tag">' + esc(e.statusTag) + "</span>"
+                ? '<span class="game-board-tag">' + esc(e.statusTag) + '</span>'
                 : "";
 
             var youHtml = e.isMe
                 ? '<span class="game-board-you">You</span>'
                 : "";
 
-            var comboLabel = GAME_KEY === "mini-crossword"
+            var comboLabel = gameKey === "mini-crossword"
                 ? "clean words"
-                : GAME_KEY === "minesweeper"
+                : gameKey === "minesweeper"
                     ? "cascade"
-                    : GAME_KEY === "neon-slope"
+                    : gameKey === "neon-slope"
                         ? "streak"
-                        : GAME_KEY === "merge-2048"
+                        : gameKey === "merge-2048"
                             ? "tile"
                             : "streak";
             var comboHtml = e.bestCombo > 0
@@ -999,8 +992,64 @@
                 "  </div>" +
                 "</div>";
         }
+        return html;
+    }
 
-        boardList.innerHTML = html;
+    function renderLeaderboard(board) {
+        if (!board) return;
+
+        var myRec = board.myRecord;
+        if (myBestEl) {
+            myBestEl.innerHTML = "Best: <strong>" + (myRec ? myRec.bestScore : 0) + "</strong>";
+        }
+        if (myRankEl) {
+            myRankEl.innerHTML = "Rank: <strong>" + (myRec ? "#" + myRec.rank : "—") + "</strong>";
+        }
+
+        if (boardSummary) {
+            var pCount = board.totalPlayers || 0;
+            var gCount = board.totalGamesPlayed || 0;
+            boardSummary.textContent =
+                pCount + (pCount === 1 ? " player" : " players") + " · " +
+                gCount + (gCount === 1 ? " run" : " runs");
+        }
+
+        if (boardList) {
+            boardList.innerHTML = buildLeaderboardHtml(board, GAME_KEY);
+        }
+    }
+
+    async function loadHubLeaderboard(gameKey) {
+        if (!hubHallList) return;
+        hubHallKey = gameKey || "stack-3d";
+        var name = getGameDisplayName(hubHallKey);
+        if (hubHallPlayBtn) {
+            hubHallPlayBtn.setAttribute("data-launch-game", hubHallKey);
+            var span = hubHallPlayBtn.querySelector("span");
+            if (span) {
+                span.textContent = "Play " + name;
+            }
+        }
+        if (hubHallSummary) {
+            hubHallSummary.textContent = "Loading " + name + " high scores…";
+        }
+        try {
+            var board = await window.mcwut.api("/api/games/" + encodeURIComponent(hubHallKey) + "/leaderboard", {
+                headers: window.mcwut.headers()
+            });
+            if (hubHallSummary) {
+                var pCount = board.totalPlayers || 0;
+                var gCount = board.totalGamesPlayed || 0;
+                hubHallSummary.textContent =
+                    name + " · " + pCount + (pCount === 1 ? " player" : " players") + " · " +
+                    gCount + (gCount === 1 ? " run" : " runs");
+            }
+            hubHallList.innerHTML = buildLeaderboardHtml(board, hubHallKey);
+        } catch (err) {
+            if (hubHallList) {
+                hubHallList.innerHTML = '<p class="text-danger small mb-0 py-2">Could not load leaderboard for ' + window.mcwut.esc(name) + '.</p>';
+            }
+        }
     }
 
     // --- Main Animation Loop (60 FPS) ---
@@ -1237,8 +1286,10 @@
         var dt = Math.min((now - state.lastTime) / 1000, 0.1);
         state.lastTime = now;
 
-        updatePhysics(dt);
-        renderScene();
+        if (!viewport.hidden && (!stageView || !stageView.hidden) && GAME_KEY === "stack-3d") {
+            updatePhysics(dt);
+            renderScene();
+        }
         requestAnimationFrame(loop);
     }
 
@@ -4993,7 +5044,39 @@
         });
     }
 
-    // --- Hub Game Switcher ---
+    // --- Hub Game Switcher & Views ---
+    function showHub(pushState) {
+        if (pushState !== false) {
+            history.pushState(null, "", "/games");
+        }
+        if (hubView) hubView.hidden = false;
+        if (stageView) stageView.hidden = true;
+        if (hubActions) hubActions.hidden = true;
+
+        if (pageTitleEl) pageTitleEl.textContent = "Games Hub";
+        if (pageKickerEl) pageKickerEl.textContent = "Choose a game, beat personal records, and climb the global leaderboards.";
+
+        msPauseClock();
+        slopePause();
+
+        loadHubLeaderboard(hubHallKey);
+    }
+
+    function launchGame(nextKey, pushState) {
+        if (!nextKey) nextKey = "stack-3d";
+        if (pushState !== false) {
+            history.pushState(null, "", "/games?game=" + encodeURIComponent(nextKey));
+        }
+        if (hubView) hubView.hidden = true;
+        if (stageView) stageView.hidden = false;
+        if (hubActions) hubActions.hidden = false;
+
+        if (pageTitleEl) pageTitleEl.textContent = "Arcade Games";
+        if (pageKickerEl) pageKickerEl.textContent = "Play solo in this browser and chase the global high score.";
+
+        switchGame(nextKey);
+    }
+
     function switchGame(nextKey) {
         if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048") {
             return;
@@ -5002,6 +5085,10 @@
         msState.active = nextKey === "minesweeper";
         slopeState.active = nextKey === "neon-slope";
         n2048State.active = nextKey === "merge-2048";
+
+        if (hubView) hubView.hidden = true;
+        if (stageView) stageView.hidden = false;
+        if (hubActions) hubActions.hidden = false;
 
         if (hubStrip) {
             var tabs = hubStrip.querySelectorAll("[data-game-key]");
@@ -5091,10 +5178,80 @@
             if (!card) return;
             var key = card.getAttribute("data-game-key");
             if (key && key !== GAME_KEY) {
-                switchGame(key);
+                launchGame(key, true);
             }
         });
     }
+
+    if (backToHubBtn) {
+        backToHubBtn.addEventListener("click", function () {
+            showHub(true);
+        });
+    }
+
+    if (stageBackBtn) {
+        stageBackBtn.addEventListener("click", function () {
+            showHub(true);
+        });
+    }
+
+    if (hubView) {
+        hubView.addEventListener("click", function (ev) {
+            var btn = ev.target.closest("[data-launch-game]");
+            if (btn) {
+                var g = btn.getAttribute("data-launch-game");
+                if (g) {
+                    launchGame(g, true);
+                    return;
+                }
+            }
+            var card = ev.target.closest(".game-tile-card[data-game-key]");
+            if (card && !card.classList.contains("is-soon")) {
+                var gk = card.getAttribute("data-game-key");
+                if (gk) {
+                    launchGame(gk, true);
+                    return;
+                }
+            }
+        });
+
+        hubView.addEventListener("keydown", function (ev) {
+            if (ev.key === "Enter" || ev.key === " ") {
+                var card = ev.target.closest(".game-tile-card[data-game-key]");
+                if (card && !card.classList.contains("is-soon")) {
+                    ev.preventDefault();
+                    var gk = card.getAttribute("data-game-key");
+                    if (gk) {
+                        launchGame(gk, true);
+                    }
+                }
+            }
+        });
+    }
+
+    var hallPills = document.querySelectorAll("[data-hall-game]");
+    for (var h = 0; h < hallPills.length; h++) {
+        hallPills[h].addEventListener("click", function () {
+            var g = this.getAttribute("data-hall-game");
+            if (!g) return;
+            for (var j = 0; j < hallPills.length; j++) {
+                var match = hallPills[j] === this;
+                hallPills[j].classList.toggle("is-active", match);
+                hallPills[j].setAttribute("aria-selected", match ? "true" : "false");
+            }
+            loadHubLeaderboard(g);
+        });
+    }
+
+    window.addEventListener("popstate", function () {
+        var sp = new URLSearchParams(window.location.search);
+        var g = sp.get("game");
+        if (g === "stack-3d" || g === "mini-crossword" || g === "minesweeper" || g === "neon-slope" || g === "merge-2048") {
+            launchGame(g, false);
+        } else {
+            showHub(false);
+        }
+    });
 
     // --- Input Bindings ---
     if (startBtn) {
@@ -5302,13 +5459,13 @@
     initCrosswordEvents();
     n2048RenderBoard();
 
-    // Support deep-linking via ?game=mini-crossword, ?game=minesweeper, ?game=neon-slope, or ?game=merge-2048
+    // Support deep-linking via ?game=stack-3d, ?game=mini-crossword, ?game=minesweeper, ?game=neon-slope, or ?game=merge-2048
     var params = new URLSearchParams(window.location.search);
     var linkedGame = params.get("game");
-    if (linkedGame === "mini-crossword" || linkedGame === "minesweeper" || linkedGame === "neon-slope" || linkedGame === "merge-2048") {
-        switchGame(linkedGame);
+    if (linkedGame === "stack-3d" || linkedGame === "mini-crossword" || linkedGame === "minesweeper" || linkedGame === "neon-slope" || linkedGame === "merge-2048") {
+        launchGame(linkedGame, false);
     } else {
-        loadLeaderboard();
+        showHub(false);
     }
     requestAnimationFrame(loop);
 })();

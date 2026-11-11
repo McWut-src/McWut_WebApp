@@ -3709,6 +3709,263 @@ html[data-theme="dark"] body.has-bg-tile::before {
   }
 }
 
+/* --- Proper Game Hub Landing Page --- */
+.game-hub-view {
+  animation: fadeIn 0.18s ease-in-out;
+}
+
+.game-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.game-tile-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  cursor: pointer;
+}
+
+.game-tile-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.game-tile-card.is-stack:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 10px 28px rgba(56, 189, 248, 0.14);
+}
+
+.game-tile-card.is-crossword:hover {
+  border-color: #f43f5e;
+  box-shadow: 0 10px 28px rgba(244, 63, 94, 0.14);
+}
+
+.game-tile-card.is-minesweeper:hover {
+  border-color: #fb7185;
+  box-shadow: 0 10px 28px rgba(251, 113, 133, 0.14);
+}
+
+.game-tile-card.is-slope:hover {
+  border-color: #22d3ee;
+  box-shadow: 0 10px 28px rgba(34, 211, 238, 0.14);
+}
+
+.game-tile-card.is-2048:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.14);
+}
+
+.game-tile-card.is-soon {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.game-tile-card.is-soon:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+  border-color: var(--line);
+}
+
+.game-tile-badge-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.game-tile-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--muted);
+}
+
+.game-tile-visual {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.game-tile-visual .game-hub-icon {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.game-tile-visual .game-hub-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.game-tile-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-tile-title {
+  font-size: 1.18rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+
+.game-tile-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.game-tile-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.game-tile-features span {
+  font-size: 0.72rem;
+  font-weight: 550;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--line) 45%, transparent);
+  color: var(--ink);
+}
+
+.game-tile-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.game-tile-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 650;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  width: 100%;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.game-tile-launch-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.game-tile-card:hover .game-tile-launch-btn:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* --- Hub Hall of Fame Card --- */
+.game-hub-hall-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.game-hub-hall-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.game-hub-hall-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.game-hall-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.game-hall-pill:hover {
+  color: var(--ink);
+  border-color: var(--blue);
+}
+
+.game-hall-pill.is-active {
+  background: var(--blue);
+  color: #ffffff;
+  border-color: var(--blue);
+}
+
+.game-hall-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  border-radius: 8px;
+}
+
+/* --- Stage Navigation Bar --- */
+.game-stage-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.game-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.game-back-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.game-stage-nav-bar .game-hub-strip {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.game-hub-icon.is-breakout {
+  background: rgba(168, 85, 247, 0.14);
+}
+
 /* --- Games Hub & Stack 3D --- */
 .game-hub-strip {
   display: grid;
@@ -5053,6 +5310,20 @@ html[data-theme="dark"] .ms-stat-pill.is-score strong {
 }
 
 @media (max-width: 575.98px) {
+  .game-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-stage-nav-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .game-stage-nav-bar .game-back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .game-hub-strip {
     grid-template-columns: 1fr 1fr;
   }

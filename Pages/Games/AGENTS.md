@@ -12,6 +12,13 @@ A single-player browser arcade hub where signed-in members play standalone JS ga
 4. **Mobile & Tablet Playable:** Every game must be responsive and fully playable via touch on phones and tablets (tap, swipe, touch-drag) as well as keyboard/mouse (Spacebar, Arrows, Click) on desktop. Viewports must resize dynamically across breakpoints (e.g., 390×844 to 1280×900).
 
 ## Behavior rules
+- **Landing Page & Hub Architecture**: Direct visits to `/games` display the dedicated **Game Hub Landing Page** (`#game-hub-view`) with catalog cards for all arcade games (**Stack 3D**, **Mini Crossword**, **Minesweeper**, **Neon Slope**, **2048 Neon**, and **Cyber Breakout** [Coming Soon]) plus the **Arcade Hall of Fame** card (`#hub-hall-card`) with game-selection pills (`[data-hall-game]`) and high-score previews.
+- **Stage Navigation & URL Routing**:
+  - Direct visit `/games` -> `#game-hub-view` is visible; `#game-stage-view` is hidden; Stack 3D loop idles without physics/rendering load.
+  - Clicking any catalog tile or "Play" button switches to `#game-stage-view`, activates the selected game, updates the URL to `/games?game={gameKey}` via `history.pushState`, and reveals the `All Games` back buttons (`#btn-back-to-hub` in header, `#btn-stage-back` in stage nav bar).
+  - Clicking `All Games` returns to `#game-hub-view`, resets the URL to `/games`, and pauses running timers/loops.
+  - Deep-linking (`/games?game=stack-3d`, `/games?game=neon-slope`, etc.) opens directly into the requested game stage without intermediate hub flashing.
+  - Browser back/forward navigation (`popstate`) seamlessly switches between the Hub landing page and individual game stages.
 - Each member has one leaderboard record per `GameKey` (`GameScores` table, unique index on `(GameKey, UserId)`), tracking `BestScore`, `BestCombo`, `GamesPlayed`, `AchievedAt`, and `LastPlayedAt`.
 - Submitting a score increments `GamesPlayed`, updates `BestCombo` if higher, and replaces `BestScore` + `AchievedAt` only when the new score beats the player's previous record.
 - Leaderboard rows sort in memory (`BestScore` descending, then `BestCombo` descending, then earlier `AchievedAt` ascending) because SQLite cannot `ORDER BY` a `DateTimeOffset`.

@@ -6,12 +6,299 @@
 
 <div class="page-head">
     <div>
-        <h1 class="page-title">Games</h1>
-        <p class="page-kicker">Play solo in this browser and chase the global high score.</p>
+        <h1 class="page-title" id="games-page-title">Games Hub</h1>
+        <p class="page-kicker" id="games-page-kicker">Choose a game, beat personal records, and climb the global leaderboards.</p>
+    </div>
+    <div id="games-hub-actions" hidden>
+        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-back-to-hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            All Games
+        </button>
     </div>
 </div>
 
-<div class="game-hub-strip" id="game-hub-strip" role="tablist" aria-label="Arcade games">
+<div class="game-hub-view" id="game-hub-view">
+    <div class="game-catalog-grid">
+        <!-- 1. Stack 3D -->
+        <div class="game-tile-card is-stack" data-game-key="stack-3d" tabindex="0" role="button" aria-label="Launch Stack 3D">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">Three.js 3D</span>
+                <span class="game-tile-pill">Top Played</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-stack" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <polygon points="16,4 28,10 16,16 4,10" fill="#38bdf8" />
+                        <polygon points="4,10 16,16 16,21 4,15" fill="#0284c7" />
+                        <polygon points="28,10 16,16 16,21 28,15" fill="#0369a1" />
+                        <polygon points="16,13 26,18 16,23 6,18" fill="#a855f7" opacity="0.9" />
+                        <polygon points="6,18 16,23 16,28 6,23" fill="#7e22ce" />
+                        <polygon points="26,18 16,23 16,28 26,23" fill="#6b21a8" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Stack 3D</h2>
+                    <span class="text-muted small">Isometric Precision Builder</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    Slice overhangs, land perfect drops, and build the highest tower. Perfect streaks expand your slab back out!
+                </p>
+                <div class="game-tile-features">
+                    <span>3D Arcade</span>
+                    <span>Combo Multiplier</span>
+                    <span>Sound FX</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="stack-3d">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play Stack 3D
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Mini Crossword -->
+        <div class="game-tile-card is-crossword" data-game-key="mini-crossword" tabindex="0" role="button" aria-label="Launch Mini Crossword">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">5×5 Daily Grid</span>
+                <span class="game-tile-pill">Speed Bonus</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-crossword" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="4" width="11" height="11" rx="2.5" fill="#f43f5e" />
+                        <rect x="17" y="4" width="11" height="11" rx="2.5" fill="#fb7185" opacity="0.85" />
+                        <rect x="4" y="17" width="11" height="11" rx="2.5" fill="#1e293b" stroke="#475569" stroke-width="1.2" />
+                        <rect x="17" y="17" width="11" height="11" rx="2.5" fill="#f59e0b" />
+                        <text x="9.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">A</text>
+                        <text x="22.5" y="12.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">B</text>
+                        <text x="22.5" y="25.5" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="800" font-family="sans-serif">C</text>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Mini Crossword</h2>
+                    <span class="text-muted small">Daily 5×5 Word Grid</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    Bite-sized crossword pack with live clue navigation, pencil draft mode, keyboard shortcuts, and speedrun timing.
+                </p>
+                <div class="game-tile-features">
+                    <span>Word Puzzle</span>
+                    <span>Pencil Mode</span>
+                    <span>Touch Keyboard</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="mini-crossword">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play Crossword
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Minesweeper -->
+        <div class="game-tile-card is-minesweeper" data-game-key="minesweeper" tabindex="0" role="button" aria-label="Launch Minesweeper">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">Canvas 2D</span>
+                <span class="game-tile-pill">Classic Logic</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-minesweeper" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <path d="M4 10h24M4 16h24M4 22h24M10 4v24M16 4v24M22 4v24" stroke="#38bdf8" stroke-width="0.8" opacity="0.14" />
+                        <circle cx="16" cy="18" r="5.6" fill="#111c2e" stroke="#fb7185" stroke-width="1.7" />
+                        <path d="M16 9.6V6.4M16 29.6v-3.2M6.4 18H3.2M28.8 18h-3.2M9.3 11.3l-2.2-2.2M22.7 11.3l2.2-2.2M9.3 24.7l-2.2 2.2M22.7 24.7l2.2 2.2" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" />
+                        <circle cx="16" cy="18" r="2.2" fill="#f43f5e" />
+                        <path d="M19.2 14.8l2-2" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="21.8" cy="12.2" r="1.1" fill="#fbbf24" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Minesweeper</h2>
+                    <span class="text-muted small">Neon Minefield Sweeper</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    Clear the minefield without tripping a blast. Features guaranteed safe first clicks, chord reveals, and zero-guess cascades.
+                </p>
+                <div class="game-tile-features">
+                    <span>3 Difficulties</span>
+                    <span>Chord Reveal</span>
+                    <span>Fast Cascades</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="minesweeper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play Minesweeper
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. Neon Slope -->
+        <div class="game-tile-card is-slope" data-game-key="neon-slope" tabindex="0" role="button" aria-label="Launch Neon Slope">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">Three.js 3D</span>
+                <span class="game-tile-pill">High Velocity</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-slope" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <path d="M4 26L13 8h6l9 18" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="16" cy="19" r="4.5" fill="#f43f5e"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Neon Slope</h2>
+                    <span class="text-muted small">Endless Cyber Tunnel</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    High-speed 3D tunnel runner. Steer left and right to dodge cyber barricades and obstacles as speed accelerates endlessly.
+                </p>
+                <div class="game-tile-features">
+                    <span>Endless Speed</span>
+                    <span>Touch / Keys</span>
+                    <span>Synthwave 3D</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="neon-slope">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play Neon Slope
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. 2048 Neon -->
+        <div class="game-tile-card is-2048" data-game-key="merge-2048" tabindex="0" role="button" aria-label="Launch 2048 Neon">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag is-live">Neon Grid</span>
+                <span class="game-tile-pill">Number Strategy</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-2048" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <rect x="5" y="5" width="10" height="10" rx="2.5" fill="#f59e0b"/>
+                        <rect x="17" y="5" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.65"/>
+                        <rect x="5" y="17" width="10" height="10" rx="2.5" fill="#fbbf24" opacity="0.4"/>
+                        <rect x="17" y="17" width="10" height="10" rx="2.5" fill="#10b981"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">2048 Neon</h2>
+                    <span class="text-muted small">Sliding Tile Puzzle</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    Slide matching neon tiles to merge 2s into 4s, 8s, and beyond to 2048. Includes undo support and smooth swipe controls.
+                </p>
+                <div class="game-tile-features">
+                    <span>Swipe & Keys</span>
+                    <span>Undo Move</span>
+                    <span>Reactive Colors</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-primary game-tile-launch-btn" data-launch-game="merge-2048">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Play 2048 Neon
+                </button>
+            </div>
+        </div>
+
+        <!-- 6. Cyber Breakout (Coming Soon) -->
+        <div class="game-tile-card is-soon" aria-label="Cyber Breakout (Coming Soon)">
+            <div class="game-tile-badge-strip">
+                <span class="game-hub-tag">In Development</span>
+                <span class="game-tile-pill">Retro Classic</span>
+            </div>
+            <div class="game-tile-visual">
+                <div class="game-hub-icon is-breakout" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="6" width="6" height="3" rx="1" fill="#ec4899" />
+                        <rect x="13" y="6" width="6" height="3" rx="1" fill="#a855f7" />
+                        <rect x="22" y="6" width="6" height="3" rx="1" fill="#6366f1" />
+                        <rect x="4" y="11" width="6" height="3" rx="1" fill="#38bdf8" />
+                        <rect x="13" y="11" width="6" height="3" rx="1" fill="#22c55e" />
+                        <rect x="22" y="11" width="6" height="3" rx="1" fill="#eab308" />
+                        <circle cx="16" cy="18" r="2" fill="#ffffff" />
+                        <rect x="10" y="24" width="12" height="3" rx="1.5" fill="#38bdf8" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="game-tile-title">Cyber Breakout</h2>
+                    <span class="text-muted small">Neon Brick Breaker</span>
+                </div>
+            </div>
+            <div class="game-tile-body">
+                <p class="game-tile-desc">
+                    High-energy neon brick-breaker with multiballs, lasers, paddle powerups, and synthwave visuals coming soon.
+                </p>
+                <div class="game-tile-features">
+                    <span>Powerups</span>
+                    <span>Multi-Ball</span>
+                    <span>Coming Soon</span>
+                </div>
+            </div>
+            <div class="game-tile-foot">
+                <button type="button" class="btn btn-secondary game-tile-launch-btn" disabled>
+                    Coming Soon
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hub Hall of Fame / Leaderboard Section -->
+    <div class="card game-hub-hall-card mb-4" id="hub-hall-card">
+        <div class="card-body">
+            <div class="game-hub-hall-header mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="game-trophy-icon" aria-hidden="true">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </span>
+                    <div>
+                        <h2 class="h6 mb-0">Arcade Hall of Fame</h2>
+                        <span class="text-muted small" id="hub-hall-summary">Top scores across the arcade</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-primary btn-sm game-hall-launch-btn" id="hub-hall-play-btn" data-launch-game="stack-3d">
+                        <span>Play Stack 3D</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="game-hub-hall-pills mb-3" role="tablist" aria-label="Hall of fame games">
+                <button type="button" class="game-hall-pill is-active" data-hall-game="stack-3d" role="tab" aria-selected="true">Stack 3D</button>
+                <button type="button" class="game-hall-pill" data-hall-game="mini-crossword" role="tab" aria-selected="false">Mini Crossword</button>
+                <button type="button" class="game-hall-pill" data-hall-game="minesweeper" role="tab" aria-selected="false">Minesweeper</button>
+                <button type="button" class="game-hall-pill" data-hall-game="neon-slope" role="tab" aria-selected="false">Neon Slope</button>
+                <button type="button" class="game-hall-pill" data-hall-game="merge-2048" role="tab" aria-selected="false">2048 Neon</button>
+            </div>
+
+            <div class="game-board-list" id="hub-hall-list">
+                <p class="empty">Loading high scores…</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="game-stage-view" id="game-stage-view" hidden>
+    <div class="game-stage-nav-bar">
+        <button type="button" class="btn btn-secondary btn-sm game-back-btn" id="btn-stage-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            All Games
+        </button>
+        <div class="game-hub-strip" id="game-hub-strip" role="tablist" aria-label="Arcade games">
     <button type="button" class="game-hub-card is-active" data-game-key="stack-3d" role="tab" aria-selected="true">
         <div class="game-hub-icon is-stack" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -106,9 +393,10 @@
             <span>Reactive number-merging grid puzzle.</span>
         </div>
     </button>
-</div>
+        </div>
+    </div>
 
-<div class="games-workspace">
+    <div class="games-workspace">
     <section class="card game-stage-card" aria-label="Arcade Game Stage">
         <div class="game-stage-header">
             <div class="game-stage-title-wrap">
@@ -660,6 +948,7 @@
             </div>
         </div>
     </aside>
+    </div>
 </div>
 
 @section Scripts {
