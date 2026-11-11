@@ -345,6 +345,67 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("FileGrants", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameCustomLevelEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AuthorUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BestScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("BestTimeMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ClearsCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameKey")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LevelJson")
+                        .IsRequired()
+                        .HasMaxLength(65536)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PlaysCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("RecordHolderUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorUserId");
+
+                    b.HasIndex("GameKey");
+
+                    b.HasIndex("GameKey", "AuthorUserId");
+
+                    b.ToTable("GameCustomLevels", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1004,6 +1065,15 @@ namespace FamilyVault.Files.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameCustomLevelEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.GameScoreEntity", b =>

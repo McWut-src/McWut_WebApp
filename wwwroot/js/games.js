@@ -5053,12 +5053,36 @@
     }
 
     // =========================================================================
-    // WACKY WHEELS (2D RAGDOLL PHYSICS OBSTACLE COURSE)
+    // WACKY WHEELS (2D RAGDOLL PHYSICS OBSTACLE COURSE + LEVEL EDITOR)
     // =========================================================================
     var wwStage = document.getElementById("wheels-stage");
     var wwViewport = document.getElementById("ww-viewport");
     var wwCanvas = document.getElementById("ww-canvas");
     var wwCtx = wwCanvas ? wwCanvas.getContext("2d") : null;
+
+    var wwTabOfficial = document.getElementById("ww-tab-official");
+    var wwTabLevels = document.getElementById("ww-tab-levels");
+    var wwTabEditor = document.getElementById("ww-tab-editor");
+    var wwLevelsCountBadge = document.getElementById("ww-levels-count");
+    var wwCustomPlayingBar = document.getElementById("ww-custom-playing-bar");
+    var wwCustomTitleLabel = document.getElementById("ww-custom-title-label");
+    var wwCustomAuthorSlot = document.getElementById("ww-custom-author-slot");
+    var wwShareLevelBtn = document.getElementById("ww-share-level-btn");
+    var wwRemixActiveBtn = document.getElementById("ww-remix-active-btn");
+
+    var wwEditorToolbar = document.getElementById("ww-editor-toolbar");
+    var wwTelemetryBar = document.getElementById("ww-telemetry-bar");
+    var wwToolPalette = document.getElementById("ww-tool-palette");
+    var wwEdPanLeft = document.getElementById("ww-ed-pan-left");
+    var wwEdPanRight = document.getElementById("ww-ed-pan-right");
+    var wwEdUndoBtn = document.getElementById("ww-ed-undo-btn");
+    var wwEdClearBtn = document.getElementById("ww-ed-clear-btn");
+    var wwEdTestBtn = document.getElementById("ww-ed-test-btn");
+    var wwEdPublishBtn = document.getElementById("ww-ed-publish-btn");
+    var wwReturnEditBtn = document.getElementById("ww-return-edit-btn");
+    var wwEditorHint = document.getElementById("ww-editor-hint");
+    var wwCenterHud = document.getElementById("ww-center-hud");
+    var wwTouchPad = document.getElementById("ww-touch-pad");
 
     var wwHudTimer = document.getElementById("ww-hud-timer");
     var wwHudDistance = document.getElementById("ww-hud-distance");
@@ -5078,18 +5102,43 @@
     var wwBtnEject = document.getElementById("ww-btn-eject");
 
     var wwStartOverlay = document.getElementById("ww-start-overlay");
+    var wwStartBadge = document.getElementById("ww-start-badge");
+    var wwStartTitle = document.getElementById("ww-start-title");
+    var wwStartDesc = document.getElementById("ww-start-desc");
     var wwStartBtn = document.getElementById("ww-start-btn");
+    var wwOpenLevelsBtn = document.getElementById("ww-open-levels-btn");
+    var wwOpenEditorBtn = document.getElementById("ww-open-editor-btn");
+
     var wwOverOverlay = document.getElementById("ww-over-overlay");
     var wwAgainBtn = document.getElementById("ww-again-btn");
+    var wwOverEditBtn = document.getElementById("ww-over-edit-btn");
+    var wwOverPublishBtn = document.getElementById("ww-over-publish-btn");
+    var wwOverLevelsBtn = document.getElementById("ww-over-levels-btn");
     var wwRecordBanner = document.getElementById("ww-record-banner");
     var wwOverBadge = document.getElementById("ww-over-badge");
     var wwOverTitle = document.getElementById("ww-over-title");
     var wwOverBreakdown = document.getElementById("ww-over-breakdown");
     var wwOverScore = document.getElementById("ww-over-score");
     var wwOverCombo = document.getElementById("ww-over-combo");
+    var wwOverBestLabel = document.getElementById("ww-over-best-label");
     var wwOverBest = document.getElementById("ww-over-best");
+    var wwOverRankLabel = document.getElementById("ww-over-rank-label");
     var wwOverRank = document.getElementById("ww-over-rank");
     var wwSaveStatus = document.getElementById("ww-save-status");
+
+    var wwLevelsOverlay = document.getElementById("ww-levels-overlay");
+    var wwLevelsNewBtn = document.getElementById("ww-levels-new-btn");
+    var wwLevelsCloseBtn = document.getElementById("ww-levels-close-btn");
+    var wwLevelsListEl = document.getElementById("ww-levels-list");
+
+    var wwPublishOverlay = document.getElementById("ww-publish-overlay");
+    var wwPubHeading = document.getElementById("ww-publish-heading");
+    var wwPubTitleInput = document.getElementById("ww-pub-title");
+    var wwPubDescInput = document.getElementById("ww-pub-desc");
+    var wwPubError = document.getElementById("ww-pub-error");
+    var wwPubSubmitBtn = document.getElementById("ww-pub-submit-btn");
+    var wwPubCopyBtn = document.getElementById("ww-pub-copy-btn");
+    var wwPubCancelBtn = document.getElementById("ww-pub-cancel-btn");
 
     var WW_START_X = 110;
     var WW_FINISH_X = 4650;
@@ -5105,7 +5154,11 @@
 
     var wwState = {
         active: false,
-        mode: "idle", // "idle" | "playing" | "gameover"
+        mode: "idle", // "idle" | "playing" | "gameover" | "editor"
+        playContext: "official", // "official" | "custom" | "editor-test"
+        customLevelMeta: null,   // GameCustomLevelSummaryView when playing a member level
+        customLevelData: null,   // Parsed JSON payload when playing a member level
+        communityLevels: [],
         gameId: 0,
         submitted: false,
         animFrame: null,
@@ -5115,11 +5168,10 @@
         stuntPts: 0,
         starsCollected: 0,
         totalStars: 15,
+        finishX: WW_FINISH_X,
         combo: 0,
         maxCombo: 0,
         maxDistX: WW_START_X,
-        loopPhase: 0,
-        loopBonusGiven: false,
         riderSeated: true,
         ejectedByPlayer: false,
         airBoostUsed: false,
@@ -5145,6 +5197,60 @@
         scarfPts: [],
         popTimer: null,
         leaderboard: null
+    };
+
+    function wwDefaultEditorData(withStarterFun) {
+        if (!withStarterFun) {
+            return {
+                version: 1,
+                finishX: 1900,
+                strips: [
+                    { pts: [[-120, 420], [340, 420], [2050, 420]] }
+                ],
+                loops: [],
+                springs: [],
+                wreckingBalls: [],
+                crates: [],
+                stars: []
+            };
+        }
+        return {
+            version: 1,
+            finishX: 2100,
+            strips: [
+                { pts: [[-120, 420], [280, 420], [560, 375], [840, 420], [1220, 420]] },
+                { pts: [[1220, 420], [1420, 345]], boost: true },
+                { pts: [[1620, 385], [1820, 420], [2300, 420]] }
+            ],
+            loops: [],
+            springs: [{ x: 880, y: 420, w: 62 }],
+            wreckingBalls: [],
+            crates: [{ x: 1860, y: 420 }, { x: 1860, y: 386 }],
+            stars: [
+                { x: 560, y: 320 },
+                { x: 1020, y: 270 },
+                { x: 1520, y: 265 }
+            ]
+        };
+    }
+
+    var wwEditor = {
+        tool: "road",
+        editingLevelId: null,
+        editingTitle: "",
+        editingDesc: "",
+        data: wwDefaultEditorData(true),
+        undoStack: [],
+        drawingPts: null,
+        panning: false,
+        panStartClientX: 0,
+        panStartClientY: 0,
+        panStartCamX: 0,
+        panStartCamY: 0,
+        erasing: false,
+        hoverWorld: null,
+        savedCamX: 480,
+        savedCamY: 350
     };
 
     // --- Wacky Wheels Procedural Web Audio ---
@@ -5356,7 +5462,7 @@
     }
 
     // --- Course & Obstacle Construction ---
-    function wwAddSegment(list, buckets, x1, y1, x2, y2, layer, boost) {
+    function wwAddSegment(list, buckets, x1, y1, x2, y2, layer, boost, loopIdx) {
         var dx = x2 - x1;
         var dy = y2 - y1;
         var len = Math.hypot(dx, dy);
@@ -5371,7 +5477,8 @@
             dx: dx, dy: dy, len: len,
             tx: tx, ty: ty, nx: nx, ny: ny,
             layer: layer || "main",
-            boost: !!boost
+            boost: !!boost,
+            loopIdx: loopIdx !== undefined ? loopIdx : -1
         };
         list.push(seg);
 
@@ -5383,14 +5490,41 @@
         }
     }
 
-    function wwAddPolyline(list, buckets, pts, layer, boostFromX, boostToX) {
+    function wwAddPolyline(list, buckets, pts, layer, boostFromX, boostToX, loopIdx) {
         for (var i = 0; i < pts.length - 1; i++) {
             var p1 = pts[i];
             var p2 = pts[i + 1];
             var midX = (p1[0] + p2[0]) * 0.5;
             var isBoost = boostFromX !== undefined && midX >= boostFromX && midX <= boostToX;
-            wwAddSegment(list, buckets, p1[0], p1[1], p2[0], p2[1], layer, isBoost);
+            wwAddSegment(list, buckets, p1[0], p1[1], p2[0], p2[1], layer, isBoost, loopIdx);
         }
+    }
+
+    function wwAddLoopToCourse(segments, buckets, groundStrips, loopsList, loopCx, loopCy, loopR) {
+        var idx = loopsList.length;
+        loopsList.push({ cx: loopCx, cy: loopCy, r: loopR, phase: 0, bonusGiven: false });
+        var baseY = loopCy + loopR;
+
+        var loopEntry = [[loopCx - 200, baseY], [loopCx - 100, baseY], [loopCx, baseY]];
+        wwAddPolyline(segments, buckets, loopEntry, "entry-floor", loopCx - 200, loopCx, idx);
+
+        var loopSteps = 40;
+        for (var s = 0; s < loopSteps; s++) {
+            var a1 = Math.PI * 0.5 - (s / loopSteps) * Math.PI * 2.0;
+            var a2 = Math.PI * 0.5 - ((s + 1) / loopSteps) * Math.PI * 2.0;
+            var lx1 = loopCx + Math.cos(a1) * loopR;
+            var ly1 = loopCy + Math.sin(a1) * loopR;
+            var lx2 = loopCx + Math.cos(a2) * loopR;
+            var ly2 = loopCy + Math.sin(a2) * loopR;
+            var frac = (s + 0.5) / loopSteps;
+            var segLayer = frac < 0.54 ? "loop-up" : "loop-down";
+            var segBoost = frac < 0.45;
+            wwAddSegment(segments, buckets, lx1, ly1, lx2, ly2, segLayer, segBoost, idx);
+        }
+
+        var loopExit = [[loopCx, baseY], [loopCx + 130, baseY], [loopCx + 260, baseY]];
+        wwAddPolyline(segments, buckets, loopExit, "exit-floor", loopCx, loopCx + 100, idx);
+        groundStrips.push({ pts: [[loopCx - 200, baseY], [loopCx + 260, baseY]], boost: false });
     }
 
     function wwSampleSmoothSection(xStart, xEnd, steps, heightFn) {
@@ -5407,6 +5541,7 @@
         var segments = [];
         var buckets = {};
         var groundStrips = [];
+        var loops = [];
 
         // Backstop wall at x = -140
         wwAddSegment(segments, buckets, -140, 160, -140, 425, "main", false);
@@ -5415,21 +5550,17 @@
         var strip1 = [];
         strip1.push([-140, 420], [0, 420], [230, 420]);
 
-        // Rolling Hills #1 & #2 (x = 230 .. 1060)
         var hills1 = wwSampleSmoothSection(230, 1060, 28, function (x, t) {
-            // Smooth zero-slope entry & exit cosine hills
             var env = Math.sin(t * Math.PI);
             return 420 - env * (54 * Math.sin(t * Math.PI * 2.5) + 28);
         });
         for (var i = 1; i < hills1.length; i++) strip1.push(hills1[i]);
 
-        // Wrecking Ball #1 Valley & Springboard #1 Approach (x = 1060 .. 1920)
         var valley1 = wwSampleSmoothSection(1060, 1920, 22, function (x, t) {
             return 420 + 18 * Math.sin(t * Math.PI * 2);
         });
         for (var j = 1; j < valley1.length; j++) strip1.push(valley1[j]);
 
-        // Curved Turbo Launch Ramp (x = 1920 .. 2155, curving smoothly up to y = 318)
         var rampPts = wwSampleSmoothSection(1920, 2155, 12, function (x, t) {
             return 420 - 102 * (t * t);
         });
@@ -5438,52 +5569,25 @@
         wwAddPolyline(segments, buckets, strip1, "main", 1960, 2155);
         groundStrips.push({ pts: strip1, isRampEnd: true });
 
-        // Strip 2: Canyon Safety Floor (x = 2155 .. 2490) + Climb-out -> Loop Approach (x = 2490 .. 2960)
+        // Strip 2: Canyon Safety Floor + Climb-out -> Loop Approach
         var strip2 = [
             [2155, 515],
             [2410, 515],
             [2520, 348]
         ];
         var landSlope = wwSampleSmoothSection(2520, 2960, 16, function (x, t) {
-            // Smooth landing slope descending from 348 down to 430
             return 348 + (430 - 348) * (0.5 - 0.5 * Math.cos(t * Math.PI));
         });
         for (var ls = 1; ls < landSlope.length; ls++) strip2.push(landSlope[ls]);
         wwAddPolyline(segments, buckets, strip2, "main", -1, -1);
         groundStrips.push({ pts: strip2, isRampEnd: false });
 
-        // Loop Entry Floor (x = 2960 .. 3160 at y = 430, with Loop Booster!)
-        var loopEntry = [[2960, 430], [3060, 430], [3160, 430]];
-        wwAddPolyline(segments, buckets, loopEntry, "entry-floor", 2960, 3160);
+        // 360° Loop-the-Loop centered at (3160, 275), radius = 155
+        wwAddLoopToCourse(segments, buckets, groundStrips, loops, 3160, 275, 155);
 
-        // 360° Loop-the-Loop centered at (3160, 275), radius = 155 (bottom at y = 430, top at y = 120)
-        var loopCx = 3160;
-        var loopCy = 275;
-        var loopR = 155;
-        var loopSteps = 40;
-        for (var s = 0; s < loopSteps; s++) {
-            var a1 = Math.PI * 0.5 - (s / loopSteps) * Math.PI * 2.0;
-            var a2 = Math.PI * 0.5 - ((s + 1) / loopSteps) * Math.PI * 2.0;
-            var lx1 = loopCx + Math.cos(a1) * loopR;
-            var ly1 = loopCy + Math.sin(a1) * loopR;
-            var lx2 = loopCx + Math.cos(a2) * loopR;
-            var ly2 = loopCy + Math.sin(a2) * loopR;
-            var frac = (s + 0.5) / loopSteps;
-            var segLayer = frac < 0.54 ? "loop-up" : "loop-down";
-            var segBoost = frac < 0.45;
-            wwAddSegment(segments, buckets, lx1, ly1, lx2, ly2, segLayer, segBoost);
-        }
-
-        // Loop Exit Floor (x = 3160 .. 3440 at y = 430)
-        var loopExit = [[3160, 430], [3300, 430], [3440, 430]];
-        wwAddPolyline(segments, buckets, loopExit, "exit-floor", 3160, 3260);
-
-        // Continuous visual floor strip under loop (x = 2960 .. 3440)
-        groundStrips.push({ pts: [[2960, 430], [3440, 430]], isRampEnd: false });
-
-        // Strip 4: Final Gauntlet Hills -> Crate Pyramid -> Checkered Finish Runway (x = 3440 .. 5350)
-        var strip4 = [[3440, 430]];
-        var finalHills = wwSampleSmoothSection(3440, 4480, 30, function (x, t) {
+        // Strip 4: Final Gauntlet Hills -> Crate Pyramid -> Checkered Finish Runway
+        var strip4 = [[3420, 430]];
+        var finalHills = wwSampleSmoothSection(3420, 4480, 30, function (x, t) {
             if (x > 4180) {
                 var blend = (x - 4180) / 300;
                 return 430 - (1 - blend) * 24 * Math.sin(t * Math.PI * 4);
@@ -5495,26 +5599,21 @@
         wwAddPolyline(segments, buckets, strip4, "main", -1, -1);
         groundStrips.push({ pts: strip4, isRampEnd: false });
 
-        // Springboards
         var springs = [
             { x: 1210, y: 432, w: 62, anim: 0, cooldown: 0 },
             { x: 2350, y: 515, w: 68, anim: 0, cooldown: 0 },
             { x: 3735, y: 416, w: 62, anim: 0, cooldown: 0 }
         ];
 
-        // Swinging Wrecking Balls
         var wreckingBalls = [
             { pivotX: 1520, pivotY: 130, length: 215, radius: 27, amp: 0.68, speed: 2.1, phase: 0.3 },
             { pivotX: 4030, pivotY: 125, length: 218, radius: 29, amp: 0.72, speed: 2.4, phase: 1.9 }
         ];
 
-        // Breakable Wooden Stunt Crates
         var crates = [
-            // Stack 1 on hill #2
             { x: 915, y: 392, w: 34, h: 34, intact: true },
             { x: 951, y: 394, w: 34, h: 34, intact: true },
             { x: 933, y: 358, w: 34, h: 34, intact: true },
-            // Stack 2 pyramid before finish gate
             { x: 4310, y: 413, w: 34, h: 34, intact: true },
             { x: 4346, y: 413, w: 34, h: 34, intact: true },
             { x: 4382, y: 413, w: 34, h: 34, intact: true },
@@ -5522,14 +5621,13 @@
             { x: 4364, y: 379, w: 34, h: 34, intact: true }
         ];
 
-        // 15 Collectible Bonus Stars (+100 pts each)
         var starCoords = [
-            [420, 325], [500, 310], [580, 325],           // Opening hill arc (3)
-            [1310, 275], [1420, 245],                     // Springboard #1 jump arc (2)
-            [2220, 235], [2335, 205], [2450, 240],        // Launch ramp canyon arc (3)
-            [3285, 265], [3160, 155], [3035, 265],        // Inside 360° Loop-the-Loop (3)
-            [3840, 265], [3950, 245],                     // Springboard #3 jump over Wrecking Ball #2 (2)
-            [4480, 375], [4570, 375]                      // Homestretch into Checkered Finish Gate (2)
+            [420, 325], [500, 310], [580, 325],
+            [1310, 275], [1420, 245],
+            [2220, 235], [2335, 205], [2450, 240],
+            [3285, 265], [3160, 155], [3035, 265],
+            [3840, 265], [3950, 245],
+            [4480, 375], [4570, 375]
         ];
         var stars = [];
         for (var sc = 0; sc < starCoords.length; sc++) {
@@ -5542,10 +5640,105 @@
         }
 
         return {
+            isOfficial: true,
+            finishX: WW_FINISH_X,
             segments: segments,
             buckets: buckets,
             groundStrips: groundStrips,
-            loopGeom: { cx: loopCx, cy: loopCy, r: loopR },
+            loops: loops,
+            springs: springs,
+            wreckingBalls: wreckingBalls,
+            crates: crates,
+            stars: stars
+        };
+    }
+
+    function wwBuildCustomCourse(raw) {
+        var d = raw || wwDefaultEditorData(true);
+        var finishX = Math.max(700, Math.min(12000, Number(d.finishX) || 2100));
+        var segments = [];
+        var buckets = {};
+        var groundStrips = [];
+        var loops = [];
+
+        wwAddSegment(segments, buckets, -140, 160, -140, 425, "main", false);
+
+        var stripsIn = Array.isArray(d.strips) ? d.strips : [];
+        var hasSpawn = false;
+        for (var si = 0; si < stripsIn.length; si++) {
+            var sp = stripsIn[si];
+            if (!sp || !Array.isArray(sp.pts) || sp.pts.length < 2) continue;
+            var pts = sp.pts.map(function (p) { return [Number(p[0]) || 0, Number(p[1]) || 420]; });
+            for (var pk = 0; pk < pts.length; pk++) {
+                if (pts[pk][0] <= 75 && pts[pk][1] >= 350 && pts[pk][1] <= 470) hasSpawn = true;
+            }
+            var boostMin = sp.boost ? -99999 : undefined;
+            var boostMax = sp.boost ? 99999 : undefined;
+            wwAddPolyline(segments, buckets, pts, "main", boostMin, boostMax);
+            groundStrips.push({ pts: pts, boost: !!sp.boost });
+        }
+
+        if (!hasSpawn) {
+            var spawnPts = [[-120, 420], [280, 420]];
+            wwAddPolyline(segments, buckets, spawnPts, "main");
+            groundStrips.unshift({ pts: spawnPts, boost: false });
+        }
+
+        // Ensure victory runway past finish gate if no strip reaches finishX
+        var hasFinishRunway = false;
+        for (var fi = 0; fi < groundStrips.length; fi++) {
+            var gPts = groundStrips[fi].pts;
+            for (var fp = 0; fp < gPts.length; fp++) {
+                if (gPts[fp][0] >= finishX - 60) {
+                    hasFinishRunway = true;
+                    break;
+                }
+            }
+        }
+        if (!hasFinishRunway) {
+            var endRunway = [[finishX - 120, 420], [finishX + 380, 420]];
+            wwAddPolyline(segments, buckets, endRunway, "main");
+            groundStrips.push({ pts: endRunway, boost: false });
+        }
+
+        var loopsIn = Array.isArray(d.loops) ? d.loops : [];
+        for (var li = 0; li < loopsIn.length; li++) {
+            var lp = loopsIn[li];
+            if (!lp) continue;
+            wwAddLoopToCourse(segments, buckets, groundStrips, loops, Number(lp.x) || 1200, Number(lp.y) || 275, Number(lp.r) || 150);
+        }
+
+        var springs = (Array.isArray(d.springs) ? d.springs : []).map(function (s) {
+            return { x: Number(s.x) || 600, y: Number(s.y) || 420, w: Number(s.w) || 62, anim: 0, cooldown: 0 };
+        });
+
+        var wreckingBalls = (Array.isArray(d.wreckingBalls) ? d.wreckingBalls : []).map(function (w, idx) {
+            return {
+                pivotX: Number(w.pivotX) || 900,
+                pivotY: Number(w.pivotY) || 130,
+                length: Number(w.length) || 205,
+                radius: Number(w.radius) || 28,
+                amp: Number(w.amp) || 0.7,
+                speed: Number(w.speed) || 2.15,
+                phase: w.phase !== undefined ? Number(w.phase) : idx * 1.3
+            };
+        });
+
+        var crates = (Array.isArray(d.crates) ? d.crates : []).map(function (c) {
+            return { x: Number(c.x) || 600, y: Number(c.y) || 420, w: 34, h: 34, intact: true };
+        });
+
+        var stars = (Array.isArray(d.stars) ? d.stars : []).map(function (st, idx) {
+            return { x: Number(st.x) || 500, y: Number(st.y) || 340, collected: false, bobPhase: idx * 0.65 };
+        });
+
+        return {
+            isOfficial: false,
+            finishX: finishX,
+            segments: segments,
+            buckets: buckets,
+            groundStrips: groundStrips,
+            loops: loops,
             springs: springs,
             wreckingBalls: wreckingBalls,
             crates: crates,
@@ -5738,9 +5931,12 @@
         }
     }
 
-    function wwIsLayerActive(layer) {
+    function wwIsSegmentActive(seg) {
+        var layer = seg.layer;
         if (layer === "main") return true;
-        var lp = wwState.loopPhase;
+        var loops = wwState.course ? wwState.course.loops : null;
+        var lpObj = loops && seg.loopIdx >= 0 && loops[seg.loopIdx] ? loops[seg.loopIdx] : null;
+        var lp = lpObj ? lpObj.phase : 0;
         if (lp === 0) {
             return layer === "entry-floor" || layer === "loop-up";
         }
@@ -5764,10 +5960,11 @@
     }
 
     function wwComputeLiveScore(completed) {
-        var progress = Math.max(0, Math.min(1, (wwState.maxDistX - WW_START_X) / (WW_FINISH_X - WW_START_X)));
+        var span = Math.max(400, wwState.finishX - WW_START_X);
+        var progress = Math.max(0, Math.min(1, (wwState.maxDistX - WW_START_X) / span));
         var basePts = completed ? 2000 : Math.round(progress * 800);
         var timeBonus = completed
-            ? Math.max(0, Math.min(3000, Math.round(((45.0 - Math.max(10.0, wwState.elapsed)) / 35.0) * 3000)))
+            ? Math.max(0, Math.min(3000, Math.round(((45.0 - Math.max(8.0, wwState.elapsed)) / 37.0) * 3000)))
             : 0;
         var starPts = wwState.starsCollected * 100;
         var raw = basePts + timeBonus + starPts + wwState.stuntPts;
@@ -5781,25 +5978,28 @@
         var rider = wwState.rider;
         var course = wwState.course;
 
-        // Update Loop-the-Loop phase state based on lead body position
+        // Update Loop-the-Loop phase states based on lead body position
         var refX = wwState.riderSeated ? ch.x : rider.pts[0].x;
         var refY = wwState.riderSeated ? ch.y : rider.pts[0].y;
-        var lg = course.loopGeom;
-        if (refX < lg.cx - lg.r - 80) {
-            wwState.loopPhase = 0;
-        } else if (wwState.loopPhase === 0 && refX > lg.cx - 40 && refY < lg.cy - 25) {
-            wwState.loopPhase = 1;
-        } else if (wwState.loopPhase === 1 && refY > lg.cy + 65 && (wwState.riderSeated ? ch.vx : (rider.pts[0].x - rider.pts[0].px) * 120) > 40 && refX > lg.cx - 30) {
-            wwState.loopPhase = 2;
-            if (!wwState.loopBonusGiven) {
-                wwState.loopBonusGiven = true;
-                wwState.combo++;
-                wwState.maxCombo = Math.max(wwState.maxCombo, wwState.combo);
-                wwState.stuntPts += 400;
-                playPerfectSound(wwState.combo + 2);
-                wwSpawnBurst(refX, refY - 20, 20, "toy");
-                wwAddFloatText(refX, refY - 40, "360° LOOP! +400", "#22d3ee");
-                wwShowBanner("360° LOOP-THE-LOOP! +400");
+        var refVx = wwState.riderSeated ? ch.vx : (rider.pts[0].x - rider.pts[0].px) * 120;
+        for (var lpi = 0; lpi < course.loops.length; lpi++) {
+            var lg = course.loops[lpi];
+            if (refX < lg.cx - lg.r - 80) {
+                lg.phase = 0;
+            } else if (lg.phase === 0 && refX > lg.cx - 40 && refY < lg.cy - 25 && refX < lg.cx + lg.r + 60) {
+                lg.phase = 1;
+            } else if (lg.phase === 1 && refY > lg.cy + 65 && refVx > 40 && refX > lg.cx - 30) {
+                lg.phase = 2;
+                if (!lg.bonusGiven) {
+                    lg.bonusGiven = true;
+                    wwState.combo++;
+                    wwState.maxCombo = Math.max(wwState.maxCombo, wwState.combo);
+                    wwState.stuntPts += 400;
+                    playPerfectSound(wwState.combo + 2);
+                    wwSpawnBurst(refX, refY - 20, 20, "toy");
+                    wwAddFloatText(refX, refY - 40, "360° LOOP! +400", "#22d3ee");
+                    wwShowBanner("360° LOOP-THE-LOOP! +400");
+                }
             }
         }
 
@@ -5903,7 +6103,7 @@
                 if (!segList) continue;
                 for (var si = 0; si < segList.length; si++) {
                     var seg = segList[si];
-                    if (!wwIsLayerActive(seg.layer)) continue;
+                    if (!wwIsSegmentActive(seg)) continue;
                     var cp = wwClosestOnSegment(wh.x, wh.y, seg);
                     var distX = wh.x - cp.x;
                     var distY = wh.y - cp.y;
@@ -5989,7 +6189,7 @@
             if (!bSegs) continue;
             for (var bs = 0; bs < bSegs.length; bs++) {
                 var bSeg = bSegs[bs];
-                if (!wwIsLayerActive(bSeg.layer)) continue;
+                if (!wwIsSegmentActive(bSeg)) continue;
                 var bcp = wwClosestOnSegment(bWorldX, bWorldY, bSeg);
                 var bdx = bWorldX - bcp.x;
                 var bdy = bWorldY - bcp.y;
@@ -6119,7 +6319,7 @@
             if (hSegs) {
                 for (var hs = 0; hs < hSegs.length; hs++) {
                     var hSeg = hSegs[hs];
-                    if (!wwIsLayerActive(hSeg.layer)) continue;
+                    if (!wwIsSegmentActive(hSeg)) continue;
                     var hcp = wwClosestOnSegment(headP.x, headP.y, hSeg);
                     var hDist = Math.hypot(headP.x - hcp.x, headP.y - hcp.y);
                     if (hDist < headP.r) {
@@ -6147,7 +6347,7 @@
                     if (!rSegs) continue;
                     for (var rs = 0; rs < rSegs.length; rs++) {
                         var rSeg = rSegs[rs];
-                        if (!wwIsLayerActive(rSeg.layer)) continue;
+                        if (!wwIsSegmentActive(rSeg)) continue;
                         var rcp = wwClosestOnSegment(rPt.x, rPt.y, rSeg);
                         var rdx2 = rPt.x - rcp.x;
                         var rdy2 = rPt.y - rcp.y;
@@ -6450,7 +6650,7 @@
         wwUpdateHud(spd);
 
         // Check Checkered Finish Gate!
-        if (leadX >= WW_FINISH_X) {
+        if (leadX >= wwState.finishX) {
             wwFinishRun(true);
             return;
         }
@@ -6483,7 +6683,8 @@
 
     function wwUpdateHud(spd) {
         if (wwHudTimer) wwHudTimer.textContent = wwFormatTime(wwState.elapsed);
-        var pct = Math.max(0, Math.min(100, Math.round(((wwState.maxDistX - WW_START_X) / (WW_FINISH_X - WW_START_X)) * 100)));
+        var span = Math.max(400, wwState.finishX - WW_START_X);
+        var pct = Math.max(0, Math.min(100, Math.round(((wwState.maxDistX - WW_START_X) / span) * 100)));
         if (wwHudDistance) wwHudDistance.textContent = pct + "%";
         if (wwHudProgress) wwHudProgress.style.width = pct + "%";
         if (wwHudStars) wwHudStars.textContent = wwState.starsCollected + "/" + wwState.totalStars;
@@ -6513,21 +6714,26 @@
 
         if (completed) {
             wwPlayFinishHorn();
-            wwSpawnBurst(WW_FINISH_X - 20, 340, 32, "toy");
-            wwSpawnBurst(WW_FINISH_X + 35, 320, 32, "toy");
+            wwSpawnBurst(wwState.finishX - 20, 340, 32, "toy");
+            wwSpawnBurst(wwState.finishX + 35, 320, 32, "toy");
         } else {
             playGameOverSound();
         }
 
         var timeBonus = completed
-            ? Math.max(0, Math.min(3000, Math.round(((45.0 - Math.max(10.0, wwState.elapsed)) / 35.0) * 3000)))
+            ? Math.max(0, Math.min(3000, Math.round(((45.0 - Math.max(8.0, wwState.elapsed)) / 37.0) * 3000)))
             : 0;
         var starPts = wwState.starsCollected * 100;
+        var span = Math.max(400, wwState.finishX - WW_START_X);
 
         if (wwOverBadge) {
-            wwOverBadge.textContent = completed
-                ? (wwState.riderSeated ? "COURSE COMPLETE! 🏁" : "RAGDOLL FLYING FINISH! 🚀")
-                : (wwState.ejectedByPlayer ? "RAGDOLL DISMOUNT!" : "TOY RIDER WRECKED!");
+            if (wwState.playContext === "editor-test") {
+                wwOverBadge.textContent = completed ? "TEST RUN CLEARED! 🏁" : "TEST RUN WIPEOUT!";
+            } else {
+                wwOverBadge.textContent = completed
+                    ? (wwState.riderSeated ? "COURSE COMPLETE! 🏁" : "RAGDOLL FLYING FINISH! 🚀")
+                    : (wwState.ejectedByPlayer ? "RAGDOLL DISMOUNT!" : "TOY RIDER WRECKED!");
+            }
             wwOverBadge.style.background = completed ? "#16a34a" : "";
             wwOverBadge.style.color = completed ? "#ffffff" : "";
         }
@@ -6539,7 +6745,7 @@
                 wwOverBreakdown.textContent =
                     "Course +2000 · Time +" + timeBonus + " · Stars +" + starPts + " · Stunts +" + wwState.stuntPts + " (" + wwFormatTime(wwState.elapsed) + ")";
             } else {
-                var pct = Math.max(0, Math.min(99, Math.round(((wwState.maxDistX - WW_START_X) / (WW_FINISH_X - WW_START_X)) * 100)));
+                var pct = Math.max(0, Math.min(99, Math.round(((wwState.maxDistX - WW_START_X) / span) * 100)));
                 wwOverBreakdown.textContent =
                     "Reached " + pct + "% of course · Stars +" + starPts + " · Stunts +" + wwState.stuntPts;
             }
@@ -6547,6 +6753,47 @@
         if (wwOverScore) wwOverScore.textContent = String(finalScore);
         if (wwOverCombo) wwOverCombo.textContent = "×" + wwState.maxCombo;
 
+        // Contextual buttons & stat labels based on playContext
+        if (wwOverEditBtn) wwOverEditBtn.hidden = wwState.playContext !== "editor-test";
+        if (wwOverPublishBtn) wwOverPublishBtn.hidden = wwState.playContext !== "editor-test";
+        if (wwOverLevelsBtn) wwOverLevelsBtn.hidden = wwState.playContext !== "custom";
+
+        if (wwState.playContext === "editor-test") {
+            if (wwOverBestLabel) wwOverBestLabel.textContent = "Run Time";
+            if (wwOverBest) wwOverBest.textContent = wwFormatTime(wwState.elapsed);
+            if (wwOverRankLabel) wwOverRankLabel.textContent = "Status";
+            if (wwOverRank) wwOverRank.textContent = completed ? "Verified ✓" : "Draft";
+            if (wwRecordBanner) wwRecordBanner.hidden = true;
+            if (wwSaveStatus) {
+                wwSaveStatus.textContent = completed
+                    ? "Your custom course is beatable! Click Publish Level to share it with members."
+                    : "Click Back to Editor to tweak ramps or obstacles, or Play Again!";
+            }
+            if (wwOverOverlay) wwOverOverlay.hidden = false;
+            return;
+        }
+
+        if (wwState.playContext === "custom" && wwState.customLevelMeta) {
+            var meta = wwState.customLevelMeta;
+            var prevLevelBest = meta.bestScore || 0;
+            if (wwOverBestLabel) wwOverBestLabel.textContent = "Level Record";
+            if (wwOverBest) wwOverBest.textContent = String(Math.max(prevLevelBest, completed ? finalScore : prevLevelBest));
+            if (wwOverRankLabel) wwOverRankLabel.textContent = "Champion";
+            if (wwOverRank) wwOverRank.textContent = meta.recordHolderName || "—";
+            if (wwRecordBanner) {
+                wwRecordBanner.textContent = "NEW COURSE RECORD! 🏆";
+                wwRecordBanner.hidden = !(completed && finalScore > prevLevelBest);
+            }
+            if (wwSaveStatus) {
+                wwSaveStatus.textContent = "Recording run on member level…";
+            }
+            if (wwOverOverlay) wwOverOverlay.hidden = false;
+            wwSubmitCustomRun(completed, finalScore, Math.round(wwState.elapsed * 1000));
+            return;
+        }
+
+        if (wwOverBestLabel) wwOverBestLabel.textContent = "Your Best";
+        if (wwOverRankLabel) wwOverRankLabel.textContent = "Global Rank";
         var prevBest = wwState.leaderboard && wwState.leaderboard.myRecord ? wwState.leaderboard.myRecord.bestScore : 0;
         var optBest = Math.max(prevBest, finalScore);
         if (wwOverBest) wwOverBest.textContent = String(optBest);
@@ -6556,6 +6803,7 @@
                 : "—";
         }
         if (wwRecordBanner) {
+            wwRecordBanner.textContent = "NEW PERSONAL RECORD!";
             wwRecordBanner.hidden = !(finalScore > prevBest && finalScore > 0);
         }
         if (wwSaveStatus) {
@@ -6566,6 +6814,40 @@
         }
 
         wwSubmitScore();
+    }
+
+    async function wwSubmitCustomRun(completed, score, elapsedMs) {
+        if (wwState.submitted || !wwState.customLevelMeta) return;
+        wwState.submitted = true;
+        var gameId = wwState.gameId;
+        var levelId = wwState.customLevelMeta.id;
+        try {
+            var res = await window.mcwut.api("/api/games/wacky-wheels/levels/" + encodeURIComponent(levelId) + "/runs", {
+                method: "POST",
+                headers: window.mcwut.headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ completed: completed, score: score, elapsedMs: elapsedMs })
+            });
+            if (!res || gameId !== wwState.gameId) return;
+            wwState.customLevelMeta = res.level;
+            if (wwOverBest) wwOverBest.textContent = String(res.level.bestScore || 0);
+            if (wwOverRank) wwOverRank.textContent = res.level.recordHolderName || "—";
+            if (wwRecordBanner) {
+                wwRecordBanner.textContent = "NEW COURSE RECORD! 🏆";
+                wwRecordBanner.hidden = !res.isNewRecord;
+            }
+            if (res.isNewRecord) {
+                playNewRecordFanfare();
+            }
+            if (wwSaveStatus) {
+                wwSaveStatus.textContent = res.isNewRecord
+                    ? "You claimed the #1 Course Record on " + res.level.title + "!"
+                    : "Run recorded! (" + res.level.clearsCount + "/" + res.level.playsCount + " clears)";
+            }
+        } catch (err) {
+            if (wwSaveStatus && gameId === wwState.gameId) {
+                wwSaveStatus.textContent = "Could not save run: " + (err.message || "Network error");
+            }
+        }
     }
 
     async function wwSubmitScore() {
@@ -6666,20 +6948,46 @@
         var visLeft = wwState.camX - (w * 0.6) / scale - 160;
         var visRight = wwState.camX + (w * 0.8) / scale + 160;
 
-        // 2. 360° Loop-the-Loop Structure (drawn behind foreground road)
-        var lg = course.loopGeom;
-        if (lg.cx + lg.r + 80 >= visLeft && lg.cx - lg.r - 80 <= visRight) {
-            // Support steel struts
+        // Optional Blueprint Grid in Level Editor Mode
+        if (wwState.mode === "editor") {
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.12)";
+            ctx.lineWidth = 1;
+            var gxStart = Math.floor(visLeft / 100) * 100;
+            ctx.beginPath();
+            for (var gx = gxStart; gx <= visRight; gx += 100) {
+                ctx.moveTo(gx, -450);
+                ctx.lineTo(gx, 860);
+            }
+            for (var gy = -400; gy <= 800; gy += 100) {
+                ctx.moveTo(visLeft, gy);
+                ctx.lineTo(visRight, gy);
+            }
+            ctx.stroke();
+
+            // Protected spawn pad indicator
+            ctx.fillStyle = "rgba(34, 197, 94, 0.14)";
+            ctx.fillRect(-120, 340, 380, 82);
+            ctx.strokeStyle = "rgba(74, 222, 128, 0.45)";
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(-120, 340, 380, 82);
+            ctx.setLineDash([]);
+        }
+
+        // 2. 360° Loop-the-Loop Structures (drawn behind foreground road)
+        for (var lpIdx = 0; lpIdx < course.loops.length; lpIdx++) {
+            var lg = course.loops[lpIdx];
+            if (lg.cx + lg.r + 80 < visLeft || lg.cx - lg.r - 80 > visRight) continue;
+            var lgFloorY = lg.cy + lg.r;
+
             ctx.strokeStyle = "rgba(56, 189, 248, 0.28)";
             ctx.lineWidth = 10;
             ctx.beginPath();
-            ctx.moveTo(lg.cx - lg.r * 0.75, lg.cy + lg.r);
+            ctx.moveTo(lg.cx - lg.r * 0.75, lgFloorY);
             ctx.lineTo(lg.cx - lg.r * 0.95, lg.cy);
-            ctx.moveTo(lg.cx + lg.r * 0.75, lg.cy + lg.r);
+            ctx.moveTo(lg.cx + lg.r * 0.75, lgFloorY);
             ctx.lineTo(lg.cx + lg.r * 0.95, lg.cy);
             ctx.stroke();
 
-            // Outer stunt ring
             ctx.strokeStyle = "#0f172a";
             ctx.lineWidth = 22;
             ctx.beginPath();
@@ -6692,7 +7000,6 @@
             ctx.arc(lg.cx, lg.cy, lg.r + 2, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Glowing loop direction chevrons
             ctx.strokeStyle = "rgba(250, 204, 21, 0.75)";
             ctx.lineWidth = 3;
             for (var la = 0; la < 8; la++) {
@@ -6704,15 +7011,18 @@
                 ctx.stroke();
             }
 
-            // Loop Turbo Pad Strip
             ctx.fillStyle = "#06b6d4";
-            ctx.fillRect(2965, 424, 185, 7);
+            ctx.fillRect(lg.cx - 195, lgFloorY - 6, 185, 7);
         }
 
         // 3. Terrain Fills & Grassy / Neon Stunt Curbs
         for (var gs = 0; gs < course.groundStrips.length; gs++) {
-            var strip = course.groundStrips[gs].pts;
-            if (strip[strip.length - 1][0] < visLeft || strip[0][0] > visRight) continue;
+            var gsObj = course.groundStrips[gs];
+            var strip = gsObj.pts;
+            if (!strip || strip.length < 2) continue;
+            var minSx = Math.min(strip[0][0], strip[strip.length - 1][0]);
+            var maxSx = Math.max(strip[0][0], strip[strip.length - 1][0]);
+            if (maxSx < visLeft - 100 || minSx > visRight + 100) continue;
 
             ctx.beginPath();
             ctx.moveTo(strip[0][0], strip[0][1]);
@@ -6730,25 +7040,24 @@
             ctx.fillStyle = earthGrad;
             ctx.fill();
 
-            // Vibrant turf top edge
             ctx.beginPath();
             ctx.moveTo(strip[0][0], strip[0][1]);
             for (var sp2 = 1; sp2 < strip.length; sp2++) {
                 ctx.lineTo(strip[sp2][0], strip[sp2][1]);
             }
-            ctx.strokeStyle = "#22c55e";
+            ctx.strokeStyle = gsObj.boost ? "#facc15" : "#22c55e";
             ctx.lineWidth = 8;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
             ctx.stroke();
 
-            ctx.strokeStyle = "#86efac";
-            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = gsObj.boost ? "#22d3ee" : "#86efac";
+            ctx.lineWidth = 2.4;
             ctx.stroke();
         }
 
-        // Launch Ramp Booster Highlight
-        if (2160 >= visLeft && 1950 <= visRight) {
+        // Official Launch Ramp Booster Highlight
+        if (course.isOfficial && 2160 >= visLeft && 1950 <= visRight) {
             ctx.strokeStyle = "#facc15";
             ctx.lineWidth = 5;
             ctx.beginPath();
@@ -6769,25 +7078,24 @@
             ctx.fillText("START →", 58, 339);
         }
 
-        if (WW_FINISH_X + 140 >= visLeft && WW_FINISH_X - 140 <= visRight) {
-            // Twin finish pillars
+        var finX = wwState.finishX;
+        if (finX + 140 >= visLeft && finX - 140 <= visRight) {
             ctx.fillStyle = "#e2e8f0";
-            ctx.fillRect(WW_FINISH_X - 8, 265, 10, 165);
-            ctx.fillRect(WW_FINISH_X + 76, 265, 10, 165);
+            ctx.fillRect(finX - 8, 265, 10, 165);
+            ctx.fillRect(finX + 76, 265, 10, 165);
 
-            // Checkered arch banner
             var cols = 12;
             var sq = 8;
             for (var r = 0; r < 4; r++) {
                 for (var c = 0; c < cols; c++) {
                     ctx.fillStyle = (r + c) % 2 === 0 ? "#0f172a" : "#ffffff";
-                    ctx.fillRect(WW_FINISH_X - 8 + c * sq, 260 + r * sq, sq, sq);
+                    ctx.fillRect(finX - 8 + c * sq, 260 + r * sq, sq, sq);
                 }
             }
             ctx.fillStyle = "#facc15";
             ctx.font = "900 13px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("🏁 FINISH", WW_FINISH_X + 40, 252);
+            ctx.fillText("🏁 FINISH", finX + 40, 252);
         }
 
         // 4. Springboards
@@ -7146,6 +7454,73 @@
             ctx.restore();
         }
 
+        // 12. Editor In-Progress Stroke & Ghost Cursor Preview
+        if (wwState.mode === "editor") {
+            if (wwEditor.drawingPts && wwEditor.drawingPts.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(wwEditor.drawingPts[0][0], wwEditor.drawingPts[0][1]);
+                for (var dp = 1; dp < wwEditor.drawingPts.length; dp++) {
+                    ctx.lineTo(wwEditor.drawingPts[dp][0], wwEditor.drawingPts[dp][1]);
+                }
+                ctx.strokeStyle = wwEditor.tool === "boost" ? "#facc15" : "#4ade80";
+                ctx.lineWidth = 7;
+                ctx.setLineDash([8, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if (wwEditor.hoverWorld && !wwEditor.drawingPts && !wwEditor.panning) {
+                var hx = wwEditor.hoverWorld.x;
+                var hy = wwEditor.hoverWorld.y;
+                ctx.save();
+                ctx.globalAlpha = 0.58;
+                if (wwEditor.tool === "loop") {
+                    ctx.strokeStyle = "#22d3ee";
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(hx, hy - 150, 150, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (wwEditor.tool === "spring") {
+                    ctx.fillStyle = "#facc15";
+                    ctx.fillRect(hx - 31, hy - 14, 62, 10);
+                } else if (wwEditor.tool === "ball") {
+                    ctx.strokeStyle = "#94a3b8";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, hy - 205);
+                    ctx.lineTo(hx, hy);
+                    ctx.stroke();
+                    ctx.fillStyle = "#f59e0b";
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 28, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (wwEditor.tool === "crate") {
+                    ctx.fillStyle = "#d97706";
+                    ctx.fillRect(hx - 17, hy - 34, 34, 34);
+                } else if (wwEditor.tool === "star") {
+                    wwDrawStarShape(ctx, hx, hy, 5, 13, 6, 0);
+                    ctx.fillStyle = "#fde047";
+                    ctx.fill();
+                } else if (wwEditor.tool === "finish") {
+                    ctx.strokeStyle = "#facc15";
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(hx - 8, 260, 94, 170);
+                } else if (wwEditor.tool === "erase") {
+                    ctx.strokeStyle = "#fb7185";
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 32, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (wwEditor.tool === "road" || wwEditor.tool === "boost") {
+                    ctx.fillStyle = wwEditor.tool === "boost" ? "#facc15" : "#4ade80";
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
         ctx.restore();
     }
 
@@ -7165,8 +7540,63 @@
         wwRender();
     }
 
+    function wwSyncModeUi() {
+        var isEd = wwState.mode === "editor";
+        var isEdTest = wwState.playContext === "editor-test";
+        var isCustom = wwState.playContext === "custom";
+
+        if (wwTabOfficial) {
+            var offAct = !isEd && wwState.playContext === "official" && (!wwLevelsOverlay || wwLevelsOverlay.hidden);
+            wwTabOfficial.classList.toggle("is-active", offAct);
+            wwTabOfficial.setAttribute("aria-selected", offAct ? "true" : "false");
+        }
+        if (wwTabLevels) {
+            var lvlAct = (wwLevelsOverlay && !wwLevelsOverlay.hidden) || (!isEd && isCustom);
+            wwTabLevels.classList.toggle("is-active", lvlAct);
+            wwTabLevels.setAttribute("aria-selected", lvlAct ? "true" : "false");
+        }
+        if (wwTabEditor) {
+            var edAct = isEd || isEdTest;
+            wwTabEditor.classList.toggle("is-active", edAct);
+            wwTabEditor.setAttribute("aria-selected", edAct ? "true" : "false");
+        }
+
+        if (wwEditorToolbar) wwEditorToolbar.hidden = !isEd;
+        if (wwTelemetryBar) wwTelemetryBar.hidden = isEd;
+        if (wwEditorHint) wwEditorHint.hidden = !isEd;
+        if (wwCenterHud) wwCenterHud.hidden = isEd;
+        if (wwTouchPad) wwTouchPad.hidden = isEd;
+        if (wwReturnEditBtn) wwReturnEditBtn.hidden = !isEdTest;
+
+        if (wwCustomPlayingBar) {
+            if (isCustom && wwState.customLevelMeta && !isEd) {
+                var m = wwState.customLevelMeta;
+                wwCustomPlayingBar.hidden = false;
+                if (wwCustomTitleLabel) wwCustomTitleLabel.textContent = m.title;
+                if (wwCustomAuthorSlot) {
+                    var c = window.mcwut.safeColor(m.authorColor);
+                    var ink = window.mcwut.pillInk(c);
+                    wwCustomAuthorSlot.innerHTML =
+                        '<span class="member-pill" style="background:' + c + ";color:" + ink + '">' +
+                        window.mcwut.esc(m.authorName) + "</span>";
+                }
+            } else {
+                wwCustomPlayingBar.hidden = true;
+            }
+        }
+    }
+
     function wwResetWorld() {
-        wwState.course = wwBuildCourse();
+        if (wwState.playContext === "editor-test") {
+            wwState.course = wwBuildCustomCourse(wwEditor.data);
+        } else if (wwState.playContext === "custom" && wwState.customLevelData) {
+            wwState.course = wwBuildCustomCourse(wwState.customLevelData);
+        } else {
+            wwState.course = wwBuildCourse();
+        }
+        wwState.finishX = wwState.course.finishX || WW_FINISH_X;
+        wwState.totalStars = wwState.course.stars.length;
+
         wwCreateEntities();
         wwState.elapsed = 0;
         wwState.score = 0;
@@ -7175,8 +7605,6 @@
         wwState.combo = 0;
         wwState.maxCombo = 0;
         wwState.maxDistX = WW_START_X;
-        wwState.loopPhase = 0;
-        wwState.loopBonusGiven = false;
         wwState.riderSeated = true;
         wwState.ejectedByPlayer = false;
         wwState.airBoostUsed = false;
@@ -7199,6 +7627,8 @@
     }
 
     function wwStartGame() {
+        if (wwLevelsOverlay) wwLevelsOverlay.hidden = true;
+        if (wwPublishOverlay) wwPublishOverlay.hidden = true;
         wwResetWorld();
         wwState.mode = "playing";
         wwState.gameId++;
@@ -7207,11 +7637,579 @@
         if (wwOverOverlay) wwOverOverlay.hidden = true;
         if (wwRecordBanner) wwRecordBanner.hidden = true;
         if (wwPopBanner) wwPopBanner.hidden = true;
+        wwSyncModeUi();
         wwEnsureEngineAudio();
         wwState.lastTime = performance.now();
         if (!wwState.animFrame) {
             wwState.animFrame = requestAnimationFrame(wwLoop);
         }
+    }
+
+    // --- Level Editor Interactive Builder ---
+    function wwScreenToWorld(clientX, clientY) {
+        var rect = wwCanvas.getBoundingClientRect();
+        var sx = clientX - rect.left;
+        var sy = clientY - rect.top;
+        var baseScale = Math.max(0.56, Math.min(1.08, Math.min(wwState.viewW / 760, wwState.viewH / 440)));
+        var scale = baseScale * wwState.camZoom;
+        return {
+            x: Math.round((sx - wwState.viewW * 0.36) / scale + wwState.camX),
+            y: Math.round((sy - wwState.viewH * 0.54) / scale + wwState.camY)
+        };
+    }
+
+    function wwPushUndo() {
+        wwEditor.undoStack.push(JSON.stringify(wwEditor.data));
+        if (wwEditor.undoStack.length > 25) wwEditor.undoStack.shift();
+        if (wwEdUndoBtn) wwEdUndoBtn.disabled = false;
+    }
+
+    function wwEditorUndo() {
+        if (wwEditor.undoStack.length === 0) return;
+        try {
+            wwEditor.data = JSON.parse(wwEditor.undoStack.pop());
+            if (wwEdUndoBtn) wwEdUndoBtn.disabled = wwEditor.undoStack.length === 0;
+            wwRefreshEditorCourse();
+        } catch (e) {}
+    }
+
+    function wwRefreshEditorCourse() {
+        wwState.course = wwBuildCustomCourse(wwEditor.data);
+        wwState.finishX = wwState.course.finishX;
+        wwState.totalStars = wwState.course.stars.length;
+        wwCreateEntities();
+        wwRender();
+    }
+
+    function wwOpenEditor(customData, editingMeta) {
+        wwSilenceAudio();
+        if (wwStartOverlay) wwStartOverlay.hidden = true;
+        if (wwOverOverlay) wwOverOverlay.hidden = true;
+        if (wwLevelsOverlay) wwLevelsOverlay.hidden = true;
+        if (wwPublishOverlay) wwPublishOverlay.hidden = true;
+
+        if (customData) {
+            wwEditor.data = JSON.parse(JSON.stringify(customData));
+            wwEditor.undoStack = [];
+            if (wwEdUndoBtn) wwEdUndoBtn.disabled = true;
+        }
+        if (editingMeta) {
+            wwEditor.editingLevelId = editingMeta.id;
+            wwEditor.editingTitle = editingMeta.title || "";
+            wwEditor.editingDesc = editingMeta.description || "";
+        } else if (customData) {
+            wwEditor.editingLevelId = null;
+        }
+
+        wwState.mode = "editor";
+        wwState.playContext = "editor-test";
+        wwState.camX = wwEditor.savedCamX || 480;
+        wwState.camY = wwEditor.savedCamY || 350;
+        wwState.camZoom = 0.88;
+        wwRefreshEditorCourse();
+        wwSyncModeUi();
+        wwResume();
+    }
+
+    function wwSetEditorTool(toolName) {
+        wwEditor.tool = toolName;
+        if (wwToolPalette) {
+            var btns = wwToolPalette.querySelectorAll("[data-ww-tool]");
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.toggle("is-active", btns[i].getAttribute("data-ww-tool") === toolName);
+            }
+        }
+    }
+
+    function wwSnapToGroundY(wx, wy) {
+        if (!wwState.course) return wy;
+        var bx = Math.floor(wx / WW_BUCKET_W);
+        var bestY = wy;
+        var bestDist = 32;
+        for (var off = -1; off <= 1; off++) {
+            var segs = wwState.course.buckets[bx + off];
+            if (!segs) continue;
+            for (var i = 0; i < segs.length; i++) {
+                var s = segs[i];
+                if (s.layer !== "main") continue;
+                var cp = wwClosestOnSegment(wx, wy, s);
+                var d = Math.hypot(wx - cp.x, wy - cp.y);
+                if (d < bestDist) {
+                    bestDist = d;
+                    bestY = Math.round(cp.y);
+                }
+            }
+        }
+        return bestY;
+    }
+
+    function wwEraseAt(wx, wy) {
+        var d = wwEditor.data;
+        var r = 38;
+        var changed = false;
+
+        for (var i = d.stars.length - 1; i >= 0; i--) {
+            if (Math.hypot(d.stars[i].x - wx, d.stars[i].y - wy) < r) {
+                d.stars.splice(i, 1);
+                changed = true;
+            }
+        }
+        for (var c = d.crates.length - 1; c >= 0; c--) {
+            if (Math.hypot(d.crates[c].x - wx, (d.crates[c].y - 17) - wy) < r) {
+                d.crates.splice(c, 1);
+                changed = true;
+            }
+        }
+        for (var s = d.springs.length - 1; s >= 0; s--) {
+            if (Math.hypot(d.springs[s].x - wx, d.springs[s].y - wy) < r + 10) {
+                d.springs.splice(s, 1);
+                changed = true;
+            }
+        }
+        for (var w = d.wreckingBalls.length - 1; w >= 0; w--) {
+            var wb = d.wreckingBalls[w];
+            var ballY = wb.pivotY + wb.length;
+            if (Math.hypot(wb.pivotX - wx, ballY - wy) < r + 18 || Math.hypot(wb.pivotX - wx, wb.pivotY - wy) < r) {
+                d.wreckingBalls.splice(w, 1);
+                changed = true;
+            }
+        }
+        for (var l = d.loops.length - 1; l >= 0; l--) {
+            var lp = d.loops[l];
+            var distCenter = Math.hypot(lp.x - wx, lp.y - wy);
+            if (Math.abs(distCenter - lp.r) < 36 || distCenter < 45) {
+                d.loops.splice(l, 1);
+                changed = true;
+            }
+        }
+        for (var st = d.strips.length - 1; st >= 0; st--) {
+            var pts = d.strips[st].pts;
+            for (var p = 0; p < pts.length - 1; p++) {
+                var mx = (pts[p][0] + pts[p + 1][0]) * 0.5;
+                var my = (pts[p][1] + pts[p + 1][1]) * 0.5;
+                // Protect the initial spawn zone (-120..240)
+                if (mx < 220 && Math.abs(my - 420) < 30) continue;
+                if (Math.hypot(mx - wx, my - wy) < r || Math.hypot(pts[p + 1][0] - wx, pts[p + 1][1] - wy) < r) {
+                    d.strips.splice(st, 1);
+                    changed = true;
+                    break;
+                }
+            }
+        }
+
+        if (changed) {
+            wwRefreshEditorCourse();
+        }
+    }
+
+    function wwSmoothPoints(pts) {
+        if (pts.length <= 2) return pts;
+        var out = [pts[0]];
+        for (var i = 1; i < pts.length - 1; i++) {
+            var sx = Math.round((pts[i - 1][0] + pts[i][0] * 2 + pts[i + 1][0]) / 4);
+            var sy = Math.round((pts[i - 1][1] + pts[i][1] * 2 + pts[i + 1][1]) / 4);
+            out.push([sx, sy]);
+        }
+        out.push(pts[pts.length - 1]);
+        return out;
+    }
+
+    if (wwCanvas) {
+        wwCanvas.addEventListener("contextmenu", function (ev) {
+            if (wwState.mode === "editor") ev.preventDefault();
+        });
+
+        wwCanvas.addEventListener("pointerdown", function (ev) {
+            if (wwState.mode !== "editor") return;
+            ev.preventDefault();
+            wwCanvas.setPointerCapture(ev.pointerId);
+
+            var pt = wwScreenToWorld(ev.clientX, ev.clientY);
+            wwEditor.hoverWorld = pt;
+
+            if (wwEditor.tool === "pan" || ev.button === 1 || ev.button === 2 || ev.shiftKey) {
+                wwEditor.panning = true;
+                wwEditor.panStartClientX = ev.clientX;
+                wwEditor.panStartClientY = ev.clientY;
+                wwEditor.panStartCamX = wwState.camX;
+                wwEditor.panStartCamY = wwState.camY;
+                return;
+            }
+
+            var d = wwEditor.data;
+            var wx = Math.max(-120, Math.min(12000, pt.x));
+            var wy = Math.max(-380, Math.min(760, pt.y));
+
+            if (wwEditor.tool === "erase") {
+                wwPushUndo();
+                wwEditor.erasing = true;
+                wwEraseAt(wx, wy);
+                return;
+            }
+
+            if (wwEditor.tool === "road" || wwEditor.tool === "boost") {
+                if (d.strips.length >= 28) {
+                    wwShowBanner("Max 28 road strips reached!");
+                    return;
+                }
+                wwPushUndo();
+                // Snap starting point onto existing road endpoint if nearby for seamless continuation!
+                var startX = wx;
+                var startY = wy;
+                for (var s = 0; s < d.strips.length; s++) {
+                    var sPts = d.strips[s].pts;
+                    var lastP = sPts[sPts.length - 1];
+                    if (Math.hypot(lastP[0] - wx, lastP[1] - wy) < 34) {
+                        startX = lastP[0];
+                        startY = lastP[1];
+                        break;
+                    }
+                }
+                wwEditor.drawingPts = [[startX, startY]];
+                return;
+            }
+
+            if (wwEditor.tool === "loop") {
+                if (d.loops.length >= 6) {
+                    wwShowBanner("Max 6 loops per level!");
+                    return;
+                }
+                wwPushUndo();
+                var groundY = wwSnapToGroundY(Math.max(360, wx), wy);
+                d.loops.push({ x: Math.max(360, wx), y: groundY - 150, r: 150 });
+                wwPlayPop();
+                wwRefreshEditorCourse();
+            } else if (wwEditor.tool === "spring") {
+                if (d.springs.length >= 30) return;
+                wwPushUndo();
+                var sy = wwSnapToGroundY(Math.max(200, wx), wy);
+                d.springs.push({ x: Math.max(200, wx), y: sy, w: 62 });
+                wwPlaySpring();
+                wwRefreshEditorCourse();
+            } else if (wwEditor.tool === "ball") {
+                if (d.wreckingBalls.length >= 20) return;
+                wwPushUndo();
+                d.wreckingBalls.push({
+                    pivotX: Math.max(280, wx),
+                    pivotY: wy - 205,
+                    length: 205,
+                    radius: 28,
+                    amp: 0.7,
+                    speed: 2.15,
+                    phase: (d.wreckingBalls.length * 1.2) % 6.2
+                });
+                wwPlayPop();
+                wwRefreshEditorCourse();
+            } else if (wwEditor.tool === "crate") {
+                if (d.crates.length >= 60) return;
+                wwPushUndo();
+                var crateY = wwSnapToGroundY(Math.max(220, wx), wy);
+                var crateX = Math.max(220, wx);
+                // Stack neatly onto an existing crate if clicked right above one
+                for (var ci = 0; ci < d.crates.length; ci++) {
+                    if (Math.abs(d.crates[ci].x - crateX) < 24 && Math.abs((d.crates[ci].y - 34) - wy) < 28) {
+                        crateX = d.crates[ci].x;
+                        crateY = d.crates[ci].y - 34;
+                    }
+                }
+                d.crates.push({ x: crateX, y: crateY });
+                wwPlayPop();
+                wwRefreshEditorCourse();
+            } else if (wwEditor.tool === "star") {
+                if (d.stars.length >= 40) return;
+                wwPushUndo();
+                d.stars.push({ x: Math.max(180, wx), y: wy });
+                wwPlayStar(d.stars.length);
+                wwRefreshEditorCourse();
+            } else if (wwEditor.tool === "finish") {
+                wwPushUndo();
+                d.finishX = Math.max(700, Math.min(12000, wx));
+                wwPlayFinishHorn();
+                wwRefreshEditorCourse();
+            }
+        });
+
+        wwCanvas.addEventListener("pointermove", function (ev) {
+            if (wwState.mode !== "editor") return;
+            if (wwEditor.panning) {
+                var baseScale = Math.max(0.56, Math.min(1.08, Math.min(wwState.viewW / 760, wwState.viewH / 440))) * wwState.camZoom;
+                wwState.camX = Math.max(-80, Math.min(12200, wwEditor.panStartCamX - (ev.clientX - wwEditor.panStartClientX) / baseScale));
+                wwState.camY = Math.max(-220, Math.min(620, wwEditor.panStartCamY - (ev.clientY - wwEditor.panStartClientY) / baseScale));
+                wwEditor.savedCamX = wwState.camX;
+                wwEditor.savedCamY = wwState.camY;
+                return;
+            }
+
+            var pt = wwScreenToWorld(ev.clientX, ev.clientY);
+            wwEditor.hoverWorld = pt;
+
+            if (wwEditor.erasing) {
+                wwEraseAt(pt.x, pt.y);
+                return;
+            }
+
+            if (wwEditor.drawingPts) {
+                var prev = wwEditor.drawingPts[wwEditor.drawingPts.length - 1];
+                if (Math.hypot(pt.x - prev[0], pt.y - prev[1]) >= 24 && wwEditor.drawingPts.length < 48) {
+                    wwEditor.drawingPts.push([
+                        Math.max(-120, Math.min(12000, pt.x)),
+                        Math.max(-380, Math.min(760, pt.y))
+                    ]);
+                }
+            }
+        });
+
+        var finishPointer = function (ev) {
+            if (wwState.mode !== "editor") return;
+            wwEditor.panning = false;
+            wwEditor.erasing = false;
+            if (wwEditor.drawingPts) {
+                if (wwEditor.drawingPts.length >= 2) {
+                    var smoothed = wwSmoothPoints(wwEditor.drawingPts);
+                    wwEditor.data.strips.push({
+                        pts: smoothed,
+                        boost: wwEditor.tool === "boost"
+                    });
+                    wwPlayPop();
+                    wwRefreshEditorCourse();
+                } else {
+                    wwEditor.undoStack.pop();
+                    if (wwEdUndoBtn) wwEdUndoBtn.disabled = wwEditor.undoStack.length === 0;
+                }
+                wwEditor.drawingPts = null;
+            }
+        };
+
+        wwCanvas.addEventListener("pointerup", finishPointer);
+        wwCanvas.addEventListener("pointercancel", finishPointer);
+
+        wwCanvas.addEventListener("wheel", function (ev) {
+            if (wwState.mode !== "editor") return;
+            ev.preventDefault();
+            wwState.camX = Math.max(-80, Math.min(12200, wwState.camX + (ev.deltaY || ev.deltaX) * 0.85));
+            wwEditor.savedCamX = wwState.camX;
+        }, { passive: false });
+    }
+
+    // --- Member Community Levels Fetching, Publishing & Sharing ---
+    async function wwLoadLevelsList(openOverlay) {
+        if (openOverlay) {
+            wwSilenceAudio();
+            if (wwStartOverlay) wwStartOverlay.hidden = true;
+            if (wwOverOverlay) wwOverOverlay.hidden = true;
+            if (wwPublishOverlay) wwPublishOverlay.hidden = true;
+            if (wwLevelsOverlay) wwLevelsOverlay.hidden = false;
+            wwSyncModeUi();
+        }
+        try {
+            var list = await window.mcwut.api("/api/games/wacky-wheels/levels", {
+                headers: window.mcwut.headers()
+            });
+            wwState.communityLevels = Array.isArray(list) ? list : [];
+            if (wwLevelsCountBadge) {
+                wwLevelsCountBadge.textContent = String(wwState.communityLevels.length);
+            }
+            wwRenderLevelsList();
+        } catch (err) {
+            if (wwLevelsListEl) {
+                wwLevelsListEl.innerHTML = '<p class="text-danger small mb-0">Could not load member levels: ' + window.mcwut.esc(err.message || "Error") + "</p>";
+            }
+        }
+    }
+
+    function wwRenderLevelsList() {
+        if (!wwLevelsListEl) return;
+        var list = wwState.communityLevels || [];
+        if (list.length === 0) {
+            wwLevelsListEl.innerHTML =
+                '<div class="text-center py-4">' +
+                '<p class="text-white fw-semibold mb-1">No custom member levels yet!</p>' +
+                '<p class="text-white-50 small mb-0">Click <strong>+ Create Level</strong> above to build the first obstacle course for other members to try.</p>' +
+                "</div>";
+            return;
+        }
+
+        var esc = window.mcwut.esc;
+        var html = "";
+        for (var i = 0; i < list.length; i++) {
+            var lv = list[i];
+            var aColor = window.mcwut.safeColor(lv.authorColor);
+            var aInk = window.mcwut.pillInk(aColor);
+            var badgeImg = lv.authorBadgeUrl
+                ? '<img class="game-board-badge" src="' + esc(lv.authorBadgeUrl) + '" alt="" aria-hidden="true" /> '
+                : "";
+
+            var recHtml = "";
+            if (lv.bestScore > 0 && lv.recordHolderName) {
+                var rColor = window.mcwut.safeColor(lv.recordHolderColor);
+                var rInk = window.mcwut.pillInk(rColor);
+                var tStr = lv.bestTimeMs ? " (" + wwFormatTime(lv.bestTimeMs / 1000) + ")" : "";
+                recHtml =
+                    '<span>🏆 Record: <strong class="text-warning">' + lv.bestScore + " pts" + esc(tStr) + '</strong> by ' +
+                    '<span class="member-pill" style="background:' + rColor + ";color:" + rInk + '">' + esc(lv.recordHolderName) + "</span></span>";
+            } else {
+                recHtml = '<span>🏆 Unbeaten — be the first to clear!</span>';
+            }
+
+            var ownerBtns = lv.isMine
+                ? '<button type="button" class="btn btn-sm btn-outline-info py-0 px-2" data-ww-lv-edit="' + esc(lv.id) + '">✎ Edit</button>' +
+                  '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" data-ww-lv-del="' + esc(lv.id) + '" title="Delete level">🗑</button>'
+                : "";
+
+            html +=
+                '<div class="ww-level-row">' +
+                '  <div class="ww-level-row-top">' +
+                '    <div>' +
+                '      <div class="ww-level-title">' + esc(lv.title) + "</div>" +
+                (lv.description ? '<div class="ww-level-desc">' + esc(lv.description) + "</div>" : "") +
+                '      <div class="ww-level-meta">' +
+                '        <span>By ' + badgeImg + '<span class="member-pill" style="background:' + aColor + ";color:" + aInk + '">' + esc(lv.authorName) + "</span></span>" +
+                '        <span>' + lv.playsCount + (lv.playsCount === 1 ? " play" : " plays") + " · " + lv.clearsCount + " clears</span>" +
+                         recHtml +
+                "      </div>" +
+                "    </div>" +
+                '    <div class="ww-level-actions">' +
+                '      <button type="button" class="btn btn-sm btn-success fw-bold py-1 px-3" data-ww-lv-play="' + esc(lv.id) + '">▶ Play</button>' +
+                '      <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" data-ww-lv-share="' + esc(lv.id) + '" title="Copy share link">🔗 Link</button>' +
+                '      <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" data-ww-lv-remix="' + esc(lv.id) + '" title="Open copy in Level Editor">⎘ Remix</button>' +
+                       ownerBtns +
+                "    </div>" +
+                "  </div>" +
+                "</div>";
+        }
+        wwLevelsListEl.innerHTML = html;
+    }
+
+    async function wwLoadAndPlayCustomLevel(levelId, modeAction, pushHistory) {
+        try {
+            var detail = await window.mcwut.api("/api/games/wacky-wheels/levels/" + encodeURIComponent(levelId), {
+                headers: window.mcwut.headers()
+            });
+            if (!detail) return;
+            var parsed = JSON.parse(detail.levelJson);
+
+            if (modeAction === "edit") {
+                wwOpenEditor(parsed, detail.summary);
+                return;
+            }
+            if (modeAction === "remix") {
+                wwEditor.editingTitle = detail.summary.title + " (Remix)";
+                wwEditor.editingDesc = detail.summary.description || "";
+                wwOpenEditor(parsed, null);
+                return;
+            }
+
+            wwState.playContext = "custom";
+            wwState.customLevelMeta = detail.summary;
+            wwState.customLevelData = parsed;
+            if (pushHistory !== false) {
+                history.pushState(null, "", "/games?game=wacky-wheels&level=" + encodeURIComponent(levelId));
+            }
+            wwStartGame();
+        } catch (err) {
+            wwShowBanner("Level not found!");
+        }
+    }
+
+    function wwCopyLevelShareLink(levelId, btnEl) {
+        var url = window.location.origin + "/games?game=wacky-wheels&level=" + encodeURIComponent(levelId);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).catch(function () {});
+        }
+        if (btnEl) {
+            var orig = btnEl.textContent;
+            btnEl.textContent = "✓ Copied!";
+            setTimeout(function () { btnEl.textContent = orig; }, 1400);
+        }
+        wwShowBanner("Level link copied! Paste in Messages to challenge a member.");
+    }
+
+    function wwOpenPublishDialog() {
+        wwSilenceAudio();
+        if (wwOverOverlay) wwOverOverlay.hidden = true;
+        if (wwPubError) wwPubError.hidden = true;
+        if (wwPubTitleInput) wwPubTitleInput.value = wwEditor.editingTitle || "";
+        if (wwPubDescInput) wwPubDescInput.value = wwEditor.editingDesc || "";
+        if (wwPubHeading) {
+            wwPubHeading.textContent = wwEditor.editingLevelId ? "Update Published Level" : "Publish Stunt Level";
+        }
+        if (wwPubSubmitBtn) {
+            wwPubSubmitBtn.textContent = wwEditor.editingLevelId ? "💾 Save Changes" : "🚀 Publish Level";
+        }
+        if (wwPubCopyBtn) {
+            wwPubCopyBtn.hidden = !wwEditor.editingLevelId;
+        }
+        if (wwPublishOverlay) wwPublishOverlay.hidden = false;
+        if (wwPubTitleInput) setTimeout(function () { wwPubTitleInput.focus(); }, 40);
+    }
+
+    async function wwSavePublishedLevel(forceNewCopy) {
+        var title = wwPubTitleInput ? wwPubTitleInput.value.trim() : "";
+        var desc = wwPubDescInput ? wwPubDescInput.value.trim() : "";
+        if (!title) {
+            if (wwPubError) {
+                wwPubError.textContent = "Please enter a level name.";
+                wwPubError.hidden = false;
+            }
+            return;
+        }
+        if (wwPubError) wwPubError.hidden = true;
+        if (wwPubSubmitBtn) wwPubSubmitBtn.disabled = true;
+
+        var isUpdate = !forceNewCopy && !!wwEditor.editingLevelId;
+        var url = isUpdate
+            ? "/api/games/wacky-wheels/levels/" + encodeURIComponent(wwEditor.editingLevelId)
+            : "/api/games/wacky-wheels/levels";
+
+        try {
+            var saved = await window.mcwut.api(url, {
+                method: isUpdate ? "PUT" : "POST",
+                headers: window.mcwut.headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({
+                    title: title,
+                    description: desc,
+                    levelJson: JSON.stringify(wwEditor.data)
+                })
+            });
+            if (wwPubSubmitBtn) wwPubSubmitBtn.disabled = false;
+            if (!saved) return;
+
+            wwEditor.editingLevelId = saved.summary.id;
+            wwEditor.editingTitle = saved.summary.title;
+            wwEditor.editingDesc = saved.summary.description || "";
+            if (wwPublishOverlay) wwPublishOverlay.hidden = true;
+
+            wwState.playContext = "custom";
+            wwState.customLevelMeta = saved.summary;
+            wwState.customLevelData = JSON.parse(saved.levelJson);
+            history.pushState(null, "", "/games?game=wacky-wheels&level=" + encodeURIComponent(saved.summary.id));
+            wwLoadLevelsList(false);
+            wwStartGame();
+            wwShowBanner("Published \"" + saved.summary.title + "\"! 🎉");
+        } catch (err) {
+            if (wwPubSubmitBtn) wwPubSubmitBtn.disabled = false;
+            if (wwPubError) {
+                wwPubError.textContent = err.message || "Could not publish level.";
+                wwPubError.hidden = false;
+            }
+        }
+    }
+
+    function wwSwitchToOfficial() {
+        wwState.playContext = "official";
+        wwState.customLevelMeta = null;
+        wwState.customLevelData = null;
+        if (wwLevelsOverlay) wwLevelsOverlay.hidden = true;
+        if (wwPublishOverlay) wwPublishOverlay.hidden = true;
+        if (wwOverOverlay) wwOverOverlay.hidden = true;
+        history.replaceState(null, "", "/games?game=wacky-wheels");
+        wwResetWorld();
+        wwState.mode = "idle";
+        if (wwStartBadge) wwStartBadge.textContent = "CANVAS 2D / PHYSICS";
+        if (wwStartTitle) wwStartTitle.textContent = "Wacky Wheels";
+        if (wwStartOverlay) wwStartOverlay.hidden = false;
+        wwSyncModeUi();
+        wwRender();
     }
 
     function wwLoop(now) {
@@ -7305,7 +8303,199 @@
     if (wwRestartBtn) {
         wwRestartBtn.addEventListener("click", function (ev) {
             ev.stopPropagation();
+            if (wwState.mode === "editor") {
+                wwStartGame();
+            } else {
+                wwStartGame();
+            }
+        });
+    }
+
+    // Mode Bar Tabs & Editor / Community Buttons
+    if (wwTabOfficial) {
+        wwTabOfficial.addEventListener("click", function () {
+            wwSwitchToOfficial();
+        });
+    }
+    if (wwTabLevels) {
+        wwTabLevels.addEventListener("click", function () {
+            wwLoadLevelsList(true);
+        });
+    }
+    if (wwTabEditor) {
+        wwTabEditor.addEventListener("click", function () {
+            wwOpenEditor(null, null);
+        });
+    }
+    if (wwOpenLevelsBtn) {
+        wwOpenLevelsBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            wwLoadLevelsList(true);
+        });
+    }
+    if (wwOpenEditorBtn) {
+        wwOpenEditorBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            wwOpenEditor(null, null);
+        });
+    }
+    if (wwLevelsNewBtn) {
+        wwLevelsNewBtn.addEventListener("click", function () {
+            wwEditor.editingLevelId = null;
+            wwEditor.editingTitle = "";
+            wwEditor.editingDesc = "";
+            wwOpenEditor(wwDefaultEditorData(true), null);
+        });
+    }
+    if (wwLevelsCloseBtn) {
+        wwLevelsCloseBtn.addEventListener("click", function () {
+            if (wwLevelsOverlay) wwLevelsOverlay.hidden = true;
+            if (wwState.mode === "idle" && wwStartOverlay) wwStartOverlay.hidden = false;
+            wwSyncModeUi();
+        });
+    }
+    if (wwLevelsListEl) {
+        wwLevelsListEl.addEventListener("click", async function (ev) {
+            var playBtn = ev.target.closest("[data-ww-lv-play]");
+            if (playBtn) {
+                wwLoadAndPlayCustomLevel(playBtn.getAttribute("data-ww-lv-play"), "play", true);
+                return;
+            }
+            var shareBtn = ev.target.closest("[data-ww-lv-share]");
+            if (shareBtn) {
+                wwCopyLevelShareLink(shareBtn.getAttribute("data-ww-lv-share"), shareBtn);
+                return;
+            }
+            var remixBtn = ev.target.closest("[data-ww-lv-remix]");
+            if (remixBtn) {
+                wwLoadAndPlayCustomLevel(remixBtn.getAttribute("data-ww-lv-remix"), "remix", false);
+                return;
+            }
+            var editBtn = ev.target.closest("[data-ww-lv-edit]");
+            if (editBtn) {
+                wwLoadAndPlayCustomLevel(editBtn.getAttribute("data-ww-lv-edit"), "edit", false);
+                return;
+            }
+            var delBtn = ev.target.closest("[data-ww-lv-del]");
+            if (delBtn) {
+                var delId = delBtn.getAttribute("data-ww-lv-del");
+                if (!delId) return;
+                delBtn.disabled = true;
+                try {
+                    await window.mcwut.api("/api/games/wacky-wheels/levels/" + encodeURIComponent(delId), {
+                        method: "DELETE",
+                        headers: window.mcwut.headers()
+                    });
+                    if (wwState.customLevelMeta && wwState.customLevelMeta.id === delId) {
+                        wwState.playContext = "official";
+                        wwState.customLevelMeta = null;
+                    }
+                    wwLoadLevelsList(true);
+                } catch (e) {
+                    delBtn.disabled = false;
+                }
+            }
+        });
+    }
+
+    if (wwToolPalette) {
+        wwToolPalette.addEventListener("click", function (ev) {
+            var btn = ev.target.closest("[data-ww-tool]");
+            if (!btn) return;
+            wwSetEditorTool(btn.getAttribute("data-ww-tool"));
+        });
+    }
+    if (wwEdPanLeft) {
+        wwEdPanLeft.addEventListener("click", function () {
+            wwState.camX = Math.max(-80, wwState.camX - 360);
+            wwEditor.savedCamX = wwState.camX;
+            wwRender();
+        });
+    }
+    if (wwEdPanRight) {
+        wwEdPanRight.addEventListener("click", function () {
+            wwState.camX = Math.min(12200, wwState.camX + 360);
+            wwEditor.savedCamX = wwState.camX;
+            wwRender();
+        });
+    }
+    if (wwEdUndoBtn) {
+        wwEdUndoBtn.addEventListener("click", function () {
+            wwEditorUndo();
+        });
+    }
+    if (wwEdClearBtn) {
+        wwEdClearBtn.addEventListener("click", function () {
+            wwPushUndo();
+            wwEditor.data = wwDefaultEditorData(false);
+            wwState.camX = 480;
+            wwEditor.savedCamX = 480;
+            wwRefreshEditorCourse();
+        });
+    }
+    if (wwEdTestBtn) {
+        wwEdTestBtn.addEventListener("click", function () {
+            wwEditor.savedCamX = wwState.camX;
+            wwEditor.savedCamY = wwState.camY;
+            wwState.playContext = "editor-test";
             wwStartGame();
+        });
+    }
+    if (wwReturnEditBtn) {
+        wwReturnEditBtn.addEventListener("click", function () {
+            wwOpenEditor(null, null);
+        });
+    }
+    if (wwOverEditBtn) {
+        wwOverEditBtn.addEventListener("click", function () {
+            wwOpenEditor(null, null);
+        });
+    }
+    if (wwEdPublishBtn) {
+        wwEdPublishBtn.addEventListener("click", function () {
+            wwOpenPublishDialog();
+        });
+    }
+    if (wwOverPublishBtn) {
+        wwOverPublishBtn.addEventListener("click", function () {
+            wwOpenPublishDialog();
+        });
+    }
+    if (wwOverLevelsBtn) {
+        wwOverLevelsBtn.addEventListener("click", function () {
+            wwLoadLevelsList(true);
+        });
+    }
+    if (wwPubSubmitBtn) {
+        wwPubSubmitBtn.addEventListener("click", function () {
+            wwSavePublishedLevel(false);
+        });
+    }
+    if (wwPubCopyBtn) {
+        wwPubCopyBtn.addEventListener("click", function () {
+            wwSavePublishedLevel(true);
+        });
+    }
+    if (wwPubCancelBtn) {
+        wwPubCancelBtn.addEventListener("click", function () {
+            if (wwPublishOverlay) wwPublishOverlay.hidden = true;
+            if (wwState.mode === "gameover" && wwOverOverlay) wwOverOverlay.hidden = false;
+        });
+    }
+    if (wwShareLevelBtn) {
+        wwShareLevelBtn.addEventListener("click", function () {
+            if (wwState.customLevelMeta) {
+                wwCopyLevelShareLink(wwState.customLevelMeta.id, wwShareLevelBtn);
+            }
+        });
+    }
+    if (wwRemixActiveBtn) {
+        wwRemixActiveBtn.addEventListener("click", function () {
+            if (wwState.customLevelData && wwState.customLevelMeta) {
+                wwEditor.editingTitle = wwState.customLevelMeta.title + " (Remix)";
+                wwEditor.editingDesc = wwState.customLevelMeta.description || "";
+                wwOpenEditor(wwState.customLevelData, null);
+            }
         });
     }
     window.addEventListener("resize", function () {
@@ -7447,6 +8637,7 @@
             if (stageHintEl) {
                 stageHintEl.innerHTML = "<kbd>W</kbd>/<kbd>↑</kbd> Gas · <kbd>S</kbd>/<kbd>↓</kbd> Brake · <kbd>A</kbd>/<kbd>D</kbd> Lean · <kbd>Space</kbd> Eject · <kbd>R</kbd> Restart";
             }
+            wwLoadLevelsList(false);
             requestAnimationFrame(function () {
                 wwResize();
                 wwResume();
@@ -7610,11 +8801,49 @@
         if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
             return;
         }
+        if (GAME_KEY === "wacky-wheels" && wwState.mode === "editor" && (ev.ctrlKey || ev.metaKey) && (ev.key === "z" || ev.key === "Z")) {
+            ev.preventDefault();
+            wwEditorUndo();
+            return;
+        }
         if (ev.ctrlKey || ev.metaKey || ev.altKey) {
             return;
         }
 
         if (GAME_KEY === "wacky-wheels") {
+            if (wwPublishOverlay && !wwPublishOverlay.hidden) {
+                if (ev.key === "Escape") {
+                    wwPublishOverlay.hidden = true;
+                }
+                return;
+            }
+            if (wwLevelsOverlay && !wwLevelsOverlay.hidden) {
+                if (ev.key === "Escape") {
+                    wwLevelsOverlay.hidden = true;
+                    wwSyncModeUi();
+                }
+                return;
+            }
+            if (wwState.mode === "editor") {
+                if (ev.code === "ArrowLeft" || ev.key === "a" || ev.key === "A") {
+                    ev.preventDefault();
+                    wwState.camX = Math.max(-80, wwState.camX - 140);
+                    wwEditor.savedCamX = wwState.camX;
+                } else if (ev.code === "ArrowRight" || ev.key === "d" || ev.key === "D") {
+                    ev.preventDefault();
+                    wwState.camX = Math.min(12200, wwState.camX + 140);
+                    wwEditor.savedCamX = wwState.camX;
+                } else if (ev.code === "ArrowUp" || ev.key === "w" || ev.key === "W") {
+                    ev.preventDefault();
+                    wwState.camY = Math.max(-220, wwState.camY - 90);
+                    wwEditor.savedCamY = wwState.camY;
+                } else if (ev.code === "ArrowDown" || ev.key === "s" || ev.key === "S") {
+                    ev.preventDefault();
+                    wwState.camY = Math.min(620, wwState.camY + 90);
+                    wwEditor.savedCamY = wwState.camY;
+                }
+                return;
+            }
             if (ev.key === "r" || ev.key === "R") {
                 ev.preventDefault();
                 wwStartGame();
@@ -7815,11 +9044,15 @@
     n2048RenderBoard();
     wwResetWorld();
 
-    // Support deep-linking via ?game=stack-3d, ?game=mini-crossword, ?game=minesweeper, ?game=neon-slope, ?game=merge-2048, or ?game=wacky-wheels
+    // Support deep-linking via ?game=stack-3d, ?game=mini-crossword, ?game=minesweeper, ?game=neon-slope, ?game=merge-2048, or ?game=wacky-wheels(&level=...)
     var params = new URLSearchParams(window.location.search);
     var linkedGame = params.get("game");
+    var linkedLevel = params.get("level");
     if (linkedGame === "stack-3d" || linkedGame === "mini-crossword" || linkedGame === "minesweeper" || linkedGame === "neon-slope" || linkedGame === "merge-2048" || linkedGame === "wacky-wheels") {
         launchGame(linkedGame, false);
+        if (linkedGame === "wacky-wheels" && linkedLevel) {
+            wwLoadAndPlayCustomLevel(linkedLevel, "play", false);
+        }
     } else {
         showHub(false);
     }

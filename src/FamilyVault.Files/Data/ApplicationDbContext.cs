@@ -31,6 +31,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<DirectMessageEntity> DirectMessages => Set<DirectMessageEntity>();
     public DbSet<DirectMessageReactionEntity> DirectMessageReactions => Set<DirectMessageReactionEntity>();
     public DbSet<GameScoreEntity> GameScores => Set<GameScoreEntity>();
+    public DbSet<GameCustomLevelEntity> GameCustomLevels => Set<GameCustomLevelEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -274,6 +275,22 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             b.HasOne<FamilyMemberEntity>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GameCustomLevelEntity>(b =>
+        {
+            b.ToTable("GameCustomLevels");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.GameKey).HasMaxLength(32).IsRequired();
+            b.Property(x => x.Title).HasMaxLength(GameLevelRules.TitleMax).IsRequired();
+            b.Property(x => x.Description).HasMaxLength(GameLevelRules.DescriptionMax).IsRequired();
+            b.Property(x => x.LevelJson).HasMaxLength(GameLevelRules.JsonMaxLength).IsRequired();
+            b.HasIndex(x => x.GameKey);
+            b.HasIndex(x => new { x.GameKey, x.AuthorUserId });
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.AuthorUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
