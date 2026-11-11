@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000037`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000038`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 11:00 UTC.** Production was moved on purpose to add **Neon Slope** (`neon-slope`) and **2048 Neon** (`merge-2048`) to the `/games` arcade hub — expanding the arcade to 5 live playable games featuring Three.js 3D downhill endless running with procedural tracks, obstacles, gem bonuses, jump physics, and 2D canvas fallback, alongside a reactive 4×4 number merging grid with smooth CSS animations, Web Audio chord chimes, single-step undo, touch swipe / D-pad controls, and shared global high scores with member profile flair.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000037` | `ghcr.io/mcwut-src/mcwut_webapp:85496f81e8b83616d9fe2a4feb5281215e978367` |
+| Live | `ca-mcwut--0000038` | `ghcr.io/mcwut-src/mcwut_webapp:ca40bd118f820a590d8275b97fb9525c7424aa64` |
+
+`0000038` has 100% of the traffic and is Healthy. `0000037` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000038`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` and `/games` redirect to sign-in. Static assets `/js/games.js` and `/css/site.css` contain the verified Neon Slope and 2048 Neon engines and styles.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000037
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000037=100
+```
 
 **11 November 2026, 03:05 UTC.** Production was moved on purpose to add the **Minesweeper** (`minesweeper`) game to the `/games` arcade hub — a Canvas 2D neon minefield with Easy/Medium/Hard fields, first-click safety, tap/long-press and right-click flagging, a Flag mode toggle for touch, cascade combo scoring, speed bonuses, explosion particle chains, confetti on a clean sweep, and seamless switching alongside **Stack 3D** and **Mini Crossword** with integrated global high scores.
 
