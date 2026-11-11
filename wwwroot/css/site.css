@@ -6627,6 +6627,114 @@ html[data-theme="dark"] .ww-stat-pill.is-combo strong {
   }
 }
 
+/* --- Hextris Neon Stage --- */
+.hx-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.08), transparent 44%),
+    radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08), transparent 44%),
+    var(--card);
+}
+
+.hx-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hx-toolbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hx-stat-pill {
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+}
+
+.hx-stat-pill.is-combo strong {
+  color: #a855f7;
+}
+
+.hx-viewport {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  background: #070a13;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.16), 0 0 18px rgba(6, 182, 212, 0.1) inset;
+  touch-action: none;
+  user-select: none;
+}
+
+.hx-viewport canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hx-touch-zones {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.hx-touch-zone {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  opacity: 0.35;
+  transition: opacity 0.15s ease;
+}
+
+.hx-touch-zone.is-active {
+  opacity: 0.85;
+}
+
+.hx-touch-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 991.98px) {
+  .hx-viewport {
+    height: 480px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hx-stage {
+    padding: 10px;
+  }
+  .hx-viewport {
+    height: 420px;
+  }
+}
+
+
 
 
 

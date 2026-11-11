@@ -966,6 +966,92 @@
                 </div>
             </div>
         </div>
+
+        <div class="hx-stage" id="hextris-stage" hidden>
+            <div class="hx-toolbar">
+                <div class="hx-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill hx-stat-pill" title="Current Score">
+                        Score <strong id="hx-hud-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill hx-stat-pill" title="Combo Multiplier">
+                        Mult <strong id="hx-hud-mult">x1</strong>
+                    </span>
+                    <span class="game-stat-pill hx-stat-pill is-combo" title="Current Cascade Streak">
+                        Cascade <strong id="hx-hud-combo">0</strong>
+                    </span>
+                </div>
+                <div class="hx-toolbar-actions">
+                    <button type="button" class="btn btn-sm btn-outline-info hx-restart-btn" id="hx-btn-restart" title="Quick Restart (R)">
+                        &#x27F2; <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="hx-viewport" id="hextris-viewport">
+                <canvas id="hextris-canvas" aria-label="Hextris Neon game canvas"></canvas>
+
+                <div class="game-overlay" id="hextris-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">HEXAGONAL PUZZLE</div>
+                        <h3 class="game-overlay-title">Hextris Neon</h3>
+                        <p class="game-overlay-desc">
+                            Catch falling colored bars on the rotating central hexagon. Connect 3 or more matching colors to shatter blocks and trigger cascading combos!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="hextris-start-btn">
+                            Play Hextris Neon
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>A</kbd><kbd>D</kbd> or <kbd>&larr;</kbd><kbd>&rarr;</kbd> Rotate</span>
+                            <span>Tap Left / Right half of screen</span>
+                            <span><kbd>S</kbd> / <kbd>&darr;</kbd> Drop &middot; <kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="hextris-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="hextris-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="hextris-over-badge">RUN COMPLETED</div>
+                        <h3 class="game-overlay-title" id="hextris-over-title">Game Over</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="hextris-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Cascade</span>
+                                <strong class="game-over-val" id="hextris-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="hextris-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="hextris-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="hextris-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="hextris-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hx-touch-zones" aria-hidden="true">
+                    <div class="hx-touch-zone is-left" id="hx-touch-left">
+                        <span class="hx-touch-hint">&#x21BA; Rotate Left</span>
+                    </div>
+                    <div class="hx-touch-zone is-right" id="hx-touch-right">
+                        <span class="hx-touch-hint">Rotate Right &#x21BB;</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <aside class="card game-board-card" aria-label="Global High Scores">
