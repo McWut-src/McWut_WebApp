@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000036`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000037`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 03:05 UTC.** Production was moved on purpose to add the **Minesweeper** (`minesweeper`) game to the `/games` arcade hub — a Canvas 2D neon minefield with Easy/Medium/Hard fields, first-click safety, tap/long-press and right-click flagging, a Flag mode toggle for touch, cascade combo scoring, speed bonuses, explosion particle chains, confetti on a clean sweep, and seamless switching alongside **Stack 3D** and **Mini Crossword** with integrated global high scores.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000036` | `ghcr.io/mcwut-src/mcwut_webapp:e8524b9335df5938c21d278aa1b36cdc4be752e9` |
+| Live | `ca-mcwut--0000037` | `ghcr.io/mcwut-src/mcwut_webapp:85496f81e8b83616d9fe2a4feb5281215e978367` |
+
+`0000037` has 100% of the traffic and is Healthy. `0000036` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000037`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` and `/games` redirect to sign-in. Static assets `/js/games.js` and `/css/site.css` contain the verified Minesweeper engine and styles.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000036
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000036=100
+```
 
 **11 November 2026, 02:15 UTC.** Production was moved on purpose to add the **Mini Crossword** (`mini-crossword`) game to the `/games` arcade hub — a bite-sized 5×5 crossword pack with curated smart clues, on-screen responsive touch QWERTY keyboard, interactive clue list navigation, pencil mode, check/hint helpers, clean-word combo scoring, victory solve celebrations, and seamless switching alongside **Stack 3D** with integrated global high scores.
 
