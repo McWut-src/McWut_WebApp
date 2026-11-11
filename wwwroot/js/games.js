@@ -867,6 +867,10 @@
             state.leaderboard = board;
             if (GAME_KEY === "minesweeper") {
                 msState.leaderboard = board;
+            } else if (GAME_KEY === "neon-slope") {
+                slopeState.leaderboard = board;
+            } else if (GAME_KEY === "merge-2048") {
+                n2048State.leaderboard = board;
             }
             renderLeaderboard(board);
             updateTargetHud();
@@ -918,7 +922,11 @@
                 ? "Mini Crossword"
                 : GAME_KEY === "minesweeper"
                     ? "Minesweeper"
-                    : "Stack 3D";
+                    : GAME_KEY === "neon-slope"
+                        ? "Neon Slope"
+                        : GAME_KEY === "merge-2048"
+                            ? "2048 Neon"
+                            : "Stack 3D";
             boardList.innerHTML =
                 '<div class="game-board-empty">' +
                 "<p class=\"mb-1 fw-semibold\">No scores yet!</p>" +
@@ -952,7 +960,11 @@
                 ? "clean words"
                 : GAME_KEY === "minesweeper"
                     ? "cascade"
-                    : "streak";
+                    : GAME_KEY === "neon-slope"
+                        ? "streak"
+                        : GAME_KEY === "merge-2048"
+                            ? "tile"
+                            : "streak";
             var comboHtml = e.bestCombo > 0
                 ? '<span class="game-board-combo" title="Best streak">×' + e.bestCombo + " " + comboLabel + "</span>"
                 : "";
@@ -3602,19 +3614,1394 @@
     document.addEventListener("visibilitychange", function () {
         if (document.hidden) {
             msPauseClock();
-        } else if (msState.active) {
-            msResumeClock();
+            slopePause();
+        } else {
+            if (msState.active) {
+                msResumeClock();
+            }
+            if (slopeState.active && slopeState.mode === "playing") {
+                slopeResume();
+            }
         }
     });
     requestAnimationFrame(msLoop);
 
+    // =========================================================================
+    // --- Neon Slope (Three.js 3D Endless Runner with 2D Fallback) ---
+    // =========================================================================
+    var slopeStage = document.getElementById("slope-stage");
+    var slopeViewport = document.getElementById("slope-viewport");
+    var slopeCanvas = document.getElementById("slope-canvas");
+    var slopeScoreEl = document.getElementById("slope-score");
+    var slopeComboEl = document.getElementById("slope-combo");
+    var slopePopEl = document.getElementById("slope-pop");
+    var slopeSpeedPill = document.getElementById("slope-speed-pill");
+    var slopeGemsEl = document.getElementById("slope-gems-count");
+    var slopeStartOverlay = document.getElementById("slope-start-overlay");
+    var slopeOverOverlay = document.getElementById("slope-over-overlay");
+    var slopeStartBtn = document.getElementById("slope-start-btn");
+    var slopeAgainBtn = document.getElementById("slope-again-btn");
+    var slopeOverScore = document.getElementById("slope-over-score");
+    var slopeOverCombo = document.getElementById("slope-over-combo");
+    var slopeOverBest = document.getElementById("slope-over-best");
+    var slopeOverRank = document.getElementById("slope-over-rank");
+    var slopeRecordBanner = document.getElementById("slope-record-banner");
+    var slopeSaveStatus = document.getElementById("slope-save-status");
+    var slopeTouchLeft = document.getElementById("slope-touch-left");
+    var slopeTouchRight = document.getElementById("slope-touch-right");
+    var slopeTouchJump = document.getElementById("slope-touch-jump");
+
+    var SLOPE_TRACK_WIDTH = 9.0;
+    var SLOPE_HALF_TRACK = SLOPE_TRACK_WIDTH / 2;
+    var SLOPE_SEGMENT_LEN = 30.0;
+    var SLOPE_ANGLE = 0.16;
+    var SLOPE_TAN = Math.tan(SLOPE_ANGLE);
+
+    var slopeState = {
+        active: false,
+        mode: "idle",
+        distance: 0,
+        score: 0,
+        gems: 0,
+        combo: 0,
+        maxCombo: 0,
+        speed: 34.0,
+        ball: {
+            x: 0,
+            y: 0,
+            z: 0,
+            vx: 0,
+            vy: 0,
+            isJumping: false,
+            isFalling: false,
+            fallTime: 0,
+            radius: 0.45,
+            roll: 0
+        },
+        segments: [],
+        nextSegmentZ: 0,
+        lastTime: 0,
+        submitted: false,
+        gameId: 0,
+        leaderboard: null,
+        popTimer: null,
+        animFrame: null
+    };
+
+    var slopeInput = {
+        left: false,
+        right: false
+    };
+
+    var slopeThreeRenderer = null;
+    var slopeThreeScene = null;
+    var slopeThreeCamera = null;
+    var slopeBallMesh = null;
+    var slopeBallLight = null;
+    var slopeTrackGroup = null;
+    var slopeEffectsGroup = null;
+    var slopeUseThree = false;
+    var slopeFallbackCtx = null;
+
+    function playSlopeJump() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(560, now + 0.16);
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.20);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.20);
+        } catch (e) {}
+    }
+
+    function playSlopeGem() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            [1046.5, 1567.98].forEach(function (freq, i) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = "sine";
+                var t = now + i * 0.055;
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.12, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.24);
+            });
+        } catch (e) {}
+    }
+
+    function playSlopeCrash() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.38);
+        } catch (e) {}
+    }
+
+    function slopeInitGraphics() {
+        if (!slopeCanvas || !slopeViewport) return;
+        if (window.THREE) {
+            try {
+                slopeThreeRenderer = new THREE.WebGLRenderer({
+                    canvas: slopeCanvas,
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: "high-performance"
+                });
+                slopeThreeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                slopeThreeScene = new THREE.Scene();
+
+                var aspect = (slopeViewport.clientWidth || 640) / (slopeViewport.clientHeight || 520);
+                slopeThreeCamera = new THREE.PerspectiveCamera(65, aspect, 0.1, 350);
+
+                var ambient = new THREE.AmbientLight(0xffffff, 0.55);
+                slopeThreeScene.add(ambient);
+
+                var dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+                dirLight.position.set(12, 28, 16);
+                slopeThreeScene.add(dirLight);
+
+                slopeTrackGroup = new THREE.Group();
+                slopeEffectsGroup = new THREE.Group();
+                slopeThreeScene.add(slopeTrackGroup);
+                slopeThreeScene.add(slopeEffectsGroup);
+
+                var ballGeo = new THREE.SphereGeometry(slopeState.ball.radius, 22, 22);
+                var ballMat = new THREE.MeshStandardMaterial({
+                    color: 0x00f0ff,
+                    emissive: 0x0088aa,
+                    roughness: 0.2,
+                    metalness: 0.8
+                });
+                slopeBallMesh = new THREE.Mesh(ballGeo, ballMat);
+                slopeBallLight = new THREE.PointLight(0x00f0ff, 1.8, 14);
+                slopeThreeScene.add(slopeBallMesh);
+                slopeThreeScene.add(slopeBallLight);
+
+                var starGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
+                for (var i = 0; i < 48; i++) {
+                    var starMat = new THREE.MeshBasicMaterial({
+                        color: i % 2 === 0 ? 0x22d3ee : 0xf43f5e,
+                        transparent: true,
+                        opacity: 0.35 + (i % 4) * 0.12
+                    });
+                    var star = new THREE.Mesh(starGeo, starMat);
+                    star.position.set(
+                        (Math.random() - 0.5) * 40,
+                        Math.random() * 30 - 5,
+                        Math.random() * 200
+                    );
+                    slopeEffectsGroup.add(star);
+                }
+
+                slopeUseThree = true;
+            } catch (err) {
+                slopeUseThree = false;
+            }
+        }
+
+        if (!slopeUseThree) {
+            slopeFallbackCtx = slopeCanvas.getContext("2d");
+        }
+        slopeResize();
+    }
+
+    function slopeResize() {
+        if (!slopeViewport || !slopeCanvas) return;
+        var w = Math.max(slopeViewport.clientWidth || 640, 280);
+        var h = Math.max(slopeViewport.clientHeight || 520, 320);
+
+        if (slopeUseThree && slopeThreeRenderer && slopeThreeCamera) {
+            slopeThreeRenderer.setSize(w, h, false);
+            slopeThreeCamera.aspect = w / h;
+            slopeThreeCamera.updateProjectionMatrix();
+        } else if (slopeFallbackCtx) {
+            var dpr = Math.min(window.devicePixelRatio || 1, 2);
+            slopeCanvas.width = Math.floor(w * dpr);
+            slopeCanvas.height = Math.floor(h * dpr);
+        }
+    }
+
+    function slopeCreateSegment(zStart) {
+        var zEnd = zStart + SLOPE_SEGMENT_LEN;
+        var obstacles = [];
+        var gems = [];
+        var mesh = null;
+
+        var yStart = -zStart * SLOPE_TAN;
+        var yEnd = -zEnd * SLOPE_TAN;
+        var midZ = (zStart + zEnd) / 2;
+        var midY = (yStart + yEnd) / 2;
+
+        if (slopeUseThree && slopeThreeScene) {
+            mesh = new THREE.Group();
+
+            var planeGeo = new THREE.PlaneGeometry(SLOPE_TRACK_WIDTH, SLOPE_SEGMENT_LEN);
+            var planeMat = new THREE.MeshStandardMaterial({
+                color: 0x090d1a,
+                roughness: 0.4,
+                metalness: 0.5
+            });
+            var plane = new THREE.Mesh(planeGeo, planeMat);
+            plane.rotation.x = -Math.PI / 2 + SLOPE_ANGLE;
+            plane.position.set(0, midY, midZ);
+            mesh.add(plane);
+
+            var railGeo = new THREE.BoxGeometry(0.2, 0.4, SLOPE_SEGMENT_LEN);
+            var railMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+            var leftRail = new THREE.Mesh(railGeo, railMat);
+            leftRail.rotation.x = SLOPE_ANGLE;
+            leftRail.position.set(-SLOPE_HALF_TRACK, midY + 0.2, midZ);
+            var rightRail = new THREE.Mesh(railGeo, railMat);
+            rightRail.rotation.x = SLOPE_ANGLE;
+            rightRail.position.set(SLOPE_HALF_TRACK, midY + 0.2, midZ);
+            mesh.add(leftRail);
+            mesh.add(rightRail);
+
+            var dashGeo = new THREE.BoxGeometry(0.12, 0.05, SLOPE_SEGMENT_LEN * 0.4);
+            var dashMat = new THREE.MeshBasicMaterial({ color: 0xa855f7 });
+            var dash = new THREE.Mesh(dashGeo, dashMat);
+            dash.rotation.x = SLOPE_ANGLE;
+            dash.position.set(0, midY + 0.02, midZ);
+            mesh.add(dash);
+
+            slopeTrackGroup.add(mesh);
+        }
+
+        if (zStart >= 40) {
+            var lanes = [-3.0, -1.5, 0, 1.5, 3.0];
+            var numObs = Math.random() < 0.65 ? 2 : 1;
+            var usedLanes = [];
+
+            for (var o = 0; o < numObs; o++) {
+                var avail = lanes.filter(function (l) { return usedLanes.indexOf(l) === -1; });
+                if (avail.length === 0) break;
+                var laneX = avail[Math.floor(Math.random() * avail.length)];
+                usedLanes.push(laneX);
+
+                var obsZ = zStart + 6.0 + o * 11.0 + Math.random() * 3.0;
+                var obsY = -obsZ * SLOPE_TAN;
+                var type = Math.random() < 0.5 ? "spike" : "barrier";
+                var obsW = type === "barrier" ? 2.6 : 1.2;
+                var obsH = type === "barrier" ? 0.8 : 1.1;
+                var obsD = type === "barrier" ? 0.7 : 1.2;
+
+                var obsMesh = null;
+                if (slopeUseThree) {
+                    var geo = type === "barrier"
+                        ? new THREE.BoxGeometry(obsW, obsH, obsD)
+                        : new THREE.ConeGeometry(0.65, obsH, 5);
+                    var mat = new THREE.MeshStandardMaterial({
+                        color: 0x881337,
+                        emissive: 0xf43f5e,
+                        roughness: 0.3
+                    });
+                    obsMesh = new THREE.Mesh(geo, mat);
+                    if (type === "spike") {
+                        obsMesh.position.set(laneX, obsY + obsH / 2, obsZ);
+                    } else {
+                        obsMesh.rotation.x = SLOPE_ANGLE;
+                        obsMesh.position.set(laneX, obsY + obsH / 2, obsZ);
+                    }
+                    mesh.add(obsMesh);
+                }
+
+                obstacles.push({
+                    x: laneX,
+                    y: obsY,
+                    z: obsZ,
+                    w: obsW,
+                    h: obsH,
+                    d: obsD,
+                    type: type,
+                    passed: false,
+                    mesh: obsMesh
+                });
+            }
+
+            var gemAvail = lanes.filter(function (l) { return usedLanes.indexOf(l) === -1; });
+            if (gemAvail.length > 0 && Math.random() < 0.75) {
+                var gemX = gemAvail[Math.floor(Math.random() * gemAvail.length)];
+                var gemZ = zStart + 12.0 + Math.random() * 6.0;
+                var gemY = -gemZ * SLOPE_TAN + 0.65;
+                var gemMesh = null;
+                if (slopeUseThree) {
+                    var gGeo = new THREE.OctahedronGeometry(0.35);
+                    var gMat = new THREE.MeshStandardMaterial({
+                        color: 0x06b6d4,
+                        emissive: 0x22d3ee,
+                        roughness: 0.1
+                    });
+                    gemMesh = new THREE.Mesh(gGeo, gMat);
+                    gemMesh.position.set(gemX, gemY, gemZ);
+                    mesh.add(gemMesh);
+                }
+                gems.push({
+                    x: gemX,
+                    y: gemY,
+                    z: gemZ,
+                    collected: false,
+                    mesh: gemMesh
+                });
+            }
+        }
+
+        return {
+            zStart: zStart,
+            zEnd: zEnd,
+            mesh: mesh,
+            obstacles: obstacles,
+            gems: gems
+        };
+    }
+
+    function slopeUpdateSegments() {
+        var ballZ = slopeState.ball.z;
+        while (slopeState.segments.length > 0 && slopeState.segments[0].zEnd < ballZ - 35) {
+            var oldSeg = slopeState.segments.shift();
+            if (oldSeg.mesh && slopeTrackGroup) {
+                slopeTrackGroup.remove(oldSeg.mesh);
+            }
+        }
+        while (slopeState.nextSegmentZ < ballZ + 180) {
+            var newSeg = slopeCreateSegment(slopeState.nextSegmentZ);
+            slopeState.segments.push(newSeg);
+            slopeState.nextSegmentZ += SLOPE_SEGMENT_LEN;
+        }
+    }
+
+    function slopeJump() {
+        if (slopeState.mode !== "playing") return;
+        var ball = slopeState.ball;
+        if (!ball.isJumping && !ball.isFalling) {
+            ball.vy = 13.5;
+            ball.isJumping = true;
+            playSlopeJump();
+        }
+    }
+
+    function slopeStartGame() {
+        slopeState.mode = "playing";
+        slopeState.gameId++;
+        slopeState.submitted = false;
+        slopeState.distance = 0;
+        slopeState.score = 0;
+        slopeState.gems = 0;
+        slopeState.combo = 0;
+        slopeState.maxCombo = 0;
+        slopeState.speed = 34.0;
+        slopeInput.left = false;
+        slopeInput.right = false;
+
+        var ball = slopeState.ball;
+        ball.x = 0;
+        ball.y = 0;
+        ball.z = 0;
+        ball.vx = 0;
+        ball.vy = 0;
+        ball.isJumping = false;
+        ball.isFalling = false;
+        ball.fallTime = 0;
+        ball.roll = 0;
+
+        if (slopeTrackGroup) {
+            clearThreeGroup(slopeTrackGroup);
+        }
+        slopeState.segments = [];
+        slopeState.nextSegmentZ = 0;
+        slopeUpdateSegments();
+
+        if (slopeStartOverlay) slopeStartOverlay.hidden = true;
+        if (slopeOverOverlay) slopeOverOverlay.hidden = true;
+        if (slopeRecordBanner) slopeRecordBanner.hidden = true;
+
+        updateSlopeHud();
+        slopeState.lastTime = performance.now();
+        if (!slopeState.animFrame) {
+            slopeState.animFrame = requestAnimationFrame(slopeLoop);
+        }
+    }
+
+    function slopeTriggerCrash() {
+        if (slopeState.mode === "gameover") return;
+        slopeState.mode = "gameover";
+        playSlopeCrash();
+
+        if (slopeOverScore) slopeOverScore.textContent = String(slopeState.score);
+        if (slopeOverCombo) slopeOverCombo.textContent = "×" + slopeState.maxCombo;
+
+        var prevBest = slopeState.leaderboard && slopeState.leaderboard.myRecord ? slopeState.leaderboard.myRecord.bestScore : 0;
+        var optBest = Math.max(prevBest, slopeState.score);
+        if (slopeOverBest) slopeOverBest.textContent = String(optBest);
+        if (slopeOverRank) {
+            var curRank = slopeState.leaderboard && slopeState.leaderboard.myRecord ? "#" + slopeState.leaderboard.myRecord.rank : "—";
+            slopeOverRank.textContent = curRank;
+        }
+        if (slopeRecordBanner) {
+            slopeRecordBanner.hidden = !(slopeState.score > prevBest && slopeState.score > 0);
+        }
+        if (slopeSaveStatus) {
+            slopeSaveStatus.textContent = slopeState.score > 0 ? "Saving score to global leaderboard…" : "Play again to post a score!";
+        }
+        if (slopeOverOverlay) {
+            slopeOverOverlay.hidden = false;
+        }
+
+        slopeSubmitScore();
+    }
+
+    function slopeUpdate(dt) {
+        if (slopeState.mode !== "playing") return;
+        dt = Math.min(dt, 0.05);
+        var ball = slopeState.ball;
+
+        slopeState.speed = Math.min(84.0, slopeState.speed + 0.65 * dt);
+        ball.z += slopeState.speed * dt;
+        slopeState.distance = ball.z;
+        ball.roll += slopeState.speed * dt * 2.2;
+
+        var targetVx = 0;
+        if (slopeInput.left) targetVx = -14.5;
+        else if (slopeInput.right) targetVx = 14.5;
+
+        ball.vx += (targetVx - ball.vx) * Math.min(1.0, 14.0 * dt);
+        ball.x += ball.vx * dt;
+
+        if (ball.isJumping || ball.isFalling) {
+            ball.vy -= 36.0 * dt;
+            ball.y += ball.vy * dt;
+            if (!ball.isFalling && ball.y <= 0) {
+                ball.y = 0;
+                ball.vy = 0;
+                ball.isJumping = false;
+            }
+        }
+
+        if (!ball.isFalling && Math.abs(ball.x) > SLOPE_HALF_TRACK - 0.1) {
+            ball.isFalling = true;
+            ball.isJumping = true;
+        }
+
+        if (ball.isFalling) {
+            ball.fallTime += dt;
+            if (ball.fallTime > 0.45) {
+                slopeTriggerCrash();
+                return;
+            }
+        }
+
+        slopeUpdateSegments();
+
+        var groundY = -ball.z * SLOPE_TAN;
+        var ballWorldY = groundY + ball.y;
+
+        for (var s = 0; s < slopeState.segments.length; s++) {
+            var seg = slopeState.segments[s];
+            if (seg.zEnd < ball.z - 5 || seg.zStart > ball.z + 15) continue;
+
+            for (var o = 0; o < seg.obstacles.length; o++) {
+                var obs = seg.obstacles[o];
+                if (obs.passed) continue;
+
+                var dz = Math.abs(ball.z - obs.z);
+                var dx = Math.abs(ball.x - obs.x);
+
+                if (!ball.isFalling && dz < (obs.d / 2 + ball.radius * 0.75) && dx < (obs.w / 2 + ball.radius * 0.75)) {
+                    if (ball.y < obs.h * 0.85) {
+                        slopeTriggerCrash();
+                        return;
+                    }
+                }
+
+                if (ball.z > obs.z + 1.2) {
+                    obs.passed = true;
+                    slopeState.combo++;
+                    slopeState.maxCombo = Math.max(slopeState.maxCombo, slopeState.combo);
+                    updateSlopeHud();
+                }
+            }
+
+            for (var g = 0; g < seg.gems.length; g++) {
+                var gem = seg.gems[g];
+                if (gem.collected) continue;
+
+                if (gem.mesh) {
+                    gem.mesh.rotation.y += 3.5 * dt;
+                }
+
+                var gdz = Math.abs(ball.z - gem.z);
+                var gdx = Math.abs(ball.x - gem.x);
+                var gdy = Math.abs(ballWorldY - gem.y);
+
+                if (gdz < 1.1 && gdx < 1.1 && gdy < 1.3) {
+                    gem.collected = true;
+                    if (gem.mesh) gem.mesh.visible = false;
+                    slopeState.gems++;
+                    slopeState.combo += 2;
+                    slopeState.maxCombo = Math.max(slopeState.maxCombo, slopeState.combo);
+                    playSlopeGem();
+                    showSlopePop("+25 CRYSTAL!");
+                    updateSlopeHud();
+                }
+            }
+        }
+
+        var distScore = Math.floor(ball.z * 0.15);
+        slopeState.score = Math.min(10000, distScore + slopeState.gems * 25);
+        updateSlopeHud();
+    }
+
+    function updateSlopeHud() {
+        if (slopeScoreEl) slopeScoreEl.textContent = String(slopeState.score);
+        if (slopeComboEl) {
+            if (slopeState.combo >= 2) {
+                slopeComboEl.textContent = "STREAK ×" + slopeState.combo;
+                slopeComboEl.hidden = false;
+            } else {
+                slopeComboEl.hidden = true;
+            }
+        }
+        if (slopeGemsEl) slopeGemsEl.textContent = String(slopeState.gems);
+        if (slopeSpeedPill) {
+            slopeSpeedPill.textContent = (slopeState.speed / 34.0).toFixed(1) + "× Speed";
+        }
+    }
+
+    function showSlopePop(text) {
+        if (!slopePopEl) return;
+        slopePopEl.textContent = text;
+        slopePopEl.hidden = false;
+        if (slopeState.popTimer) clearTimeout(slopeState.popTimer);
+        slopeState.popTimer = setTimeout(function () {
+            if (slopePopEl) slopePopEl.hidden = true;
+        }, 1100);
+    }
+
+    function slopeRender() {
+        var ball = slopeState.ball;
+        var groundY = -ball.z * SLOPE_TAN;
+
+        if (slopeUseThree && slopeThreeRenderer && slopeThreeCamera) {
+            if (slopeBallMesh) {
+                slopeBallMesh.position.set(ball.x, groundY + ball.y + ball.radius, ball.z);
+                slopeBallMesh.rotation.x = ball.roll;
+                slopeBallMesh.rotation.z = -ball.vx * 0.08;
+            }
+            if (slopeBallLight) {
+                slopeBallLight.position.set(ball.x, groundY + ball.y + 1.2, ball.z);
+            }
+            slopeThreeCamera.position.set(
+                ball.x * 0.45,
+                groundY + ball.y + 2.8,
+                ball.z - 6.8
+            );
+            slopeThreeCamera.lookAt(
+                ball.x * 0.25,
+                groundY + ball.y + 0.6,
+                ball.z + 16.0
+            );
+
+            slopeThreeRenderer.render(slopeThreeScene, slopeThreeCamera);
+        } else if (slopeFallbackCtx && slopeCanvas) {
+            slopeDrawFallback(slopeFallbackCtx, slopeCanvas.width, slopeCanvas.height);
+        }
+    }
+
+    function slopeDrawFallback(ctx, width, height) {
+        var ball = slopeState.ball;
+        var groundY = -ball.z * SLOPE_TAN;
+
+        ctx.fillStyle = "#060914";
+        ctx.fillRect(0, 0, width, height);
+
+        var grad = ctx.createLinearGradient(0, 0, 0, height * 0.45);
+        grad.addColorStop(0, "#1e0b36");
+        grad.addColorStop(1, "#070b18");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height * 0.45);
+
+        function project(x, y, z) {
+            var relZ = z - ball.z + 6.8;
+            if (relZ <= 0.6) return null;
+            var fov = height * 0.75;
+            var scale = fov / relZ;
+            var camX = ball.x * 0.45;
+            var camY = groundY + ball.y + 2.8;
+            var sx = width / 2 + (x - camX) * scale;
+            var sy = height / 2 - (y - camY) * scale;
+            return { x: sx, y: sy, scale: scale };
+        }
+
+        var pNearL = project(-SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
+        var pNearR = project(SLOPE_HALF_TRACK, -ball.z * SLOPE_TAN, ball.z);
+        var farZ = ball.z + 120.0;
+        var pFarL = project(-SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
+        var pFarR = project(SLOPE_HALF_TRACK, -farZ * SLOPE_TAN, farZ);
+
+        if (pNearL && pNearR && pFarL && pFarR) {
+            ctx.beginPath();
+            ctx.moveTo(pNearL.x, pNearL.y);
+            ctx.lineTo(pNearR.x, pNearR.y);
+            ctx.lineTo(pFarR.x, pFarR.y);
+            ctx.lineTo(pFarL.x, pFarL.y);
+            ctx.closePath();
+            ctx.fillStyle = "#0a0e1c";
+            ctx.fill();
+
+            ctx.strokeStyle = "#00f0ff";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(pNearL.x, pNearL.y);
+            ctx.lineTo(pFarL.x, pFarL.y);
+            ctx.moveTo(pNearR.x, pNearR.y);
+            ctx.lineTo(pFarR.x, pFarR.y);
+            ctx.stroke();
+
+            ctx.strokeStyle = "rgba(168, 85, 247, 0.4)";
+            ctx.lineWidth = 1.5;
+            var gridSpacing = 6.0;
+            var startZ = Math.floor(ball.z / gridSpacing) * gridSpacing;
+            for (var gz = startZ; gz < ball.z + 100; gz += gridSpacing) {
+                var gy = -gz * SLOPE_TAN;
+                var gL = project(-SLOPE_HALF_TRACK, gy, gz);
+                var gR = project(SLOPE_HALF_TRACK, gy, gz);
+                if (gL && gR) {
+                    ctx.beginPath();
+                    ctx.moveTo(gL.x, gL.y);
+                    ctx.lineTo(gR.x, gR.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        for (var s = 0; s < slopeState.segments.length; s++) {
+            var seg = slopeState.segments[s];
+            if (seg.zEnd < ball.z - 2 || seg.zStart > ball.z + 100) continue;
+
+            for (var o = 0; o < seg.obstacles.length; o++) {
+                var obs = seg.obstacles[o];
+                var p = project(obs.x, obs.y + obs.h / 2, obs.z);
+                if (p) {
+                    var ow = obs.w * p.scale;
+                    var oh = obs.h * p.scale;
+                    ctx.fillStyle = "rgba(244, 63, 94, 0.9)";
+                    ctx.strokeStyle = "#fda4af";
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(p.x - ow / 2, p.y - oh / 2, ow, oh);
+                    ctx.strokeRect(p.x - ow / 2, p.y - oh / 2, ow, oh);
+                }
+            }
+
+            for (var g = 0; g < seg.gems.length; g++) {
+                var gem = seg.gems[g];
+                if (gem.collected) continue;
+                var gp = project(gem.x, gem.y, gem.z);
+                if (gp) {
+                    var gr = 0.5 * gp.scale;
+                    ctx.save();
+                    ctx.translate(gp.x, gp.y);
+                    ctx.rotate(performance.now() * 0.003);
+                    ctx.fillStyle = "#22d3ee";
+                    ctx.beginPath();
+                    ctx.moveTo(0, -gr);
+                    ctx.lineTo(gr, 0);
+                    ctx.lineTo(0, gr);
+                    ctx.lineTo(-gr, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        }
+
+        var bp = project(ball.x, groundY + ball.y + ball.radius, ball.z);
+        if (bp) {
+            var br = ball.radius * bp.scale;
+            ctx.beginPath();
+            ctx.arc(bp.x, bp.y, br * 1.35, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0, 240, 255, 0.25)";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(bp.x, bp.y, br, 0, Math.PI * 2);
+            ctx.fillStyle = "#00f0ff";
+            ctx.fill();
+            ctx.strokeStyle = "#e0f2fe";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+
+    function slopeLoop(now) {
+        if (!slopeState.active && slopeState.mode !== "playing") {
+            slopeState.animFrame = null;
+            return;
+        }
+        var dt = (now - (slopeState.lastTime || now)) / 1000;
+        slopeState.lastTime = now;
+        slopeUpdate(dt);
+        slopeRender();
+        slopeState.animFrame = requestAnimationFrame(slopeLoop);
+    }
+
+    function slopePause() {
+        if (slopeState.animFrame) {
+            cancelAnimationFrame(slopeState.animFrame);
+            slopeState.animFrame = null;
+        }
+    }
+
+    function slopeResume() {
+        if (slopeState.active && !slopeState.animFrame) {
+            slopeState.lastTime = performance.now();
+            slopeState.animFrame = requestAnimationFrame(slopeLoop);
+        }
+    }
+
+    async function slopeSubmitScore() {
+        if (slopeState.submitted) return;
+        slopeState.submitted = true;
+        var gameId = slopeState.gameId;
+        var score = Math.max(0, Math.min(10000, Math.round(slopeState.score)));
+        var combo = Math.max(0, Math.min(10000, Math.round(slopeState.maxCombo)));
+
+        try {
+            var res = await window.mcwut.api("/api/games/neon-slope/scores", {
+                method: "POST",
+                headers: window.mcwut.headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ score: score, maxCombo: combo })
+            });
+            if (!res) return;
+            slopeState.leaderboard = res.leaderboard;
+            if (GAME_KEY === "neon-slope") {
+                renderLeaderboard(res.leaderboard);
+            }
+            if (gameId !== slopeState.gameId) return;
+            if (slopeOverRank) {
+                slopeOverRank.textContent = res.rank ? "#" + res.rank : "—";
+            }
+            if (slopeRecordBanner) {
+                slopeRecordBanner.hidden = !res.isNewBest;
+            }
+            if (res.isNewBest) {
+                playNewRecordFanfare();
+            }
+            if (slopeSaveStatus) {
+                slopeSaveStatus.textContent = res.isNewBest
+                    ? "New personal record saved to the global leaderboard!"
+                    : "Score recorded. Personal best: " + res.bestScore + ".";
+            }
+        } catch (err) {
+            if (slopeSaveStatus && gameId === slopeState.gameId) {
+                slopeSaveStatus.textContent = "Could not save score: " + (err.message || "Network error");
+            }
+        }
+    }
+
+    if (slopeStartBtn) {
+        slopeStartBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            slopeStartGame();
+        });
+    }
+    if (slopeAgainBtn) {
+        slopeAgainBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            slopeStartGame();
+        });
+    }
+    if (slopeTouchLeft) {
+        slopeTouchLeft.addEventListener("pointerdown", function (ev) {
+            ev.preventDefault();
+            slopeInput.left = true;
+        });
+        slopeTouchLeft.addEventListener("pointerup", function (ev) {
+            ev.preventDefault();
+            slopeInput.left = false;
+        });
+        slopeTouchLeft.addEventListener("pointercancel", function () {
+            slopeInput.left = false;
+        });
+    }
+    if (slopeTouchRight) {
+        slopeTouchRight.addEventListener("pointerdown", function (ev) {
+            ev.preventDefault();
+            slopeInput.right = true;
+        });
+        slopeTouchRight.addEventListener("pointerup", function (ev) {
+            ev.preventDefault();
+            slopeInput.right = false;
+        });
+        slopeTouchRight.addEventListener("pointercancel", function () {
+            slopeInput.right = false;
+        });
+    }
+    if (slopeTouchJump) {
+        slopeTouchJump.addEventListener("pointerdown", function (ev) {
+            ev.preventDefault();
+            slopeJump();
+        });
+    }
+    if (slopeViewport) {
+        var slopePointerActive = false;
+        slopeViewport.addEventListener("pointerdown", function (ev) {
+            if (GAME_KEY !== "neon-slope") return;
+            if (ev.target.closest("button") || ev.target.closest(".slope-touch-zones")) return;
+            if (slopeState.mode === "idle") {
+                slopeStartGame();
+                return;
+            }
+            if (slopeState.mode === "playing") {
+                slopePointerActive = true;
+                var rect = slopeViewport.getBoundingClientRect();
+                var clickRelX = (ev.clientX - rect.left) / rect.width;
+                if (clickRelX < 0.38) {
+                    slopeInput.left = true;
+                    slopeInput.right = false;
+                } else if (clickRelX > 0.62) {
+                    slopeInput.right = true;
+                    slopeInput.left = false;
+                } else {
+                    slopeJump();
+                }
+            }
+        });
+        window.addEventListener("pointerup", function () {
+            if (slopePointerActive) {
+                slopePointerActive = false;
+                slopeInput.left = false;
+                slopeInput.right = false;
+            }
+        });
+    }
+
+    // =========================================================================
+    // --- 2048 Neon (Reactive 4×4 Grid Puzzle) ---
+    // =========================================================================
+    var n2048Stage = document.getElementById("neon2048-stage");
+    var n2048Board = document.getElementById("n2048-board");
+    var n2048ScoreEl = document.getElementById("n2048-score");
+    var n2048MaxTileEl = document.getElementById("n2048-max-tile");
+    var n2048MovesEl = document.getElementById("n2048-moves");
+    var n2048UndoBtn = document.getElementById("n2048-undo-btn");
+    var n2048ResetBtn = document.getElementById("n2048-reset-btn");
+    var n2048StartOverlay = document.getElementById("n2048-start-overlay");
+    var n2048WinOverlay = document.getElementById("n2048-win-overlay");
+    var n2048OverOverlay = document.getElementById("n2048-over-overlay");
+    var n2048StartBtn = document.getElementById("n2048-start-btn");
+    var n2048AgainBtn = document.getElementById("n2048-again-btn");
+    var n2048WinAgainBtn = document.getElementById("n2048-win-again-btn");
+    var n2048KeepGoingBtn = document.getElementById("n2048-keep-going-btn");
+    var n2048WinScore = document.getElementById("n2048-win-score");
+    var n2048WinTile = document.getElementById("n2048-win-tile");
+    var n2048WinBest = document.getElementById("n2048-win-best");
+    var n2048WinRank = document.getElementById("n2048-win-rank");
+    var n2048OverScore = document.getElementById("n2048-over-score");
+    var n2048OverTile = document.getElementById("n2048-over-tile");
+    var n2048OverBest = document.getElementById("n2048-over-best");
+    var n2048OverRank = document.getElementById("n2048-over-rank");
+    var n2048RecordBanner = document.getElementById("n2048-record-banner");
+    var n2048WinRecordBanner = document.getElementById("n2048-win-record-banner");
+    var n2048SaveStatus = document.getElementById("n2048-save-status");
+
+    var n2048State = {
+        active: false,
+        mode: "idle",
+        grid: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        undoGrid: null,
+        undoScore: 0,
+        score: 0,
+        moves: 0,
+        maxTile: 2,
+        combo: 0,
+        maxCombo: 0,
+        hasWon2048: false,
+        submitted: false,
+        gameId: 0,
+        popIndices: [],
+        leaderboard: null
+    };
+
+    function play2048Merge(val) {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var noteMap = {
+                4: 261.63, 8: 293.66, 16: 329.63, 32: 392.00,
+                64: 440.00, 128: 523.25, 256: 659.25, 512: 783.99,
+                1024: 1046.50, 2048: 1318.51
+            };
+            var freq = noteMap[val] || 1318.51;
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = val >= 256 ? "triangle" : "sine";
+            osc.frequency.setValueAtTime(freq, now);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.01, now + 0.16);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+
+            if (val >= 128) {
+                var osc2 = ctx.createOscillator();
+                var gain2 = ctx.createGain();
+                osc2.type = "sine";
+                osc2.frequency.setValueAtTime(freq * 1.5, now + 0.04);
+                gain2.gain.setValueAtTime(0.06, now + 0.04);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.04);
+                osc2.stop(now + 0.28);
+            }
+        } catch (e) {}
+    }
+
+    function play2048Slide() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 0.08);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } catch (e) {}
+    }
+
+    function play2048Invalid() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(95, now);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.09);
+        } catch (e) {}
+    }
+
+    function play2048GameOver() {
+        var ctx = ensureAudio();
+        if (!ctx) return;
+        try {
+            var now = ctx.currentTime;
+            var notes = [293.66, 261.63, 220.00, 164.81];
+            notes.forEach(function (freq, i) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = "sawtooth";
+                var t = now + i * 0.1;
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.06, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.22);
+            });
+        } catch (e) {}
+    }
+
+    function n2048SpawnTile() {
+        var empties = [];
+        for (var i = 0; i < 16; i++) {
+            if (n2048State.grid[i] === 0) empties.push(i);
+        }
+        if (empties.length === 0) return -1;
+        var pick = empties[Math.floor(Math.random() * empties.length)];
+        n2048State.grid[pick] = Math.random() < 0.9 ? 2 : 4;
+        return pick;
+    }
+
+    function n2048IsGameOver() {
+        for (var i = 0; i < 16; i++) {
+            if (n2048State.grid[i] === 0) return false;
+        }
+        for (var r = 0; r < 4; r++) {
+            for (var c = 0; c < 4; c++) {
+                var val = n2048State.grid[r * 4 + c];
+                if (c < 3 && val === n2048State.grid[r * 4 + c + 1]) return false;
+                if (r < 3 && val === n2048State.grid[(r + 1) * 4 + c]) return false;
+            }
+        }
+        return true;
+    }
+
+    function n2048RenderBoard() {
+        if (!n2048Board) return;
+        n2048Board.innerHTML = "";
+        for (var i = 0; i < 16; i++) {
+            var val = n2048State.grid[i];
+            var cell = document.createElement("div");
+            cell.className = "n2048-cell";
+            if (val > 0) {
+                var tileCls = val <= 2048 ? "tile-" + val : "tile-super";
+                cell.classList.add(tileCls);
+                cell.textContent = String(val);
+                if (n2048State.popIndices && n2048State.popIndices.indexOf(i) !== -1) {
+                    cell.classList.add("is-pop");
+                }
+            }
+            n2048Board.appendChild(cell);
+        }
+        n2048State.popIndices = [];
+
+        if (n2048ScoreEl) n2048ScoreEl.textContent = String(n2048State.score);
+        if (n2048MaxTileEl) n2048MaxTileEl.textContent = String(n2048State.maxTile);
+        if (n2048MovesEl) n2048MovesEl.textContent = String(n2048State.moves);
+    }
+
+    function n2048StartGame() {
+        n2048State.mode = "playing";
+        n2048State.gameId++;
+        n2048State.submitted = false;
+        n2048State.grid = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        n2048State.undoGrid = null;
+        n2048State.undoScore = 0;
+        n2048State.score = 0;
+        n2048State.moves = 0;
+        n2048State.maxTile = 2;
+        n2048State.combo = 0;
+        n2048State.maxCombo = 0;
+        n2048State.hasWon2048 = false;
+
+        if (n2048UndoBtn) n2048UndoBtn.disabled = true;
+        if (n2048StartOverlay) n2048StartOverlay.hidden = true;
+        if (n2048WinOverlay) n2048WinOverlay.hidden = true;
+        if (n2048OverOverlay) n2048OverOverlay.hidden = true;
+        if (n2048RecordBanner) n2048RecordBanner.hidden = true;
+        if (n2048WinRecordBanner) n2048WinRecordBanner.hidden = true;
+
+        n2048SpawnTile();
+        n2048SpawnTile();
+        n2048RenderBoard();
+    }
+
+    function n2048TriggerWin() {
+        playNewRecordFanfare();
+        if (n2048WinScore) n2048WinScore.textContent = String(n2048State.score);
+        if (n2048WinTile) n2048WinTile.textContent = String(n2048State.maxTile);
+        var prevBest = n2048State.leaderboard && n2048State.leaderboard.myRecord ? n2048State.leaderboard.myRecord.bestScore : 0;
+        if (n2048WinBest) n2048WinBest.textContent = String(Math.max(prevBest, n2048State.score));
+        if (n2048WinRank) {
+            var curRank = n2048State.leaderboard && n2048State.leaderboard.myRecord ? "#" + n2048State.leaderboard.myRecord.rank : "—";
+            n2048WinRank.textContent = curRank;
+        }
+        if (n2048WinRecordBanner) {
+            n2048WinRecordBanner.hidden = !(n2048State.score > prevBest && n2048State.score > 0);
+        }
+        if (n2048WinOverlay) n2048WinOverlay.hidden = false;
+        n2048SubmitScore();
+    }
+
+    function n2048TriggerGameOver() {
+        if (n2048State.mode === "gameover") return;
+        n2048State.mode = "gameover";
+        play2048GameOver();
+
+        if (n2048OverScore) n2048OverScore.textContent = String(n2048State.score);
+        if (n2048OverTile) n2048OverTile.textContent = String(n2048State.maxTile);
+
+        var prevBest = n2048State.leaderboard && n2048State.leaderboard.myRecord ? n2048State.leaderboard.myRecord.bestScore : 0;
+        var optBest = Math.max(prevBest, n2048State.score);
+        if (n2048OverBest) n2048OverBest.textContent = String(optBest);
+        if (n2048OverRank) {
+            var curRank = n2048State.leaderboard && n2048State.leaderboard.myRecord ? "#" + n2048State.leaderboard.myRecord.rank : "—";
+            n2048OverRank.textContent = curRank;
+        }
+        if (n2048RecordBanner) {
+            n2048RecordBanner.hidden = !(n2048State.score > prevBest && n2048State.score > 0);
+        }
+        if (n2048SaveStatus) {
+            n2048SaveStatus.textContent = n2048State.score > 0 ? "Saving score to global leaderboard…" : "Play again to post a score!";
+        }
+        if (n2048OverOverlay) {
+            n2048OverOverlay.hidden = false;
+        }
+
+        n2048SubmitScore();
+    }
+
+    function n2048Undo() {
+        if (!n2048State.undoGrid || n2048State.mode !== "playing") return;
+        n2048State.grid = n2048State.undoGrid.slice();
+        n2048State.score = n2048State.undoScore;
+        n2048State.undoGrid = null;
+        if (n2048UndoBtn) n2048UndoBtn.disabled = true;
+        n2048RenderBoard();
+    }
+
+    function n2048Slide(dir) {
+        if (n2048State.mode !== "playing") return false;
+        var moved = false;
+        var scoreGained = 0;
+        var mergedAny = false;
+        var newGrid = n2048State.grid.slice();
+        var mergedIndices = [];
+
+        function processLine(indices) {
+            var line = indices.map(function (idx) { return newGrid[idx]; });
+            var filtered = line.filter(function (v) { return v !== 0; });
+            var merged = [];
+            var skip = false;
+            for (var i = 0; i < filtered.length; i++) {
+                if (skip) {
+                    skip = false;
+                    continue;
+                }
+                if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
+                    var val = filtered[i] * 2;
+                    merged.push(val);
+                    scoreGained += val;
+                    mergedAny = true;
+                    skip = true;
+                } else {
+                    merged.push(filtered[i]);
+                }
+            }
+            while (merged.length < 4) {
+                merged.push(0);
+            }
+            for (var j = 0; j < 4; j++) {
+                var oldVal = newGrid[indices[j]];
+                var newVal = merged[j];
+                if (oldVal !== newVal) {
+                    moved = true;
+                }
+                newGrid[indices[j]] = newVal;
+                if (newVal > oldVal && oldVal !== 0) {
+                    mergedIndices.push(indices[j]);
+                }
+            }
+        }
+
+        if (dir === "left") {
+            for (var r = 0; r < 4; r++) processLine([r * 4, r * 4 + 1, r * 4 + 2, r * 4 + 3]);
+        } else if (dir === "right") {
+            for (var r = 0; r < 4; r++) processLine([r * 4 + 3, r * 4 + 2, r * 4 + 1, r * 4]);
+        } else if (dir === "up") {
+            for (var c = 0; c < 4; c++) processLine([c, c + 4, c + 8, c + 12]);
+        } else if (dir === "down") {
+            for (var c = 0; c < 4; c++) processLine([c + 12, c + 8, c + 4, c]);
+        }
+
+        if (!moved) {
+            play2048Invalid();
+            return false;
+        }
+
+        n2048State.undoGrid = n2048State.grid.slice();
+        n2048State.undoScore = n2048State.score;
+        if (n2048UndoBtn) n2048UndoBtn.disabled = false;
+
+        n2048State.grid = newGrid;
+        n2048State.score = Math.min(10000, n2048State.score + scoreGained);
+        n2048State.moves++;
+
+        if (mergedAny) {
+            n2048State.combo++;
+            n2048State.maxCombo = Math.max(n2048State.maxCombo, n2048State.combo);
+            var maxVal = 4;
+            for (var m = 0; m < mergedIndices.length; m++) {
+                if (newGrid[mergedIndices[m]] > maxVal) {
+                    maxVal = newGrid[mergedIndices[m]];
+                }
+            }
+            play2048Merge(maxVal);
+        } else {
+            n2048State.combo = 0;
+            play2048Slide();
+        }
+
+        var spawnedIdx = n2048SpawnTile();
+        n2048State.popIndices = mergedIndices.concat(spawnedIdx >= 0 ? [spawnedIdx] : []);
+
+        var curMax = 2;
+        for (var k = 0; k < 16; k++) {
+            if (n2048State.grid[k] > curMax) curMax = n2048State.grid[k];
+        }
+        n2048State.maxTile = Math.max(n2048State.maxTile, curMax);
+
+        if (n2048State.maxTile >= 2048 && !n2048State.hasWon2048) {
+            n2048State.hasWon2048 = true;
+            n2048TriggerWin();
+        }
+
+        if (n2048IsGameOver()) {
+            n2048TriggerGameOver();
+        }
+
+        n2048RenderBoard();
+        return true;
+    }
+
+    async function n2048SubmitScore() {
+        if (n2048State.submitted) return;
+        n2048State.submitted = true;
+        var gameId = n2048State.gameId;
+        var score = Math.max(0, Math.min(10000, Math.round(n2048State.score)));
+        var combo = Math.max(0, Math.min(score, Math.round(n2048State.maxTile)));
+
+        try {
+            var res = await window.mcwut.api("/api/games/merge-2048/scores", {
+                method: "POST",
+                headers: window.mcwut.headers({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ score: score, maxCombo: combo })
+            });
+            if (!res) return;
+            n2048State.leaderboard = res.leaderboard;
+            if (GAME_KEY === "merge-2048") {
+                renderLeaderboard(res.leaderboard);
+            }
+            if (gameId !== n2048State.gameId) return;
+            if (n2048OverRank) {
+                n2048OverRank.textContent = res.rank ? "#" + res.rank : "—";
+            }
+            if (n2048RecordBanner) {
+                n2048RecordBanner.hidden = !res.isNewBest;
+            }
+            if (n2048WinRecordBanner) {
+                n2048WinRecordBanner.hidden = !res.isNewBest;
+            }
+            if (res.isNewBest) {
+                playNewRecordFanfare();
+            }
+            if (n2048SaveStatus) {
+                n2048SaveStatus.textContent = res.isNewBest
+                    ? "New personal record saved to the global leaderboard!"
+                    : "Score recorded. Personal best: " + res.bestScore + ".";
+            }
+        } catch (err) {
+            if (n2048SaveStatus && gameId === n2048State.gameId) {
+                n2048SaveStatus.textContent = "Could not save score: " + (err.message || "Network error");
+            }
+        }
+    }
+
+    if (n2048StartBtn) {
+        n2048StartBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            n2048StartGame();
+        });
+    }
+    if (n2048AgainBtn) {
+        n2048AgainBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            n2048StartGame();
+        });
+    }
+    if (n2048WinAgainBtn) {
+        n2048WinAgainBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            n2048StartGame();
+        });
+    }
+    if (n2048KeepGoingBtn) {
+        n2048KeepGoingBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            if (n2048WinOverlay) n2048WinOverlay.hidden = true;
+            n2048State.mode = "playing";
+        });
+    }
+    if (n2048UndoBtn) {
+        n2048UndoBtn.addEventListener("click", function () {
+            n2048Undo();
+        });
+    }
+    if (n2048ResetBtn) {
+        n2048ResetBtn.addEventListener("click", function () {
+            n2048StartGame();
+        });
+    }
+
+    if (n2048Board) {
+        var touchStartX = 0;
+        var touchStartY = 0;
+        n2048Board.addEventListener("touchstart", function (ev) {
+            if (ev.touches && ev.touches.length === 1) {
+                touchStartX = ev.touches[0].clientX;
+                touchStartY = ev.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        n2048Board.addEventListener("touchend", function (ev) {
+            if (!ev.changedTouches || ev.changedTouches.length === 0) return;
+            var dx = ev.changedTouches[0].clientX - touchStartX;
+            var dy = ev.changedTouches[0].clientY - touchStartY;
+            var absX = Math.abs(dx);
+            var absY = Math.abs(dy);
+            if (Math.max(absX, absY) > 28) {
+                if (absX > absY) {
+                    n2048Slide(dx > 0 ? "right" : "left");
+                } else {
+                    n2048Slide(dy > 0 ? "down" : "up");
+                }
+            }
+        }, { passive: true });
+    }
+
+    if (n2048Stage) {
+        n2048Stage.addEventListener("click", function (ev) {
+            var btn = ev.target.closest(".n2048-dpad-btn");
+            if (btn) {
+                var dir = btn.getAttribute("data-dir");
+                if (dir) {
+                    n2048Slide(dir);
+                }
+            }
+        });
+    }
+
     // --- Hub Game Switcher ---
     function switchGame(nextKey) {
-        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper") {
+        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048") {
             return;
         }
         GAME_KEY = nextKey;
         msState.active = nextKey === "minesweeper";
+        slopeState.active = nextKey === "neon-slope";
+        n2048State.active = nextKey === "merge-2048";
 
         if (hubStrip) {
             var tabs = hubStrip.querySelectorAll("[data-game-key]");
@@ -3627,17 +5014,23 @@
 
         if (nextKey === "mini-crossword") {
             msPauseClock();
+            slopePause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = false;
             if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Mini Crossword";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Tap cells or clues · Type or use touch keys · <kbd>Space</kbd> flips direction";
             }
         } else if (nextKey === "minesweeper") {
+            slopePause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = false;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Minesweeper";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Tap to reveal · Long-press or <kbd>F</kbd> to flag · Chain big cascades";
@@ -3646,10 +5039,41 @@
                 msResize();
             });
             msResumeClock();
-        } else {
+        } else if (nextKey === "neon-slope") {
             msPauseClock();
+            viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = false;
+            if (n2048Stage) n2048Stage.hidden = true;
+            if (activeTitleEl) activeTitleEl.textContent = "Neon Slope";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "← → or <kbd>A</kbd> <kbd>D</kbd> steer · <kbd>Space</kbd> / ↑ jump · Touch controls";
+            }
+            requestAnimationFrame(function () {
+                slopeResize();
+            });
+            slopeResume();
+        } else if (nextKey === "merge-2048") {
+            msPauseClock();
+            slopePause();
+            viewport.hidden = true;
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = false;
+            if (activeTitleEl) activeTitleEl.textContent = "2048 Neon";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "Swipe or Arrows / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to slide & merge · Reach 2048!";
+            }
+            n2048RenderBoard();
+        } else {
+            msPauseClock();
+            slopePause();
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
             viewport.hidden = false;
             if (activeTitleEl) activeTitleEl.textContent = "Stack 3D";
             if (stageHintEl) {
@@ -3693,6 +5117,10 @@
                 loadCrosswordPuzzle(cwState.puzzleIdx);
             } else if (GAME_KEY === "minesweeper") {
                 msNewGame();
+            } else if (GAME_KEY === "neon-slope") {
+                slopeStartGame();
+            } else if (GAME_KEY === "merge-2048") {
+                n2048StartGame();
             } else {
                 startGame();
             }
@@ -3725,6 +5153,55 @@
             return;
         }
         if (ev.ctrlKey || ev.metaKey || ev.altKey) {
+            return;
+        }
+
+        if (GAME_KEY === "neon-slope") {
+            if (ev.key === "r" || ev.key === "R") {
+                ev.preventDefault();
+                slopeStartGame();
+            } else if (ev.code === "ArrowLeft" || ev.key === "a" || ev.key === "A") {
+                ev.preventDefault();
+                slopeInput.left = true;
+            } else if (ev.code === "ArrowRight" || ev.key === "d" || ev.key === "D") {
+                ev.preventDefault();
+                slopeInput.right = true;
+            } else if (ev.code === "Space" || ev.code === "ArrowUp" || ev.key === "w" || ev.key === "W") {
+                ev.preventDefault();
+                if (slopeState.mode === "idle" || slopeState.mode === "gameover") {
+                    slopeStartGame();
+                } else {
+                    slopeJump();
+                }
+            }
+            return;
+        }
+
+        if (GAME_KEY === "merge-2048") {
+            if (ev.key === "r" || ev.key === "R") {
+                ev.preventDefault();
+                n2048StartGame();
+            } else if (ev.key === "z" || ev.key === "Z" || ev.key === "u" || ev.key === "U") {
+                ev.preventDefault();
+                n2048Undo();
+            } else if (ev.code === "ArrowLeft" || ev.key === "a" || ev.key === "A") {
+                ev.preventDefault();
+                n2048Slide("left");
+            } else if (ev.code === "ArrowRight" || ev.key === "d" || ev.key === "D") {
+                ev.preventDefault();
+                n2048Slide("right");
+            } else if (ev.code === "ArrowUp" || ev.key === "w" || ev.key === "W") {
+                ev.preventDefault();
+                n2048Slide("up");
+            } else if (ev.code === "ArrowDown" || ev.key === "s" || ev.key === "S") {
+                ev.preventDefault();
+                n2048Slide("down");
+            } else if (ev.code === "Space" || ev.key === "Enter") {
+                if (n2048State.mode === "idle" || n2048State.mode === "gameover") {
+                    ev.preventDefault();
+                    n2048StartGame();
+                }
+            }
             return;
         }
 
@@ -3807,16 +5284,28 @@
         }
     });
 
+    window.addEventListener("keyup", function (ev) {
+        if (GAME_KEY === "neon-slope") {
+            if (ev.code === "ArrowLeft" || ev.key === "a" || ev.key === "A") {
+                slopeInput.left = false;
+            } else if (ev.code === "ArrowRight" || ev.key === "d" || ev.key === "D") {
+                slopeInput.right = false;
+            }
+        }
+    });
+
     // --- Boot ---
     initGraphics();
+    slopeInitGraphics();
     setupIdleDemo();
     updateViewportBackground(state.baseHue);
     initCrosswordEvents();
+    n2048RenderBoard();
 
-    // Support deep-linking via ?game=mini-crossword or ?game=minesweeper
+    // Support deep-linking via ?game=mini-crossword, ?game=minesweeper, ?game=neon-slope, or ?game=merge-2048
     var params = new URLSearchParams(window.location.search);
     var linkedGame = params.get("game");
-    if (linkedGame === "mini-crossword" || linkedGame === "minesweeper") {
+    if (linkedGame === "mini-crossword" || linkedGame === "minesweeper" || linkedGame === "neon-slope" || linkedGame === "merge-2048") {
         switchGame(linkedGame);
     } else {
         loadLeaderboard();

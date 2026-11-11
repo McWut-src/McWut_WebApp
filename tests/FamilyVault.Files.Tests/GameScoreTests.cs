@@ -9,12 +9,14 @@ public class GameScoreTests
     private static readonly DateTimeOffset Now = DateTimeOffset.Parse("2026-11-10T18:00:00Z");
 
     [Fact]
-    public void Rules_normalize_stack_3d_and_reject_unavailable_or_unknown_games()
+    public void Rules_normalize_available_games_and_reject_unavailable_or_unknown_games()
     {
         Assert.Equal("stack-3d", GameScoreRules.NormalizeGameKey("  STACK-3D "));
         Assert.Equal("mini-crossword", GameScoreRules.NormalizeGameKey(" MINI-CROSSWORD "));
         Assert.Equal("minesweeper", GameScoreRules.NormalizeGameKey(" MINESWEEPER "));
-        Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("neon-slope"));
+        Assert.Equal("neon-slope", GameScoreRules.NormalizeGameKey(" NEON-SLOPE "));
+        Assert.Equal("merge-2048", GameScoreRules.NormalizeGameKey(" MERGE-2048 "));
+        Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("brick-breaker"));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
 
@@ -100,5 +102,16 @@ public class GameScoreTests
         Assert.False(ownerBoard.Entries[0].IsMe);
         Assert.Equal("Vince", ownerBoard.Entries[1].DisplayName);
         Assert.True(ownerBoard.Entries[1].IsMe);
+
+        // Neon Slope and 2048 Neon score submission
+        var slopeSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "neon-slope", score: 850, maxCombo: 15);
+        Assert.True(slopeSub.IsNewBest);
+        Assert.Equal(850, slopeSub.BestScore);
+        Assert.Equal(15, slopeSub.BestCombo);
+
+        var mergeSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "merge-2048", score: 2048, maxCombo: 512);
+        Assert.True(mergeSub.IsNewBest);
+        Assert.Equal(2048, mergeSub.BestScore);
+        Assert.Equal(512, mergeSub.BestCombo);
     }
 }

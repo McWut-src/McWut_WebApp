@@ -26,8 +26,8 @@ public static class GameScoreRules
         new(Stack3dKey, "Stack 3D", "Precision timing tower builder. Slice overhangs and chain perfect combos.", "Three.js 3D", true),
         new(MiniCrosswordKey, "Mini Crossword", "Bite-sized 5×5 crossword pack with smart clues, pencil mode, and speed bonuses.", "Alpine / Grid", true),
         new(MinesweeperKey, "Minesweeper", "Neon minefield with cascading reveals, touch flagging, and explosive particle chains.", "Canvas 2D", true),
-        new(NeonSlopeKey, "Neon Slope", "High-speed endless 3D tunnel runner.", "Three.js 3D", false),
-        new(Merge2048Key, "2048 Neon", "Slide and merge tiles to reach 2048 and beyond.", "Alpine.js", false),
+        new(NeonSlopeKey, "Neon Slope", "High-speed endless 3D tunnel runner.", "Three.js 3D", true),
+        new(Merge2048Key, "2048 Neon", "Slide and merge tiles to reach 2048 and beyond.", "Neon Grid", true),
         new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", false)
     ];
 

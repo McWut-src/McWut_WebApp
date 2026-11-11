@@ -73,7 +73,7 @@
         </div>
     </button>
 
-    <div class="game-hub-card is-soon" aria-disabled="true">
+    <button type="button" class="game-hub-card" data-game-key="neon-slope" role="tab" aria-selected="false">
         <div class="game-hub-icon is-slope" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
                 <path d="M4 26L13 8h6l9 18" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
@@ -83,13 +83,13 @@
         <div class="game-hub-info">
             <div class="game-hub-title-row">
                 <strong>Neon Slope</strong>
-                <span class="game-hub-tag">Soon</span>
+                <span class="game-hub-tag is-live">Three.js 3D</span>
             </div>
             <span>High-speed 3D endless tunnel dodge.</span>
         </div>
-    </div>
+    </button>
 
-    <div class="game-hub-card is-soon" aria-disabled="true">
+    <button type="button" class="game-hub-card" data-game-key="merge-2048" role="tab" aria-selected="false">
         <div class="game-hub-icon is-2048" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
                 <rect x="5" y="5" width="10" height="10" rx="2.5" fill="#f59e0b"/>
@@ -101,11 +101,11 @@
         <div class="game-hub-info">
             <div class="game-hub-title-row">
                 <strong>2048 Neon</strong>
-                <span class="game-hub-tag">Soon</span>
+                <span class="game-hub-tag is-live">Neon Grid</span>
             </div>
             <span>Reactive number-merging grid puzzle.</span>
         </div>
-    </div>
+    </button>
 </div>
 
 <div class="games-workspace">
@@ -412,6 +412,221 @@
                         <p class="game-save-status" id="ms-save-status">Saving score…</p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap">
                             <button type="button" class="btn btn-primary game-play-btn" id="ms-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slope-stage" id="slope-stage" hidden>
+            <div class="slope-viewport-wrap" id="slope-viewport">
+                <canvas id="slope-canvas" aria-label="Neon Slope 3D endless runner"></canvas>
+
+                <div class="game-hud" aria-live="polite">
+                    <div class="game-hud-top">
+                        <div class="game-hud-target" id="slope-target" hidden>
+                            <span class="game-hud-target-label" id="slope-target-label">Leader</span>
+                            <span class="game-hud-target-pill" id="slope-target-pill"></span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="slope-gem-pill" id="slope-gem-pill" title="Crystals collected">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="slope-gem-icon"><polygon points="12,2 22,8.5 12,22 2,8.5" fill="#22d3ee" fill-opacity="0.3"/></svg>
+                                <strong id="slope-gems-count">0</strong>
+                            </span>
+                            <div class="game-hud-speed" id="slope-speed-pill">1.0× Speed</div>
+                        </div>
+                    </div>
+
+                    <div class="game-hud-center">
+                        <div class="game-hud-score" id="slope-score">0</div>
+                        <div class="game-hud-combo" id="slope-combo" hidden>DODGE ×1</div>
+                        <div class="game-hud-pop" id="slope-pop" hidden>SPEED BOOST!</div>
+                    </div>
+                </div>
+
+                <div class="slope-touch-zones" aria-hidden="true">
+                    <button type="button" class="slope-touch-btn is-left" id="slope-touch-left" title="Steer Left">◀</button>
+                    <button type="button" class="slope-touch-btn is-jump" id="slope-touch-jump" title="Jump">▲ Jump</button>
+                    <button type="button" class="slope-touch-btn is-right" id="slope-touch-right" title="Steer Right">▶</button>
+                </div>
+
+                <div class="game-overlay" id="slope-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">THREE.JS 3D ARCADE</div>
+                        <h3 class="game-overlay-title">Neon Slope</h3>
+                        <p class="game-overlay-desc">
+                            Roll down an endless high-speed neon slope. Dodge deadly red spikes, leap over gaps, and collect glowing power crystals!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="slope-start-btn">
+                            Play Neon Slope
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> / Touch Steer</span>
+                            <span><kbd>Space</kbd> / <kbd>↑</kbd> Jump</span>
+                            <span><kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="slope-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="slope-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="slope-over-badge">RUN FINISHED</div>
+                        <h3 class="game-overlay-title" id="slope-over-title">Crashed Out</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="slope-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Streak</span>
+                                <strong class="game-over-val" id="slope-over-combo">×0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="slope-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="slope-over-rank">—</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="slope-save-status">Saving score…</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="slope-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="n2048-stage" id="neon2048-stage" hidden>
+            <div class="n2048-toolbar">
+                <div class="n2048-toolbar-left">
+                    <span class="game-stat-pill n2048-stat-pill" title="Current Score">
+                        Score <strong id="n2048-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill n2048-stat-pill is-tile" title="Highest Tile Achieved">
+                        Max Tile <strong id="n2048-max-tile">2</strong>
+                    </span>
+                    <span class="game-stat-pill n2048-stat-pill" title="Total Moves">
+                        Moves <strong id="n2048-moves">0</strong>
+                    </span>
+                </div>
+                <div class="n2048-toolbar-right">
+                    <button type="button" class="btn btn-sm n2048-tool-btn" id="n2048-undo-btn" title="Undo last move" disabled>
+                        ↩ Undo
+                    </button>
+                    <button type="button" class="btn btn-sm n2048-tool-btn" id="n2048-reset-btn" title="New Game (R)">
+                        ↺ New
+                    </button>
+                </div>
+            </div>
+
+            <div class="n2048-arena">
+                <div class="n2048-board-wrap">
+                    <div class="n2048-board" id="n2048-board" tabindex="0" role="grid" aria-label="4 by 4 2048 Neon grid">
+                        <!-- 16 cells rendered dynamically -->
+                    </div>
+
+                    <div class="n2048-dpad" aria-label="On-screen directional controls">
+                        <button type="button" class="n2048-dpad-btn is-up" data-dir="up" aria-label="Move Up">▲</button>
+                        <div class="n2048-dpad-row">
+                            <button type="button" class="n2048-dpad-btn is-left" data-dir="left" aria-label="Move Left">◀</button>
+                            <button type="button" class="n2048-dpad-btn is-down" data-dir="down" aria-label="Move Down">▼</button>
+                            <button type="button" class="n2048-dpad-btn is-right" data-dir="right" aria-label="Move Right">▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="n2048-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">4×4 NEON GRID PUZZLE</div>
+                        <h3 class="game-overlay-title">2048 Neon</h3>
+                        <p class="game-overlay-desc">
+                            Slide glowing number tiles across the grid. Identical numbers fuse into higher powers of 2. Reach the legendary <strong>2048</strong> cyber tile!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="n2048-start-btn">
+                            Play 2048 Neon
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>Swipe</kbd> / <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Slide</span>
+                            <span><kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="n2048-win-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="n2048-win-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" style="background:#10b981;color:#fff;">CYBER 2048 REACHED!</div>
+                        <h3 class="game-overlay-title">Matrix Ascended!</h3>
+                        <p class="game-overlay-desc">You created the legendary 2048 neon tile. You can keep playing to push your score higher, or start a fresh round!</p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="n2048-win-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Tile</span>
+                                <strong class="game-over-val" id="n2048-win-tile">2048</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="n2048-win-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="n2048-win-rank">—</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="n2048-keep-going-btn">
+                                Keep Playing
+                            </button>
+                            <button type="button" class="btn btn-outline-light" id="n2048-win-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="n2048-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="n2048-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge">NO MOVES REMAINING</div>
+                        <h3 class="game-overlay-title">Grid Locked</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="n2048-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Tile</span>
+                                <strong class="game-over-val" id="n2048-over-tile">2</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="n2048-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="n2048-over-rank">—</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="n2048-save-status">Saving score…</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="n2048-again-btn">
                                 Play Again
                             </button>
                         </div>
