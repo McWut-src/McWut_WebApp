@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000045`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000046`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 22:25 UTC.** Production was moved on purpose to unlock and release **Hextris Neon** (`hextris`) — a fast-paced hexagonal match-3 arcade puzzle game in pure Canvas 2D with critically-damped spring rotation, squash-and-stretch docking impact, explosive particle clears, inward gravity, cascading combo multipliers (up to 10×), hitstop micro-pauses, radial shockwaves, danger perimeter warnings, synthesized Web Audio effects (rotation tick, docking thud, ascending pentatonic combo chords, game over sweep), split-screen touch controls with on-screen visual hints, full keyboard controls, and global high-score leaderboard integration backed by `GameScoreRules`.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000045` | `ghcr.io/mcwut-src/mcwut_webapp:c70129556a592bf3da92d6dffed43f7ed5d340ec` |
+| Live | `ca-mcwut--0000046` | `ghcr.io/mcwut-src/mcwut_webapp:52565b43bdaeb749a7eff11ca0fcc4dcfe44d3c7` |
+
+`0000046` has 100% of the traffic and is Healthy. `0000045` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000046`: both hosts `/health` return `ok`, Register is 404, and `/files` and `/games` redirect to sign-in. Static asset `/js/games.js` serves the live Hextris Neon configuration (`"hextris": { ... available: true }`).
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000045
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000045=100
+```
 
 **11 November 2026, 19:29 UTC.** Production was moved on purpose to fix **mojibake character encoding across the Games Hub UI** — replacing corrupted Windows-1252 character artifacts across Mini Crossword, Minesweeper, Neon Slope, 2048 Neon, and Wacky Wheels with clean, resilient HTML entities (`&times;`, `&#x270E;`, `&#x2713;`, `&#x1F4A1;`, `&lsaquo;`, `&rsaquo;`, `&#x21C4;`, `&#x232B;`, `&larr;`, `&rarr;`, `&uarr;`, `&darr;`, `&#x25C0;`, `&#x25B6;`, `&#x25B2;`, `&#x25BC;`, `&#x21BA;`, `&#x21BB;`, `&#x1F3C6;`, `&#x1F310;`, `&#x1F6E0;`, `&#x1F680;`) and updating the Games area guidelines.
 
