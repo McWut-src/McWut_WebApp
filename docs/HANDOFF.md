@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000040`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000041`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**11 November 2026, 15:46 UTC.** Production was moved on purpose to add the **Interactive Visual Level Editor** and **Community Member Levels** to **Wacky Wheels** (`wacky-wheels`) — enabling members to sketch custom courses directly on the canvas (rolling hills, boost launch ramps, 360° Sonic stunt loops, springboards, swinging wrecking balls, breakable crates, stars, and finish gate with 25-step Undo and live test drive), publish and share them across the family with shareable deep links (`/games?game=wacky-wheels&level={id}`), remix courses, and compete for Course Champion records (score & fastest clear time) backed by `GameCustomLevels` table, `GameLevelRules`, and `GameCustomLevelService`.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000040` | `ghcr.io/mcwut-src/mcwut_webapp:31a05847441baf7da30b1bab9424447c56464b30` |
+| Live | `ca-mcwut--0000041` | `ghcr.io/mcwut-src/mcwut_webapp:8309a3e392e571d352cdd2b3004cca3964a3e449` |
+
+`0000041` has 100% of the traffic and is Healthy. `0000040` is the previous revision and can be brought back. The new revision’s startup log says it is listening.
+
+Checked while signed out, on `0000041`: both hosts `/health` return `ok` with security headers, Register is 404, and `/files` and `/games` redirect to sign-in. Static assets `/js/games.js` and `/css/site.css` contain the verified level editor, community levels list, and styles.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000040
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000040=100
+```
 
 **11 November 2026, 14:53 UTC.** Production was moved on purpose to add **Wacky Wheels** (`wacky-wheels`) to the `/games` arcade hub — expanding the arcade to 6 live playable games with a family-friendly Canvas 2D ragdoll physics stunt obstacle course featuring a 2-wheel spring/damper suspension buggy, 5-segment articulated Lego-style toy rider with breakable snap-joints and star/confetti bursts, rolling hills, turbo launch ramp, 360° loop-the-loop, springboards, swinging wrecking balls, breakable crates, 15 bonus stars, checkered finish gate, synthesized Web Audio effects, mobile touch controls, and global high scores.
 
