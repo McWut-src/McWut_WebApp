@@ -27,7 +27,8 @@ public class IndexModel : PageModel
             new("merge-2048", "2048 Neon", "#f59e0b", "Tile Puzzle", "Slide and merge matching tiles to reach 2048.", true),
             new("wacky-wheels", "Wacky Wheels", "#22c55e", "Ragdoll Stunt", "Slapstick ragdoll physics buggy obstacle course.", true, IsNew: false),
             new("brick-breaker", "Cyber Breakout", "#ec4899", "Laser Paddle", "Neon brick breaker with lasers and multiball.", true, IsNew: false),
-            new("hextris", "Hextris Neon", "#a855f7", "Hex Match", "Catch falling colored bars on the rotating hexagon.", true, IsNew: true)
+            new("hextris", "Hextris Neon", "#a855f7", "Hex Match", "Catch falling colored bars on the rotating hexagon.", true, IsNew: false),
+            new("meme-merge", "Meme Merge", "#facc15", "Meme Drop", "Drop and merge classic memes with juicy physics to summon The Rock.", true, IsNew: true)
         ];
     }
 }

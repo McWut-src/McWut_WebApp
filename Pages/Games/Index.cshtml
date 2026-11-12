@@ -683,6 +683,7 @@
                     <button type="button" class="ww-tool-btn" data-ww-tool="ball" title="Tap to hang a Swinging Wrecking Ball">&#x1F4A3; Wrecking</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="crate" title="Tap to stack breakable wooden crates">&#x1F4E6; Crate</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="star" title="Tap to place +100 pt Bonus Stars">&#x2605; Star</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="spike" title="Tap to place a bouncy toy Spike Strip">&#x26A0; Spikes</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="finish" title="Tap to move the Checkered Finish Gate">&#x1F3C1; Finish</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="pan" title="Drag canvas to pan view">&#x270B; Pan</button>
                     <button type="button" class="ww-tool-btn is-danger" data-ww-tool="erase" title="Tap or drag to erase roads or obstacles">&#x232B; Erase</button>
@@ -733,6 +734,7 @@
                 <div class="ww-center-hud" id="ww-center-hud" aria-live="polite">
                     <div class="ww-score-readout" id="ww-hud-score">0</div>
                     <div class="game-hud-combo ww-streak-pill" id="ww-streak-pill" hidden>FLIP STREAK &times;1</div>
+                    <div class="game-hud-combo ww-baby-pill" id="ww-baby-pill" hidden>&#x1F37C; BABY ON BOARD +500</div>
                     <div class="game-hud-pop ww-pop-banner" id="ww-pop-banner" hidden>BACKFLIP!</div>
                 </div>
 
@@ -772,7 +774,7 @@
                         <div class="game-overlay-badge" id="ww-start-badge">CANVAS 2D / PHYSICS</div>
                         <h3 class="game-overlay-title" id="ww-start-title">Wacky Wheels</h3>
                         <p class="game-overlay-desc" id="ww-start-desc">
-                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360&deg; loop-the-loop, springboards, crates, and swinging wrecking balls! Land flips for combo multipliers &mdash; or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
+                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360&deg; loop-the-loop, springboards, toy spike strips, crates, and swinging wrecking balls! Deliver the toy baby doll in the front seat for <strong>+500 SAFE DELIVERY</strong>, land flips for combo multipliers &mdash; or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
                         </p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap mb-2">
                             <button type="button" class="btn btn-primary game-play-btn" id="ww-start-btn">
@@ -1052,6 +1054,95 @@
                 </div>
             </div>
         </div>
+
+        <div class="mm-stage" id="meme-stage" hidden>
+            <div class="mm-toolbar">
+                <div class="mm-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill mm-stat-pill" title="Current Score">
+                        Score <strong id="mm-hud-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill mm-stat-pill is-next" title="Next Meme to Drop">
+                        <span class="mm-next-label">Next</span>
+                        <span class="mm-next-preview" id="mm-hud-next" aria-label="Next meme">
+                            <span class="mm-next-icon" id="mm-next-icon">&#x1F480;</span>
+                        </span>
+                    </span>
+                    <span class="game-stat-pill mm-stat-pill is-combo" title="Merge Combo Streak">
+                        Combo <strong id="mm-hud-combo">&times;1</strong>
+                    </span>
+                    <span class="game-stat-pill mm-stat-pill d-none d-sm-inline-flex" title="Highest Tier Achieved">
+                        Apex <strong id="mm-hud-apex">Tier 1</strong>
+                    </span>
+                </div>
+                <div class="mm-toolbar-actions">
+                    <button type="button" class="btn btn-sm btn-outline-warning mm-restart-btn" id="mm-btn-restart" title="Quick Restart (R)">
+                        &#x27F2; <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mm-viewport" id="meme-viewport">
+                <canvas id="meme-canvas" aria-label="Meme Merge game canvas"></canvas>
+
+                <div class="game-overlay" id="meme-start-overlay">
+                    <div class="game-overlay-card">
+                        <div class="game-overlay-badge">&#x1F3AF; PHYSICS PUZZLE</div>
+                        <h3 class="game-overlay-title">Meme Merge</h3>
+                        <p class="game-overlay-desc">
+                            Drop and bounce classic memes into the jar. Connect matching memes to evolve them up the neon gradient ladder. Can you summon The Rock?
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn" id="meme-start-btn">
+                            Play Meme Merge
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>A</kbd><kbd>D</kbd> or <kbd>&larr;</kbd><kbd>&rarr;</kbd> or Drag to Aim</span>
+                            <span><kbd>Space</kbd> / <kbd>&darr;</kbd> / Tap to Drop</span>
+                            <span>Watch the danger line &middot; <kbd>R</kbd> Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="meme-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover">
+                        <div class="game-record-banner" id="meme-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="meme-over-badge">JAR OVERFLOWED</div>
+                        <h3 class="game-overlay-title" id="meme-over-title">Game Over</h3>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="meme-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Combo</span>
+                                <strong class="game-over-val" id="meme-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="meme-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="meme-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="meme-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn" id="meme-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mm-touch-bar" aria-hidden="true">
+                    <button type="button" class="mm-touch-btn" id="mm-touch-left" title="Move Left">&#x25C0;</button>
+                    <button type="button" class="mm-touch-btn is-drop" id="mm-touch-drop" title="Drop Meme">&#x25BC; DROP</button>
+                    <button type="button" class="mm-touch-btn" id="mm-touch-right" title="Move Right">&#x25B6;</button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <aside class="card game-board-card" aria-label="Global High Scores">
@@ -1083,5 +1174,16 @@
 
 @section Scripts {
     <script src="~/lib/three/three.min.js" asp-append-version="true"></script>
+    <script src="~/js/games-audio.js" asp-append-version="true"></script>
+    <script src="~/js/games-leaderboard.js" asp-append-version="true"></script>
+    <script src="~/js/games-stack3d.js" asp-append-version="true"></script>
+    <script src="~/js/games-crossword.js" asp-append-version="true"></script>
+    <script src="~/js/games-minesweeper.js" asp-append-version="true"></script>
+    <script src="~/js/games-neon-slope.js" asp-append-version="true"></script>
+    <script src="~/js/games-2048.js" asp-append-version="true"></script>
+    <script src="~/js/games-wacky-wheels.js" asp-append-version="true"></script>
+    <script src="~/js/games-breakout.js" asp-append-version="true"></script>
+    <script src="~/js/games-hextris.js" asp-append-version="true"></script>
+    <script src="~/js/games-meme-merge.js" asp-append-version="true"></script>
     <script src="~/js/games.js" asp-append-version="true"></script>
 }

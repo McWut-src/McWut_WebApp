@@ -36,6 +36,31 @@ public class GameCustomLevelTests
     }
 
     [Fact]
+    public void Rules_normalize_spike_strips_and_enforce_cap()
+    {
+        var raw = """
+        {
+          "finishX": 1850,
+          "strips": [
+            { "pts": [[-120, 420], [900, 360], [1950, 420]] }
+          ],
+          "spikes": [
+            { "x": 700, "y": 405, "w": 64 },
+            { "x": 1200, "y": 300, "w": 9999 }
+          ]
+        }
+        """;
+
+        var normalized = GameLevelRules.ValidateAndNormalizeLevelJson("wacky-wheels", raw);
+        Assert.Contains("\"spikes\":[{\"x\":700,\"y\":405,\"w\":64},{\"x\":1200,\"y\":300,\"w\":120}]", normalized);
+
+        var spikes = string.Join(",", Enumerable.Repeat("""{ "x": 600, "y": 400 }""", GameLevelRules.MaxSpikes + 1));
+        var tooMany = $$"""{ "strips": [{ "pts": [[-120, 420], [400, 420]] }], "spikes": [{{spikes}}] }""";
+        Assert.Throws<GameScoreValidationException>(() =>
+            GameLevelRules.ValidateAndNormalizeLevelJson("wacky-wheels", tooMany));
+    }
+
+    [Fact]
     public async Task Members_can_publish_browse_play_set_records_and_manage_own_levels()
     {
         await using var fx = new SqliteFixture();

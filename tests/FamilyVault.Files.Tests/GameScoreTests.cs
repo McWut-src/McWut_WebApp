@@ -19,6 +19,7 @@ public class GameScoreTests
         Assert.Equal("wacky-wheels", GameScoreRules.NormalizeGameKey(" WACKY-WHEELS "));
         Assert.Equal("brick-breaker", GameScoreRules.NormalizeGameKey(" BRICK-BREAKER "));
         Assert.Equal("hextris", GameScoreRules.NormalizeGameKey(" HEXTRIS "));
+        Assert.Equal("meme-merge", GameScoreRules.NormalizeGameKey(" MEME-MERGE "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
 

@@ -24,6 +24,7 @@ public static class GameLevelRules
     public const int MaxWreckingBalls = 20;
     public const int MaxCrates = 60;
     public const int MaxStars = 40;
+    public const int MaxSpikes = 40;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -256,6 +257,26 @@ public static class GameLevelRules
             }
         }
 
+        var spikes = new List<WackyWheelsSpike>();
+        if (parsed.Spikes is not null)
+        {
+            if (parsed.Spikes.Count > MaxSpikes)
+            {
+                throw new GameScoreValidationException($"A level can have at most {MaxSpikes} spike strips.");
+            }
+
+            foreach (var spk in parsed.Spikes)
+            {
+                if (spk is null) continue;
+                spikes.Add(new WackyWheelsSpike
+                {
+                    X = Math.Round(ClampFinite(spk.X, 600, 180, MaxWorldX), 1),
+                    Y = Math.Round(ClampFinite(spk.Y, 420, -120, MaxWorldY), 1),
+                    W = Math.Round(ClampFinite(spk.W ?? 64, 64, 40, 120), 1)
+                });
+            }
+        }
+
         var cleanPayload = new WackyWheelsLevelPayload
         {
             Version = 1,
@@ -265,7 +286,8 @@ public static class GameLevelRules
             Springs = springs,
             WreckingBalls = wreckingBalls,
             Crates = crates,
-            Stars = stars
+            Stars = stars,
+            Spikes = spikes
         };
 
         var serialized = JsonSerializer.Serialize(cleanPayload, JsonOptions);
@@ -297,6 +319,7 @@ public static class GameLevelRules
         public List<WackyWheelsBall>? WreckingBalls { get; set; }
         public List<WackyWheelsPoint>? Crates { get; set; }
         public List<WackyWheelsPoint>? Stars { get; set; }
+        public List<WackyWheelsSpike>? Spikes { get; set; }
     }
 
     private sealed class WackyWheelsStrip
@@ -334,5 +357,12 @@ public static class GameLevelRules
     {
         public double X { get; set; }
         public double Y { get; set; }
+    }
+
+    private sealed class WackyWheelsSpike
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double? W { get; set; }
     }
 }
