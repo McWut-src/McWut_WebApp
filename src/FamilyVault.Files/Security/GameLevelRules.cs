@@ -25,6 +25,10 @@ public static class GameLevelRules
     public const int MaxCrates = 60;
     public const int MaxStars = 40;
     public const int MaxSpikes = 40;
+    public const int MaxCheckpoints = 12;
+    public const int MaxTntCrates = 24;
+    public const int MaxFans = 16;
+    public const int MaxSeesaws = 12;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -136,7 +140,8 @@ public static class GameLevelRules
                     normalizedStrips.Add(new WackyWheelsStrip
                     {
                         Pts = cleanPts,
-                        Boost = s.Boost == true ? true : null
+                        Boost = s.Boost == true ? true : null,
+                        Bridge = s.Bridge == true ? true : null
                     });
                 }
             }
@@ -219,43 +224,10 @@ public static class GameLevelRules
             }
         }
 
-        var crates = new List<WackyWheelsPoint>();
-        if (parsed.Crates is not null)
-        {
-            if (parsed.Crates.Count > MaxCrates)
-            {
-                throw new GameScoreValidationException($"A level can have at most {MaxCrates} crates.");
-            }
-
-            foreach (var cr in parsed.Crates)
-            {
-                if (cr is null) continue;
-                crates.Add(new WackyWheelsPoint
-                {
-                    X = Math.Round(ClampFinite(cr.X, 600, 180, MaxWorldX), 1),
-                    Y = Math.Round(ClampFinite(cr.Y, 420, MinWorldY, MaxWorldY), 1)
-                });
-            }
-        }
-
-        var stars = new List<WackyWheelsPoint>();
-        if (parsed.Stars is not null)
-        {
-            if (parsed.Stars.Count > MaxStars)
-            {
-                throw new GameScoreValidationException($"A level can have at most {MaxStars} bonus stars.");
-            }
-
-            foreach (var st in parsed.Stars)
-            {
-                if (st is null) continue;
-                stars.Add(new WackyWheelsPoint
-                {
-                    X = Math.Round(ClampFinite(st.X, 500, 160, MaxWorldX), 1),
-                    Y = Math.Round(ClampFinite(st.Y, 340, MinWorldY, MaxWorldY), 1)
-                });
-            }
-        }
+        var crates = NormalizePoints(parsed.Crates, MaxCrates, "crates", 180, 600, 420);
+        var stars = NormalizePoints(parsed.Stars, MaxStars, "bonus stars", 160, 500, 340);
+        var checkpoints = NormalizePoints(parsed.Checkpoints, MaxCheckpoints, "checkpoints", 240, 900, 420);
+        var tntCrates = NormalizePoints(parsed.TntCrates, MaxTntCrates, "TNT crates", 180, 600, 420);
 
         var spikes = new List<WackyWheelsSpike>();
         if (parsed.Spikes is not null)
@@ -277,6 +249,49 @@ public static class GameLevelRules
             }
         }
 
+        var fans = new List<WackyWheelsFan>();
+        if (parsed.Fans is not null)
+        {
+            if (parsed.Fans.Count > MaxFans)
+            {
+                throw new GameScoreValidationException($"A level can have at most {MaxFans} air fans.");
+            }
+
+            foreach (var fn in parsed.Fans)
+            {
+                if (fn is null) continue;
+                fans.Add(new WackyWheelsFan
+                {
+                    X = Math.Round(ClampFinite(fn.X, 800, 200, MaxWorldX), 1),
+                    Y = Math.Round(ClampFinite(fn.Y, 420, MinWorldY, MaxWorldY), 1),
+                    W = Math.Round(ClampFinite(fn.W ?? 92, 92, 50, 160), 1),
+                    H = Math.Round(ClampFinite(fn.H ?? 240, 240, 100, 420), 1),
+                    Power = Math.Round(ClampFinite(fn.Power ?? 1450, 1450, 700, 2400), 0)
+                });
+            }
+        }
+
+        var seesaws = new List<WackyWheelsSeesaw>();
+        if (parsed.Seesaws is not null)
+        {
+            if (parsed.Seesaws.Count > MaxSeesaws)
+            {
+                throw new GameScoreValidationException($"A level can have at most {MaxSeesaws} see-saws.");
+            }
+
+            foreach (var ss in parsed.Seesaws)
+            {
+                if (ss is null) continue;
+                seesaws.Add(new WackyWheelsSeesaw
+                {
+                    X = Math.Round(ClampFinite(ss.X, 800, 220, MaxWorldX), 1),
+                    Y = Math.Round(ClampFinite(ss.Y, 400, MinWorldY, MaxWorldY), 1),
+                    Len = Math.Round(ClampFinite(ss.Len ?? 200, 200, 120, 360), 1),
+                    MaxAngle = Math.Round(ClampFinite(ss.MaxAngle ?? 0.45, 0.45, 0.2, 0.65), 2)
+                });
+            }
+        }
+
         var cleanPayload = new WackyWheelsLevelPayload
         {
             Version = 1,
@@ -287,7 +302,11 @@ public static class GameLevelRules
             WreckingBalls = wreckingBalls,
             Crates = crates,
             Stars = stars,
-            Spikes = spikes
+            Spikes = spikes,
+            Checkpoints = checkpoints.Count > 0 ? checkpoints : null,
+            TntCrates = tntCrates.Count > 0 ? tntCrates : null,
+            Fans = fans.Count > 0 ? fans : null,
+            Seesaws = seesaws.Count > 0 ? seesaws : null
         };
 
         var serialized = JsonSerializer.Serialize(cleanPayload, JsonOptions);
@@ -297,6 +316,38 @@ public static class GameLevelRules
         }
 
         return serialized;
+    }
+
+    private static List<WackyWheelsPoint> NormalizePoints(
+        List<WackyWheelsPoint>? source,
+        int maxCount,
+        string label,
+        double minX,
+        double fallbackX,
+        double fallbackY)
+    {
+        var list = new List<WackyWheelsPoint>();
+        if (source is null)
+        {
+            return list;
+        }
+
+        if (source.Count > maxCount)
+        {
+            throw new GameScoreValidationException($"A level can have at most {maxCount} {label}.");
+        }
+
+        foreach (var pt in source)
+        {
+            if (pt is null) continue;
+            list.Add(new WackyWheelsPoint
+            {
+                X = Math.Round(ClampFinite(pt.X, fallbackX, minX, MaxWorldX), 1),
+                Y = Math.Round(ClampFinite(pt.Y, fallbackY, MinWorldY, MaxWorldY), 1)
+            });
+        }
+
+        return list;
     }
 
     private static double ClampFinite(double value, double fallback, double min, double max)
@@ -320,12 +371,17 @@ public static class GameLevelRules
         public List<WackyWheelsPoint>? Crates { get; set; }
         public List<WackyWheelsPoint>? Stars { get; set; }
         public List<WackyWheelsSpike>? Spikes { get; set; }
+        public List<WackyWheelsPoint>? Checkpoints { get; set; }
+        public List<WackyWheelsPoint>? TntCrates { get; set; }
+        public List<WackyWheelsFan>? Fans { get; set; }
+        public List<WackyWheelsSeesaw>? Seesaws { get; set; }
     }
 
     private sealed class WackyWheelsStrip
     {
         public List<double[]> Pts { get; set; } = [];
         public bool? Boost { get; set; }
+        public bool? Bridge { get; set; }
     }
 
     private sealed class WackyWheelsLoop
@@ -364,5 +420,22 @@ public static class GameLevelRules
         public double X { get; set; }
         public double Y { get; set; }
         public double? W { get; set; }
+    }
+
+    private sealed class WackyWheelsFan
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double? W { get; set; }
+        public double? H { get; set; }
+        public double? Power { get; set; }
+    }
+
+    private sealed class WackyWheelsSeesaw
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double? Len { get; set; }
+        public double? MaxAngle { get; set; }
     }
 }

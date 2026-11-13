@@ -48,6 +48,9 @@
             if (window.McWutGames && window.McWutGames.godzilla && typeof window.McWutGames.godzilla.setMuted === "function") {
                 window.McWutGames.godzilla.setMuted(muted);
             }
+            if (window.McWutGames && window.McWutGames.subwaySurfer && typeof window.McWutGames.subwaySurfer.setMuted === "function") {
+                window.McWutGames.subwaySurfer.setMuted(muted);
+            }
         });
     }
 
@@ -201,6 +204,9 @@
         }
         if (window.McWutGames && window.McWutGames.godzilla && typeof window.McWutGames.godzilla.setMuted === "function") {
             window.McWutGames.godzilla.setMuted(muted);
+        }
+        if (window.McWutGames && window.McWutGames.subwaySurfer && typeof window.McWutGames.subwaySurfer.setMuted === "function") {
+            window.McWutGames.subwaySurfer.setMuted(muted);
         }
     }
 

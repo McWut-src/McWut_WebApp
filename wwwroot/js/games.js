@@ -24,6 +24,7 @@
     var hxStage = document.getElementById("hextris-stage");
     var mmStage = document.getElementById("meme-stage");
     var gzStage = document.getElementById("godzilla-stage");
+    var ssStage = document.getElementById("subway-stage");
 
     var hubStrip = document.getElementById("game-hub-strip");
     var activeTitleEl = document.getElementById("game-active-title");
@@ -65,6 +66,7 @@
         hxPause();
         if (typeof mmPause === "function") mmPause();
         if (typeof gzPause === "function") gzPause();
+        if (typeof ssPause === "function") ssPause();
 
         loadMyBestScores();
         loadHubLeaderboard(hubHallKey);
@@ -93,7 +95,7 @@
     }
 
     function switchGame(nextKey) {
-        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge" && nextKey !== "godzilla-rampage") {
+        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge" && nextKey !== "godzilla-rampage" && nextKey !== "subway-surfer") {
             return;
         }
         GAME_KEY = nextKey;
@@ -106,6 +108,12 @@
         hxState.active = nextKey === "hextris";
         if (typeof mmState !== "undefined" && mmState) mmState.active = nextKey === "meme-merge";
         if (typeof gzState !== "undefined" && gzState) gzState.active = nextKey === "godzilla-rampage";
+        if (typeof ssState !== "undefined" && ssState) ssState.active = nextKey === "subway-surfer";
+
+        if (nextKey !== "subway-surfer") {
+            if (typeof ssPause === "function") ssPause();
+            if (ssStage) ssStage.hidden = true;
+        }
 
         if (hubView) hubView.hidden = true;
         if (stageView) stageView.hidden = false;
@@ -335,7 +343,7 @@
                 if (typeof gzResize === "function") gzResize();
                 if (typeof gzResume === "function") gzResume();
             });
-        } else {
+        } else if (nextKey === "subway-surfer") {
             msPauseClock();
             slopePause();
             wwPause();
@@ -343,6 +351,7 @@
             hxPause();
             if (typeof mmPause === "function") mmPause();
             if (typeof gzPause === "function") gzPause();
+            viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
             if (slopeStage) slopeStage.hidden = true;
@@ -352,12 +361,43 @@
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
             if (gzStage) gzStage.hidden = true;
+            if (ssStage) ssStage.hidden = false;
+            if (activeTitleEl) activeTitleEl.textContent = "Subway Surfer";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "&larr;&rarr; / <kbd>A</kbd><kbd>D</kbd> Lanes &middot; &uarr; / <kbd>Space</kbd> Jump &middot; &darr; / <kbd>S</kbd> Roll &middot; <kbd>E</kbd>/<kbd>Shift</kbd> Hoverboard";
+            }
+            requestAnimationFrame(function () {
+                if (typeof ssResize === "function") ssResize();
+                if (typeof ssResume === "function") ssResume();
+            });
+        } else {
+            msPauseClock();
+            slopePause();
+            wwPause();
+            cbPause();
+            hxPause();
+            if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
+            if (typeof ssPause === "function") ssPause();
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
+            if (wwStage) wwStage.hidden = true;
+            if (cbStage) cbStage.hidden = true;
+            if (hxStage) hxStage.hidden = true;
+            if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
+            if (ssStage) ssStage.hidden = true;
             viewport.hidden = false;
             if (activeTitleEl) activeTitleEl.textContent = "Stack 3D";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Click, tap, or press <kbd>Space</kbd> to drop";
             }
             resizeViewport();
+            requestAnimationFrame(function () {
+                if (typeof resizeViewport === "function") resizeViewport();
+            });
         }
 
         loadLeaderboard();
@@ -502,6 +542,8 @@
                 if (typeof mmStartGame === "function") mmStartGame();
             } else if (GAME_KEY === "godzilla-rampage") {
                 if (typeof gzStartGame === "function") gzStartGame();
+            } else if (GAME_KEY === "subway-surfer") {
+                if (typeof ssStartGame === "function") ssStartGame();
             } else {
                 startGame();
             }
@@ -541,6 +583,9 @@
         if (ev.ctrlKey || ev.metaKey || ev.altKey) {
             return;
         }
+        if (stageView && stageView.hidden) {
+            return;
+        }
 
         if (GAME_KEY === "wacky-wheels") {
             if (wwPublishOverlay && !wwPublishOverlay.hidden) {
@@ -567,18 +612,36 @@
                     wwEditor.savedCamX = wwState.camX;
                 } else if (ev.code === "ArrowUp" || ev.key === "w" || ev.key === "W") {
                     ev.preventDefault();
-                    wwState.camY = Math.max(-220, wwState.camY - 90);
+                    wwState.camY = Math.max(-360, wwState.camY - 90);
                     wwEditor.savedCamY = wwState.camY;
                 } else if (ev.code === "ArrowDown" || ev.key === "s" || ev.key === "S") {
                     ev.preventDefault();
-                    wwState.camY = Math.min(620, wwState.camY + 90);
+                    wwState.camY = Math.min(720, wwState.camY + 90);
                     wwEditor.savedCamY = wwState.camY;
+                } else if (ev.key === "Delete" || ev.key === "Backspace") {
+                    if (typeof wwDeleteSelected === "function" && wwDeleteSelected()) {
+                        ev.preventDefault();
+                    }
+                } else if (ev.key === "+" || ev.key === "=") {
+                    if (typeof wwSetEditorZoom === "function") {
+                        ev.preventDefault();
+                        wwSetEditorZoom((wwEditor.zoom || 0.88) + 0.14);
+                    }
+                } else if (ev.key === "-" || ev.key === "_") {
+                    if (typeof wwSetEditorZoom === "function") {
+                        ev.preventDefault();
+                        wwSetEditorZoom((wwEditor.zoom || 0.88) - 0.14);
+                    }
                 }
                 return;
             }
             if (ev.key === "r" || ev.key === "R") {
                 ev.preventDefault();
                 wwStartGame();
+            } else if (ev.key === "c" || ev.key === "C") {
+                if (!ev.repeat && typeof wwRespawnAtCheckpoint === "function" && wwRespawnAtCheckpoint()) {
+                    ev.preventDefault();
+                }
             } else if (ev.code === "ArrowUp" || ev.key === "w" || ev.key === "W") {
                 ev.preventDefault();
                 if (wwState.mode === "idle") wwStartGame();
@@ -770,6 +833,19 @@
             return;
         }
 
+        if (GAME_KEY === "subway-surfer") {
+            if (ev.key === "r" || ev.key === "R") {
+                ev.preventDefault();
+                if (typeof ssStartGame === "function") ssStartGame();
+                return;
+            }
+            if (typeof ssHandleKey === "function") {
+                var ssHandled = ssHandleKey(ev, true);
+                if (ssHandled) ev.preventDefault();
+            }
+            return;
+        }
+
         if (ev.code === "Space" || ev.code === "ArrowDown" || ev.code === "Enter") {
             if (state.mode === "playing") {
                 ev.preventDefault();
@@ -811,6 +887,10 @@
             if (typeof gzHandleKey === "function") {
                 gzHandleKey(ev, false);
             }
+        } else if (GAME_KEY === "subway-surfer") {
+            if (typeof ssHandleKey === "function") {
+                ssHandleKey(ev, false);
+            }
         }
     });
 
@@ -821,6 +901,7 @@
         wwInput.right = false;
         wwSilenceAudio();
         if (typeof gzClearInput === "function") gzClearInput();
+        if (typeof ssClearInput === "function") ssClearInput();
     });
 
     // --- Boot ---
@@ -828,6 +909,7 @@
         if (typeof initGraphics === "function") initGraphics();
         if (typeof slopeInitGraphics === "function") slopeInitGraphics();
         if (typeof gzInitGraphics === "function") gzInitGraphics();
+        if (typeof ssInitGraphics === "function") ssInitGraphics();
         if (typeof setupIdleDemo === "function") setupIdleDemo();
         if (typeof updateViewportBackground === "function" && typeof state !== "undefined" && state) {
             updateViewportBackground(state.baseHue);
@@ -868,7 +950,8 @@
         "games-breakout.js",
         "games-hextris.js",
         "games-meme-merge.js",
-        "games-godzilla.js"
+        "games-godzilla.js",
+        "games-subway-surfer.js"
     ];
 
     function ensureSubmodules(onReady) {

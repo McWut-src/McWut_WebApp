@@ -11,6 +11,7 @@
 
     var canvas = document.getElementById("stack-canvas");
     var viewport = document.getElementById("stack-viewport");
+    var stageView = document.getElementById("game-stage-view");
 
     if (!canvas || !viewport) {
         return;
@@ -77,6 +78,7 @@
         targetZoom: 1.0,
         idleAngle: 0,
         shakeTimer: 0,
+        gameId: 0,
         lastTime: performance.now(),
         leaderboard: null
     };
@@ -152,6 +154,13 @@
                     starsGroup.add(star);
                 }
 
+                canvas.addEventListener("webglcontextlost", function (ev) {
+                    ev.preventDefault();
+                }, false);
+                canvas.addEventListener("webglcontextrestored", function () {
+                    resizeViewport();
+                }, false);
+
                 useThree = true;
             } catch (err) {
                 useThree = false;
@@ -160,6 +169,17 @@
 
         if (!useThree) {
             fallbackCtx = canvas.getContext("2d");
+            if (!fallbackCtx && canvas.parentNode) {
+                var freshCanvas = document.createElement("canvas");
+                freshCanvas.id = canvas.id;
+                if (canvas.className) freshCanvas.className = canvas.className;
+                if (canvas.getAttribute("aria-label")) {
+                    freshCanvas.setAttribute("aria-label", canvas.getAttribute("aria-label"));
+                }
+                canvas.parentNode.replaceChild(freshCanvas, canvas);
+                canvas = freshCanvas;
+                fallbackCtx = canvas.getContext("2d");
+            }
         }
 
         resizeViewport();
@@ -170,6 +190,7 @@
         var h = Math.max(viewport.clientHeight || 520, 320);
 
         if (useThree && threeRenderer && threeCamera) {
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
             threeRenderer.setSize(w, h, false);
             var aspect = w / h;
             var frustum = 15 / Math.max(0.25, state.cameraZoom);
@@ -235,6 +256,7 @@
 
     // --- Initialize Demo Idle Tower ---
     function setupIdleDemo() {
+        state.gameId += 1;
         state.mode = "idle";
         state.baseHue = 195;
         state.tower = [];
@@ -246,6 +268,7 @@
         state.targetCameraY = 4.2;
         state.cameraZoom = 1.05;
         state.targetZoom = 1.05;
+        state.idleAngle = 0;
 
         clearThreeGroup(towerGroup);
         clearThreeGroup(effectsGroup);
@@ -271,12 +294,15 @@
             }
             state.tower.push(slab);
         }
+
+        resizeViewport();
     }
 
     // --- Start a Live Run ---
     function startGame() {
         ensureAudio();
 
+        state.gameId += 1;
         state.mode = "playing";
         state.score = 0;
         state.combo = 0;
@@ -290,6 +316,7 @@
         state.targetCameraY = 2.5;
         state.cameraZoom = 1.0;
         state.targetZoom = 1.0;
+        state.idleAngle = 0;
         state.shakeTimer = 0;
 
         if (towerGroup) {
@@ -318,9 +345,17 @@
         }
         state.tower.push(firstSlab);
 
+        if (hudPop) {
+            clearTimeout(hudPop._hideTimer);
+            hudPop.hidden = true;
+        }
+        if (hudSpeed) {
+            hudSpeed.textContent = "1.0× Speed";
+        }
         if (startOverlay) startOverlay.hidden = true;
         if (overOverlay) overOverlay.hidden = true;
 
+        resizeViewport();
         updateHud();
         spawnNextActiveSlab();
     }
@@ -584,7 +619,7 @@
 
     function updateHud() {
         if (hudScore) {
-            hudScore.textContent = String(state.score);
+            hudScore.textContent = state.score.toLocaleString();
         }
         if (hudCombo) {
             if (state.combo >= 1) {
@@ -630,12 +665,16 @@
             '<span class="member-pill" style="background:' + color + ";color:" + ink + '">' +
             esc(target.displayName) +
             "</span> <strong>" +
-            target.bestScore +
+            (target.bestScore || 0).toLocaleString() +
             "</strong>";
     }
 
     // --- Game Over & Leaderboard Submission ---
     function triggerGameOver() {
+        var runId = state.gameId;
+        var finalScore = state.score;
+        var finalCombo = state.maxCombo;
+
         state.mode = "gameover";
         updateHud();
 
@@ -644,27 +683,50 @@
         state.targetCameraY = (heightLevels * BOX_HEIGHT) * 0.45;
         state.targetZoom = Math.max(0.38, Math.min(1.0, 13.5 / (heightLevels * BOX_HEIGHT + 5)));
 
-        if (overScore) overScore.textContent = String(state.score);
-        if (overCombo) overCombo.textContent = "×" + state.maxCombo;
+        if (overScore) overScore.textContent = finalScore.toLocaleString();
+        if (overCombo) overCombo.textContent = "×" + finalCombo;
 
         var prevBest = state.leaderboard && state.leaderboard.myRecord ? state.leaderboard.myRecord.bestScore : 0;
-        var optimisticBest = Math.max(prevBest, state.score);
-        if (overBest) overBest.textContent = String(optimisticBest);
+        var optimisticBest = Math.max(prevBest, finalScore);
+        if (overBest) overBest.textContent = optimisticBest.toLocaleString();
         if (overRank) {
             var curRank = state.leaderboard && state.leaderboard.myRecord ? "#" + state.leaderboard.myRecord.rank : "—";
             overRank.textContent = curRank;
         }
         if (overRecordBanner) {
-            overRecordBanner.hidden = !(state.score > prevBest && state.score > 0);
+            overRecordBanner.hidden = !(finalScore > prevBest && finalScore > 0);
         }
         if (overSaveStatus) {
-            overSaveStatus.textContent = state.score > 0 ? "Saving score to global leaderboard…" : "Play again to post a score!";
+            overSaveStatus.textContent = finalScore > 0 ? "Saving score to global leaderboard…" : "Play again to post a score!";
         }
         if (overOverlay) {
             overOverlay.hidden = false;
         }
 
-        submitScore(state.score, state.maxCombo);
+        if (typeof submitScore === "function") {
+            Promise.resolve(submitScore(finalScore, finalCombo)).then(function (res) {
+                if (!res || runId !== state.gameId) return;
+                if (res.leaderboard) {
+                    state.leaderboard = res.leaderboard;
+                }
+                if (overBest) overBest.textContent = (res.bestScore || 0).toLocaleString();
+                if (overRank) overRank.textContent = res.rank ? "#" + res.rank : "—";
+                if (overRecordBanner) overRecordBanner.hidden = !res.isNewBest;
+                if (overSaveStatus) {
+                    if (res.isNewBest) {
+                        overSaveStatus.textContent = "New personal record saved to global leaderboard!";
+                    } else if (finalScore > 0) {
+                        overSaveStatus.textContent = "Score saved! Personal best: " + (res.bestScore || 0).toLocaleString() + ".";
+                    } else {
+                        overSaveStatus.textContent = "Play again to post a higher score!";
+                    }
+                }
+            }).catch(function () {
+                if (overSaveStatus && runId === state.gameId) {
+                    overSaveStatus.textContent = "Could not save score right now.";
+                }
+            });
+        }
     }
 
 
@@ -882,6 +944,10 @@
     function renderScene() {
         if (GAME_KEY !== "stack-3d") return;
         if (useThree && threeRenderer && threeScene && threeCamera) {
+            var glCtx = typeof threeRenderer.getContext === "function" ? threeRenderer.getContext() : null;
+            if (glCtx && typeof glCtx.isContextLost === "function" && glCtx.isContextLost()) {
+                return;
+            }
             var shakeX = state.shakeTimer > 0 ? (Math.random() - 0.5) * 0.45 : 0;
             var shakeZ = state.shakeTimer > 0 ? (Math.random() - 0.5) * 0.45 : 0;
             threeCamera.position.set(20 + shakeX, 20 + state.cameraY, 20 + shakeZ);

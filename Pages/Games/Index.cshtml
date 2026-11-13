@@ -676,25 +676,40 @@
 
             <div class="ww-editor-toolbar" id="ww-editor-toolbar" hidden>
                 <div class="ww-tool-palette" id="ww-tool-palette" role="toolbar" aria-label="Level editor tools">
-                    <button type="button" class="ww-tool-btn is-active" data-ww-tool="road" title="Click and drag to draw hills, ramps, or floating roads">&#x26F0; Road</button>
+                    <button type="button" class="ww-tool-btn is-active" data-ww-tool="road" title="Click and drag to draw hills, ramps, or ground">&#x26F0; Road</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="bridge" title="Draw elevated wooden/steel bridges without blocking roads underneath">&#x1F309; Bridge</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="boost" title="Draw glowing turbo-boosted road or launch ramps">&#x26A1; Boost</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="loop" title="Tap to stamp a 360&deg; Loop-the-Loop">&#x1F504; Loop</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="spring" title="Tap to place a bouncy Springboard">&#x23EB; Spring</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="seesaw" title="Tap to place a tilting See-Saw plank">&#x2696; See-Saw</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="fan" title="Tap to place an Air Updraft Fan">&#x1F4A8; Fan</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="ball" title="Tap to hang a Swinging Wrecking Ball">&#x1F4A3; Wrecking</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="crate" title="Tap to stack breakable wooden crates">&#x1F4E6; Crate</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="tnt" title="Tap to place an explosive TNT Crate">&#x1F9E8; TNT</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="checkpoint" title="Tap to place a Respawn Checkpoint flag">&#x1F6A9; Checkpt</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="star" title="Tap to place +100 pt Bonus Stars">&#x2605; Star</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="spike" title="Tap to place a bouncy toy Spike Strip">&#x26A0; Spikes</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="finish" title="Tap to move the Checkered Finish Gate">&#x1F3C1; Finish</button>
+                    <button type="button" class="ww-tool-btn" data-ww-tool="move" title="Tap or drag to move objects and tweak their settings">&#x2725; Move</button>
                     <button type="button" class="ww-tool-btn" data-ww-tool="pan" title="Drag canvas to pan view">&#x270B; Pan</button>
-                    <button type="button" class="ww-tool-btn is-danger" data-ww-tool="erase" title="Tap or drag to erase roads or obstacles">&#x232B; Erase</button>
+                    <button type="button" class="ww-tool-btn is-danger" data-ww-tool="erase" title="Tap or drag to erase road segments or obstacles">&#x232B; Erase</button>
                 </div>
                 <div class="ww-editor-actions">
                     <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-left" title="Scroll Left" aria-label="Scroll Left">&#x25C0;</button>
                     <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-pan-right" title="Scroll Right" aria-label="Scroll Right">&#x25B6;</button>
-                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-undo-btn" title="Undo last edit" disabled>&#x21A9; Undo</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-zoom-out" title="Zoom Out" aria-label="Zoom Out">&#x1F50D;&minus;</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-zoom-reset" title="Reset Zoom">88%</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-zoom-in" title="Zoom In" aria-label="Zoom In">&#x1F50D;+</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-snap-btn" title="Toggle 20px Grid Snap" aria-pressed="false">&#x229E; Snap</button>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-undo-btn" title="Undo last edit (Ctrl+Z)" disabled>&#x21A9; Undo</button>
                     <button type="button" class="btn btn-sm ww-ed-act-btn" id="ww-ed-clear-btn" title="Reset to blank starter track">&#x1F9F9; Clear</button>
                     <button type="button" class="btn btn-sm ww-ed-act-btn is-test" id="ww-ed-test-btn" title="Test drive your custom course">&#x25B6; Test</button>
                     <button type="button" class="btn btn-sm ww-ed-act-btn is-publish" id="ww-ed-publish-btn" title="Publish for other members to play">&#x1F680; Publish</button>
+                </div>
+                <div class="ww-editor-props" id="ww-editor-props" hidden>
+                    <span class="ww-props-title" id="ww-props-title">Selected</span>
+                    <div class="ww-props-controls" id="ww-props-controls"></div>
+                    <button type="button" class="btn btn-sm ww-ed-act-btn is-del-prop" id="ww-props-del-btn" title="Remove selected item">&#x1F5D1; Remove</button>
                 </div>
             </div>
 
@@ -703,7 +718,7 @@
                     <span class="game-stat-pill ww-stat-pill" title="Elapsed Run Time">
                         &#x23F1; <strong id="ww-hud-timer">0:00.0</strong>
                     </span>
-                    <span class="game-stat-pill ww-stat-pill is-dist" title="Course Progress & Distance">
+                    <span class="game-stat-pill ww-stat-pill is-dist" title="Course Progress &amp; Distance">
                         <span>&#x1F3C1;</span>
                         <strong id="ww-hud-distance">0%</strong>
                         <span class="ww-mini-track" aria-hidden="true"><span class="ww-mini-fill" id="ww-hud-progress"></span></span>
@@ -711,7 +726,7 @@
                     <span class="game-stat-pill ww-stat-pill is-stars" title="Bonus Stars Collected (+100 pts each)">
                         &#x2605; <strong id="ww-hud-stars">0/15</strong>
                     </span>
-                    <span class="game-stat-pill ww-stat-pill is-combo" title="Flip & Airtime Combo Streak">
+                    <span class="game-stat-pill ww-stat-pill is-combo" title="Flip &amp; Airtime Combo Streak">
                         Combo <strong id="ww-hud-combo">&times;0</strong>
                     </span>
                     <span class="game-stat-pill ww-stat-pill" title="Vehicle Speed">
@@ -721,6 +736,9 @@
                 <div class="ww-toolbar-actions">
                     <button type="button" class="btn btn-sm ww-restart-pill is-edit-return" id="ww-return-edit-btn" hidden title="Return to Level Editor">
                         &#x270E; <span>Edit Track</span>
+                    </button>
+                    <button type="button" class="btn btn-sm ww-restart-pill is-checkpoint" id="ww-checkpoint-btn" hidden title="Respawn at Checkpoint (C)" aria-label="Respawn at Checkpoint">
+                        &#x1F6A9; <span>Checkpoint</span>
                     </button>
                     <button type="button" class="btn btn-sm ww-restart-pill" id="ww-restart-btn" title="Quick Restart (R)" aria-label="Quick Restart">
                         &#x27F2; <span>Restart</span>
@@ -733,40 +751,14 @@
 
                 <div class="ww-center-hud" id="ww-center-hud" aria-live="polite">
                     <div class="ww-score-readout" id="ww-hud-score">0</div>
+                    <div class="game-hud-combo ww-bank-pill" id="ww-bank-pill" hidden>AIR BANK +0</div>
                     <div class="game-hud-combo ww-streak-pill" id="ww-streak-pill" hidden>FLIP STREAK &times;1</div>
                     <div class="game-hud-combo ww-baby-pill" id="ww-baby-pill" hidden>&#x1F37C; BABY ON BOARD +500</div>
                     <div class="game-hud-pop ww-pop-banner" id="ww-pop-banner" hidden>BACKFLIP!</div>
                 </div>
 
                 <div class="ww-editor-hint-pill" id="ww-editor-hint" hidden>
-                    Drag on canvas to draw smooth roads & hills &middot; Click <strong>&#x25B6; Test</strong> anytime to drive!
-                </div>
-
-                <div class="ww-touch-pad" id="ww-touch-pad" role="group" aria-label="Touch vehicle controls">
-                    <div class="ww-touch-cluster is-left">
-                        <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-left" title="Lean Back / Wheelie (A or Left)" aria-label="Tilt Left">
-                            <span class="ww-btn-glyph">&#x21BA;</span>
-                            <span class="ww-btn-sub">Tilt L</span>
-                        </button>
-                        <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-right" title="Lean Forward (D or Right)" aria-label="Tilt Right">
-                            <span class="ww-btn-glyph">&#x21BB;</span>
-                            <span class="ww-btn-sub">Tilt R</span>
-                        </button>
-                    </div>
-                    <div class="ww-touch-cluster is-right">
-                        <button type="button" class="ww-touch-btn is-eject" id="ww-btn-eject" title="Eject Ragdoll / Super Boost (Space)" aria-label="Eject Ragdoll or Super Boost">
-                            <span class="ww-btn-glyph">&#x1F680;</span>
-                            <span class="ww-btn-sub">Eject</span>
-                        </button>
-                        <button type="button" class="ww-touch-btn is-brake" id="ww-btn-brake" title="Brake / Reverse (S or Down)" aria-label="Brake or Reverse">
-                            <span class="ww-btn-glyph">&#x25BC;</span>
-                            <span class="ww-btn-sub">Brake</span>
-                        </button>
-                        <button type="button" class="ww-touch-btn is-gas" id="ww-btn-gas" title="Accelerate / Gas (W or Up)" aria-label="Accelerate">
-                            <span class="ww-btn-glyph">&#x25B2;</span>
-                            <span class="ww-btn-sub">Gas</span>
-                        </button>
-                    </div>
+                    Draw roads/bridges, tap to place toys, or use <strong>&#x2725; Move</strong> to adjust &middot; Click <strong>&#x25B6; Test</strong> anytime!
                 </div>
 
                 <div class="game-overlay" id="ww-start-overlay">
@@ -774,7 +766,7 @@
                         <div class="game-overlay-badge" id="ww-start-badge">CANVAS 2D / PHYSICS</div>
                         <h3 class="game-overlay-title" id="ww-start-title">Wacky Wheels</h3>
                         <p class="game-overlay-desc" id="ww-start-desc">
-                            Balance your spring-loaded stunt buggy across rolling hills, launch ramps, a 360&deg; loop-the-loop, springboards, toy spike strips, crates, and swinging wrecking balls! Deliver the toy baby doll in the front seat for <strong>+500 SAFE DELIVERY</strong>, land flips for combo multipliers &mdash; or hit <strong>Eject</strong> to fling your toy rider across the finish gate!
+                            Balance your spring-loaded buggy across rolling hills, see-saws, air fans, TNT crates, a 360&deg; loop, springboards, toy spike strips, and wrecking balls! Land flips upright to bank combos, keep the baby onboard for <strong>+500 SAFE DELIVERY</strong> &mdash; or hit <strong>Eject</strong> to launch your ragdoll through the <strong>+650 Bullseye Hoop</strong> above the finish!
                         </p>
                         <div class="d-flex gap-2 justify-content-center flex-wrap mb-2">
                             <button type="button" class="btn btn-primary game-play-btn" id="ww-start-btn">
@@ -792,7 +784,7 @@
                         <div class="game-overlay-keys">
                             <span><kbd>W</kbd>/<kbd>&uarr;</kbd> Gas &middot; <kbd>S</kbd>/<kbd>&darr;</kbd> Brake</span>
                             <span><kbd>A</kbd>/<kbd>D</kbd> or <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> Lean / Flip</span>
-                            <span><kbd>Space</kbd> Eject / Boost &middot; <kbd>R</kbd> Restart</span>
+                            <span><kbd>Space</kbd> Eject / Boost &middot; <kbd>C</kbd> Checkpoint &middot; <kbd>R</kbd> Restart</span>
                         </div>
                     </div>
                 </div>
@@ -890,6 +882,33 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="ww-touch-pad" id="ww-touch-pad" role="group" aria-label="Touch vehicle controls">
+                <div class="ww-touch-cluster is-left">
+                    <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-left" title="Lean Back / Wheelie (A or Left)" aria-label="Tilt Left">
+                        <span class="ww-btn-glyph">&#x21BA;</span>
+                        <span class="ww-btn-sub">Tilt L</span>
+                    </button>
+                    <button type="button" class="ww-touch-btn is-tilt" id="ww-btn-right" title="Lean Forward (D or Right)" aria-label="Tilt Right">
+                        <span class="ww-btn-glyph">&#x21BB;</span>
+                        <span class="ww-btn-sub">Tilt R</span>
+                    </button>
+                </div>
+                <div class="ww-touch-cluster is-right">
+                    <button type="button" class="ww-touch-btn is-brake" id="ww-btn-brake" title="Brake / Reverse (S or Down)" aria-label="Brake or Reverse">
+                        <span class="ww-btn-glyph">&#x25BC;</span>
+                        <span class="ww-btn-sub">Brake</span>
+                    </button>
+                    <button type="button" class="ww-touch-btn is-eject" id="ww-btn-eject" title="Eject Ragdoll / Super Boost (Space)" aria-label="Eject Ragdoll or Super Boost">
+                        <span class="ww-btn-glyph">&#x1F680;</span>
+                        <span class="ww-btn-sub">Eject</span>
+                    </button>
+                    <button type="button" class="ww-touch-btn is-gas" id="ww-btn-gas" title="Accelerate / Gas (W or Up)" aria-label="Accelerate">
+                        <span class="ww-btn-glyph">&#x25B2;</span>
+                        <span class="ww-btn-sub">Gas</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1298,6 +1317,123 @@
                 </div>
             </div>
         </div>
+
+        <div class="ss-stage" id="subway-stage" hidden>
+            <div class="ss-toolbar">
+                <div class="ss-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill ss-stat-pill" title="Run Score">
+                        Score <strong id="ss-hud-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill ss-stat-pill is-coins" title="Coins Collected">
+                        Coins <strong id="ss-hud-coins">0</strong>
+                    </span>
+                    <span class="game-stat-pill ss-stat-pill is-mult" title="Score Multiplier">
+                        Mult <strong id="ss-hud-mult">&times;1</strong>
+                    </span>
+                    <span class="game-stat-pill ss-stat-pill is-combo" title="Coin &amp; Stunt Streak">
+                        Streak <strong id="ss-hud-combo">0</strong>
+                    </span>
+                    <span class="game-stat-pill ss-stat-pill d-none d-sm-inline-flex" title="Current Dash Speed">
+                        Speed <strong id="ss-hud-speed">1.0&times;</strong>
+                    </span>
+                </div>
+                <div class="ss-toolbar-actions">
+                    <button type="button" class="btn btn-sm ss-board-pill-btn" id="ss-btn-board-top" title="Activate Hoverboard (E, Shift, B, or Double-Tap)" aria-label="Activate Hoverboard">
+                        &#x26A1; Board <strong id="ss-hud-boards">1</strong>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning ss-restart-btn" id="ss-btn-restart" title="Quick Restart (R)" aria-label="Quick Restart">
+                        &#x27F2; <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ss-viewport" id="subway-viewport">
+                <canvas id="subway-canvas" aria-label="Subway Surfer 3D endless runner canvas"></canvas>
+                <div class="ss-speed-lines" id="ss-speed-lines" aria-hidden="true"></div>
+
+                <div class="ss-hud-float" aria-live="polite">
+                    <div class="ss-hud-left">
+                        <div class="ss-chase-pill" id="ss-chase-pill" hidden>
+                            GUARD CLOSE!
+                        </div>
+                        <div class="ss-powerups-stack" id="ss-powerups-stack"></div>
+                    </div>
+                    <div class="ss-hud-right">
+                        <div class="ss-biome-pill" id="ss-hud-biome">NIGHT METRO</div>
+                        <div class="ss-dist-pill" id="ss-hud-dist">0 m</div>
+                    </div>
+                </div>
+
+                <div class="ss-pop-banner" id="ss-pop-banner" hidden>HOVERBOARD!</div>
+                <div class="ss-popup-layer" id="ss-popup-layer" aria-hidden="true"></div>
+
+                <div class="game-overlay" id="subway-start-overlay">
+                    <div class="game-overlay-card ss-overlay-card">
+                        <div class="game-overlay-badge ss-badge">THREE.JS 3D RUNNER</div>
+                        <h3 class="game-overlay-title">Subway Surfer</h3>
+                        <p class="game-overlay-desc">
+                            Dash down 3 metro tracks, vault onto train roofs via yellow ramps, duck under caution signs, and grab <strong>Jetpacks</strong>, <strong>Magnets</strong>, and <strong>Super Sneakers</strong>! Pop your <strong>Hoverboard</strong> to smash through crashes.
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn ss-play-btn" id="subway-start-btn">
+                            Play Subway Surfer
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> / <kbd>A</kbd> <kbd>D</kbd> Switch Lanes</span>
+                            <span><kbd>&uarr;</kbd> / <kbd>W</kbd> / <kbd>Space</kbd> Jump</span>
+                            <span><kbd>&darr;</kbd> / <kbd>S</kbd> Roll &amp; Fast-Fall</span>
+                            <span><kbd>E</kbd> / <kbd>Shift</kbd> / Double-Tap Hoverboard</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="subway-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover ss-overlay-card" role="dialog" aria-labelledby="subway-over-title">
+                        <div class="game-record-banner" id="subway-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="subway-over-badge">RUN COMPLETE</div>
+                        <h3 class="game-overlay-title" id="subway-over-title">Wipeout!</h3>
+                        <p class="game-overlay-desc mb-2" id="subway-over-breakdown"></p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="subway-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Best Streak</span>
+                                <strong class="game-over-val" id="subway-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="subway-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="subway-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="subway-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn ss-play-btn" id="subway-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ss-touch-controls" id="ss-touch-controls" aria-label="Subway Surfer touch controls">
+                <div class="ss-touch-dpad">
+                    <button type="button" class="ss-touch-btn" id="ss-touch-left" title="Switch Lane Left" aria-label="Switch Lane Left">&#x25C0;</button>
+                    <button type="button" class="ss-touch-btn is-roll" id="ss-touch-roll" title="Roll / Slide" aria-label="Roll">&#x25BC; Roll</button>
+                    <button type="button" class="ss-touch-btn is-jump" id="ss-touch-jump" title="Jump" aria-label="Jump">&#x25B2; Jump</button>
+                    <button type="button" class="ss-touch-btn" id="ss-touch-right" title="Switch Lane Right" aria-label="Switch Lane Right">&#x25B6;</button>
+                </div>
+                <button type="button" class="ss-touch-btn is-board" id="ss-touch-board" title="Activate Hoverboard" aria-label="Activate Hoverboard">
+                    &#x26A1; Board (<span id="ss-touch-board-count">1</span>)
+                </button>
+            </div>
+        </div>
     </section>
 
     <aside class="card game-board-card" aria-label="Global High Scores">
@@ -1341,5 +1477,6 @@
     <script src="~/js/games-hextris.js" asp-append-version="true"></script>
     <script src="~/js/games-meme-merge.js" asp-append-version="true"></script>
     <script src="~/js/games-godzilla.js" asp-append-version="true"></script>
+    <script src="~/js/games-subway-surfer.js" asp-append-version="true"></script>
     <script src="~/js/games.js" asp-append-version="true"></script>
 }

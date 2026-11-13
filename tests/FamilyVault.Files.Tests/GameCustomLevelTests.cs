@@ -61,6 +61,39 @@ public class GameCustomLevelTests
     }
 
     [Fact]
+    public void Rules_normalize_bridges_checkpoints_tnt_fans_and_seesaws_with_caps()
+    {
+        var raw = """
+        {
+          "finishX": 3200,
+          "strips": [
+            { "pts": [[-120, 420], [800, 420]] },
+            { "pts": [[900, 260], [1400, 260]], "bridge": true }
+          ],
+          "checkpoints": [ { "x": 1500, "y": 420 } ],
+          "tntCrates": [ { "x": 1950, "y": 420 } ],
+          "fans": [ { "x": 2200, "y": 500, "w": 999, "h": 50, "power": 9999 } ],
+          "seesaws": [ { "x": 2500, "y": 380, "len": 500, "maxAngle": 2.0 } ]
+        }
+        """;
+
+        var normalized = GameLevelRules.ValidateAndNormalizeLevelJson("wacky-wheels", raw);
+        Assert.Contains("\"bridge\":true", normalized);
+        Assert.Contains("\"checkpoints\":[{\"x\":1500,\"y\":420}]", normalized);
+        Assert.Contains("\"tntCrates\":[{\"x\":1950,\"y\":420}]", normalized);
+        Assert.Contains("\"fans\":[{\"x\":2200,\"y\":500,\"w\":160,\"h\":100,\"power\":2400}]", normalized);
+        Assert.Contains("\"seesaws\":[{\"x\":2500,\"y\":380,\"len\":360,\"maxAngle\":0.65}]", normalized);
+
+        var tooManyFans = string.Join(",", Enumerable.Repeat("""{ "x": 600, "y": 400 }""", GameLevelRules.MaxFans + 1));
+        Assert.Throws<GameScoreValidationException>(() =>
+            GameLevelRules.ValidateAndNormalizeLevelJson("wacky-wheels", $$"""{ "strips": [{ "pts": [[-120, 420], [400, 420]] }], "fans": [{{tooManyFans}}] }"""));
+
+        var tooManySeesaws = string.Join(",", Enumerable.Repeat("""{ "x": 600, "y": 400 }""", GameLevelRules.MaxSeesaws + 1));
+        Assert.Throws<GameScoreValidationException>(() =>
+            GameLevelRules.ValidateAndNormalizeLevelJson("wacky-wheels", $$"""{ "strips": [{ "pts": [[-120, 420], [400, 420]] }], "seesaws": [{{tooManySeesaws}}] }"""));
+    }
+
+    [Fact]
     public async Task Members_can_publish_browse_play_set_records_and_manage_own_levels()
     {
         await using var fx = new SqliteFixture();

@@ -21,6 +21,7 @@ public class GameScoreTests
         Assert.Equal("hextris", GameScoreRules.NormalizeGameKey(" HEXTRIS "));
         Assert.Equal("meme-merge", GameScoreRules.NormalizeGameKey(" MEME-MERGE "));
         Assert.Equal("godzilla-rampage", GameScoreRules.NormalizeGameKey(" GODZILLA-RAMPAGE "));
+        Assert.Equal("subway-surfer", GameScoreRules.NormalizeGameKey(" SUBWAY-SURFER "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
 
@@ -131,6 +132,11 @@ public class GameScoreTests
         Assert.True(godzillaSub.IsNewBest);
         Assert.Equal(14_850, godzillaSub.BestScore);
         Assert.Equal(22, godzillaSub.BestCombo);
+
+        var subwaySub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "subway-surfer", score: 8_420, maxCombo: 64);
+        Assert.True(subwaySub.IsNewBest);
+        Assert.Equal(8_420, subwaySub.BestScore);
+        Assert.Equal(64, subwaySub.BestCombo);
     }
 
     [Fact]
