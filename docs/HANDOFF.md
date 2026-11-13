@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000052`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000053`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**13 November 2026, 19:40 UTC.** Production was moved on purpose to ship **Subway Surfer**, the **Wacky Wheels** physics/editor upgrades, and **Stack 3D** bug fixes at `fcf0f4a`. Releases **Subway Surfer** (`subway-surfer`) as a playable 3-lane Three.js 3D endless runner with 2.5D Canvas fallback, expands **Wacky Wheels** (`wacky-wheels` & `GameLevelRules`) with tactical stunt banking, wheelies, finish bullseye, checkpoints, TNT/fans/see-saws/spikes, and upgraded Level Editor tools, and fixes **Stack 3D** (`stack-3d`) by restoring `var stageView` to stop the frame-1 crash, resetting orthographic zoom/HUD on Play Again, settling Game Over leaderboard submission status (`gameId` guard), handling `webglcontextlost`/2D fallback canvas replacement, guarding Hub `Space`/`Enter` keydown leaks, and hiding/pausing `#subway-stage` on switch.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000052` | `ghcr.io/mcwut-src/mcwut_webapp:9edc5dfea2846eaea17a56cce96955ded3dffe1e` |
+| Live | `ca-mcwut--0000053` | `ghcr.io/mcwut-src/mcwut_webapp:fcf0f4a7af616cfd5826a4e66a7adf63487a0784` |
+
+`0000053` has 100% of the traffic and is Healthy. `0000052` is the previous revision and can be brought back.
+
+Checked while signed out, on `0000053` across both `https://mcwut.com` and `https://www.mcwut.com`: `/health` returns 200 `ok`, `/Identity/Account/Login` returns 200, `/Identity/Account/Register` is 404, `/files` and `/games` redirect (302) to sign-in, `/js/games-subway-surfer.js`, `/js/games-wacky-wheels.js`, and `/css/site.css` return HTTP 200, `/js/games-stack3d.js` serves `var stageView = document.getElementById("game-stage-view")`, `gameId: 0`, and `webglcontextlost`, and `/js/games.js` serves `ssPause` and `if (stageView && stageView.hidden)`.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000052
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000052=100
+```
 
 **13 November 2026, 17:44 UTC.** Production was moved on purpose to ship the **Godzilla Rampage** (`godzilla-rampage`) Baby Bronny 3D voxel rig and difficulty/engagement combat overhaul at `9edc5df`. Replaced the flat Baby Bronny tower graphic with an articulated 3D voxel rig (`createBronnyVoxelRig` / `animateBronnyVoxelRig`) in a #6 purple jersey dribbling a spinning basketball on the Mega Tower and fist-pumping atop Godzilla's head at victory alongside updated 34×24 pixel sprites, locked the Mega Tower behind a Golden Vault shield (`getTowerShieldMult`: `80%` → `60%` → `35%` → `0%` damage reduction with `+300` Shield Breaker bonus), added Multi-Phase Mega Tower radial shockwaves/turrets/Final Surge below 65%/35% HP, upgraded Reactor Meltdowns (`detonateReactor`) with pulsing `0.78s`/`0.38s` telegraphs that damage Godzilla while wiping nearby threats, and tuned combat/heal pacing in both Three.js 3D and 2.5D Canvas fallback.
 
