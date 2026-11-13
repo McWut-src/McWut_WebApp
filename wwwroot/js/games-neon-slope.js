@@ -548,7 +548,7 @@
         }
 
         var distScore = Math.floor(ball.z * 0.15);
-        slopeState.score = Math.min(10000, distScore + slopeState.gems * 25);
+        slopeState.score = Math.min(1000000, distScore + slopeState.gems * 25);
         updateSlopeHud();
     }
 
@@ -763,8 +763,8 @@
         if (slopeState.submitted) return;
         slopeState.submitted = true;
         var gameId = slopeState.gameId;
-        var score = Math.max(0, Math.min(10000, Math.round(slopeState.score)));
-        var combo = Math.max(0, Math.min(10000, Math.round(slopeState.maxCombo)));
+        var score = Math.max(0, Math.min(1000000, Math.round(slopeState.score)));
+        var combo = Math.max(0, Math.min(100000, Math.round(slopeState.maxCombo)));
 
         try {
             var res = await window.mcwut.api("/api/games/neon-slope/scores", {

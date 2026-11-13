@@ -938,7 +938,7 @@
     };
 
     MemeMergeGame.prototype.addScore = function (pts) {
-        this.score = Math.min(10000, this.score + pts);
+        this.score = Math.min(1000000, this.score + pts);
         this.updateHUD();
     };
 

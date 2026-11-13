@@ -1285,7 +1285,7 @@
         var starPts = wwState.starsCollected * 100;
         var babyPts = completed && wwState.baby && wwState.baby.attached ? 500 : 0;
         var raw = basePts + timeBonus + starPts + wwState.stuntPts + babyPts;
-        return Math.max(0, Math.min(10000, Math.round(raw)));
+        return Math.max(0, Math.min(1000000, Math.round(raw)));
     }
 
     // --- Physics Substep ---
@@ -2297,7 +2297,7 @@
         if (wwState.submitted) return;
         wwState.submitted = true;
         var gameId = wwState.gameId;
-        var score = Math.max(0, Math.min(10000, Math.round(wwState.score)));
+        var score = Math.max(0, Math.min(1000000, Math.round(wwState.score)));
         var combo = Math.max(0, Math.min(score, Math.round(wwState.maxCombo)));
 
         try {

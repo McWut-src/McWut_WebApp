@@ -180,7 +180,7 @@
                 "    </div>" +
                 "  </div>" +
                 '  <div class="game-board-score">' +
-                '    <strong>' + e.bestScore + "</strong>" +
+                '    <strong>' + (e.bestScore || 0).toLocaleString() + "</strong>" +
                 '    <span>pts</span>' +
                 "  </div>" +
                 "</div>";
@@ -188,12 +188,12 @@
         return html;
     }
 
-    function renderLeaderboard(board) {
+    function renderLeaderboard(board, gameKey) {
         if (!board) return;
 
         var myRec = board.myRecord;
         if (myBestEl) {
-            myBestEl.innerHTML = "Best: <strong>" + (myRec ? myRec.bestScore : 0) + "</strong>";
+            myBestEl.innerHTML = "Best: <strong>" + (myRec ? (myRec.bestScore || 0).toLocaleString() : 0) + "</strong>";
         }
         if (myRankEl) {
             myRankEl.innerHTML = "Rank: <strong>" + (myRec ? "#" + myRec.rank : "—") + "</strong>";
@@ -208,7 +208,8 @@
         }
 
         if (boardList) {
-            boardList.innerHTML = buildLeaderboardHtml(board, GAME_KEY);
+            var resolvedKey = gameKey || board.gameKey || (window.McWutGames && window.McWutGames.activeGameKey) || (typeof GAME_KEY !== "undefined" ? GAME_KEY : "stack-3d");
+            boardList.innerHTML = buildLeaderboardHtml(board, resolvedKey);
         }
     }
 

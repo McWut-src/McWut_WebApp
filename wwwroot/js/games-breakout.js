@@ -656,7 +656,7 @@
                        : br.type === "carrier" ? 15
                        : br.type === "reinforced" ? 12 : 10;
             const pts = Math.round(base * this.multiplier);
-            this.score = Math.min(10000, this.score + pts);
+            this.score = Math.min(1000000, this.score + pts);
 
             this._addText(br.x + br.w / 2, br.y + br.h / 2, "+" + pts, br.color, 17);
             if (this.multiplier > 1 && this.combo % 4 === 0) {
@@ -1625,7 +1625,7 @@
 
     async function cbHandleEnd(payload, won) {
         cbState.running = false;
-        var score = Math.max(0, Math.min(10000, payload.score || 0));
+        var score = Math.max(0, Math.min(1000000, payload.score || 0));
         var maxCombo = Math.max(0, Math.min(score, payload.maxCombo || 0));
 
         if (cbOverTitle) cbOverTitle.textContent = won ? "Matrix Cleared!" : "Run Finished";

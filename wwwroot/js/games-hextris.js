@@ -478,7 +478,7 @@
         this.cascadeCount++;
         this.multiplier = Math.min(10, this.cascadeCount);
         var points = matched.length * 20 * this.multiplier;
-        this.score = Math.min(10000, this.score + points);
+        this.score = Math.min(1000000, this.score + points);
         this.maxCombo = Math.max(this.maxCombo, this.cascadeCount);
 
         this.audio.playMatch(this.cascadeCount);
@@ -832,7 +832,7 @@
 
     async function hxHandleEnd(payload) {
         hxState.running = false;
-        var score = Math.max(0, Math.min(10000, payload.score || 0));
+        var score = Math.max(0, Math.min(1000000, payload.score || 0));
         var maxCombo = Math.max(0, Math.min(score, payload.maxCombo || 0));
 
         if (hxOverTitle) hxOverTitle.textContent = "Run Finished";

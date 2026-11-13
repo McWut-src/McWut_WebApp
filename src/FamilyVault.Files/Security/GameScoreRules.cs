@@ -22,8 +22,8 @@ public static class GameScoreRules
     public const string MemeMergeKey = "meme-merge";
     public const string GodzillaRampageKey = "godzilla-rampage";
 
-    public const int MaxScore = 10_000;
-    public const int MaxCombo = 10_000;
+    public const int MaxScore = 1_000_000;
+    public const int MaxCombo = 100_000;
 
     public static IReadOnlyList<GameCatalogEntry> Catalog { get; } =
     [

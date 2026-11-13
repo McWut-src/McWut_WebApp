@@ -11,7 +11,7 @@
     var CITY_HALF = 62;
     var TOWER_X = 0;
     var TOWER_Z = -48;
-    var MAX_SCORE = 10000;
+    var MAX_SCORE = 1000000;
 
     // --- DOM Elements ---
     var stageEl = document.getElementById("godzilla-stage");
@@ -2311,7 +2311,7 @@
             checkBounties();
         }
 
-        var mult = 1 + Math.min(gzState.combo - 1, 12) * 0.06;
+        var mult = 1 + Math.min(gzState.combo - 1, 16) * 0.06;
         var pts = Math.round(basePts * mult);
         gzState.destructionScore = Math.min(MAX_SCORE, gzState.destructionScore + pts);
         gzState.score = Math.min(MAX_SCORE, gzState.destructionScore + gzState.bountyScore);
@@ -2699,13 +2699,14 @@
 
     function computeStyleRank(win, score) {
         if (win) {
-            if (score >= 8800) return "S+";
-            if (score >= 7000) return "S";
-            if (score >= 5200) return "A";
-            if (score >= 3500) return "B";
+            if (score >= 12000) return "S+";
+            if (score >= 9200) return "S";
+            if (score >= 6500) return "A";
+            if (score >= 4000) return "B";
             return "C";
         }
-        return score >= 3000 ? "B" : "C";
+        if (score >= 7500) return "A";
+        return score >= 3500 ? "B" : "C";
     }
 
     function formatClock(sec) {
@@ -2805,7 +2806,7 @@
         gzState.submitted = true;
         var gid = gzState.gameId;
         var finalScore = Math.max(0, Math.min(MAX_SCORE, Math.round(gzState.score)));
-        var finalCombo = Math.max(0, Math.min(MAX_SCORE, Math.round(gzState.maxCombo)));
+        var finalCombo = Math.max(0, Math.min(100000, Math.round(gzState.maxCombo)));
 
         try {
             var res = null;

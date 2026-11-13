@@ -31,8 +31,12 @@ public class GameScoreTests
         Assert.Equal(24, score);
         Assert.Equal(24, combo);
 
+        var (highScore, highCombo) = GameScoreRules.ValidateScore(25_000, 32);
+        Assert.Equal(25_000, highScore);
+        Assert.Equal(32, highCombo);
+
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.ValidateScore(-1, 0));
-        Assert.Throws<GameScoreValidationException>(() => GameScoreRules.ValidateScore(20_000, 0));
+        Assert.Throws<GameScoreValidationException>(() => GameScoreRules.ValidateScore(GameScoreRules.MaxScore + 1, 0));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.ValidateScore(10, -1));
     }
 
@@ -123,10 +127,10 @@ public class GameScoreTests
         Assert.Equal(4250, wheelsSub.BestScore);
         Assert.Equal(6, wheelsSub.BestCombo);
 
-        var godzillaSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "godzilla-rampage", score: 8750, maxCombo: 14);
+        var godzillaSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "godzilla-rampage", score: 14_850, maxCombo: 22);
         Assert.True(godzillaSub.IsNewBest);
-        Assert.Equal(8750, godzillaSub.BestScore);
-        Assert.Equal(14, godzillaSub.BestCombo);
+        Assert.Equal(14_850, godzillaSub.BestScore);
+        Assert.Equal(22, godzillaSub.BestCombo);
     }
 
     [Fact]

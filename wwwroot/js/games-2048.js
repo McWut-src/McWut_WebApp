@@ -340,7 +340,7 @@
         if (n2048UndoBtn) n2048UndoBtn.disabled = false;
 
         n2048State.grid = newGrid;
-        n2048State.score = Math.min(10000, n2048State.score + scoreGained);
+        n2048State.score = Math.min(1000000, n2048State.score + scoreGained);
         n2048State.moves++;
 
         if (mergedAny) {
@@ -384,7 +384,7 @@
         if (n2048State.submitted) return;
         n2048State.submitted = true;
         var gameId = n2048State.gameId;
-        var score = Math.max(0, Math.min(10000, Math.round(n2048State.score)));
+        var score = Math.max(0, Math.min(1000000, Math.round(n2048State.score)));
         var combo = Math.max(0, Math.min(score, Math.round(n2048State.maxTile)));
 
         try {

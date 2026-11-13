@@ -419,7 +419,7 @@
         if (count > msState.bestCascade) {
             msState.bestCascade = count;
         }
-        msState.score = Math.min(10000, msState.score + gained);
+        msState.score = Math.min(1000000, msState.score + gained);
 
         var pos = msCellCenter(atIdx);
         if (count >= 4) {
@@ -583,7 +583,7 @@
         var d = msDiff();
         var seconds = msState.elapsedMs / 1000;
         var timeBonus = Math.max(0, Math.round((d.timeCap - seconds) * d.speed));
-        msState.score = Math.min(10000, msState.score + d.winBonus + timeBonus);
+        msState.score = Math.min(1000000, msState.score + d.winBonus + timeBonus);
 
         var flagDelay = 0;
         for (var i = 0; i < msState.cells.length; i++) {
@@ -733,8 +733,8 @@
         }
         msState.submitted = true;
         var gameId = msState.gameId;
-        var score = Math.max(0, Math.min(10000, Math.round(msState.score)));
-        var combo = Math.max(0, Math.min(10000, Math.round(msState.bestCascade)));
+        var score = Math.max(0, Math.min(1000000, Math.round(msState.score)));
+        var combo = Math.max(0, Math.min(100000, Math.round(msState.bestCascade)));
 
         try {
             var res = await window.mcwut.api("/api/games/minesweeper/scores", {
