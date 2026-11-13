@@ -45,6 +45,9 @@
             if (window.mmGame) {
                 window.mmGame.setMuted(muted);
             }
+            if (window.McWutGames && window.McWutGames.godzilla && typeof window.McWutGames.godzilla.setMuted === "function") {
+                window.McWutGames.godzilla.setMuted(muted);
+            }
         });
     }
 
@@ -195,6 +198,9 @@
             hxGame.setMuted(muted);
         } else if (window.McWutGames && window.McWutGames.hextris && typeof window.McWutGames.hextris.hxSetMuted === "function") {
             window.McWutGames.hextris.hxSetMuted(muted);
+        }
+        if (window.McWutGames && window.McWutGames.godzilla && typeof window.McWutGames.godzilla.setMuted === "function") {
+            window.McWutGames.godzilla.setMuted(muted);
         }
     }
 

@@ -23,6 +23,7 @@
     var cbStage = document.getElementById("breakout-stage");
     var hxStage = document.getElementById("hextris-stage");
     var mmStage = document.getElementById("meme-stage");
+    var gzStage = document.getElementById("godzilla-stage");
 
     var hubStrip = document.getElementById("game-hub-strip");
     var activeTitleEl = document.getElementById("game-active-title");
@@ -63,6 +64,7 @@
         cbPause();
         hxPause();
         if (typeof mmPause === "function") mmPause();
+        if (typeof gzPause === "function") gzPause();
 
         loadMyBestScores();
         loadHubLeaderboard(hubHallKey);
@@ -91,7 +93,7 @@
     }
 
     function switchGame(nextKey) {
-        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge") {
+        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge" && nextKey !== "godzilla-rampage") {
             return;
         }
         GAME_KEY = nextKey;
@@ -103,6 +105,7 @@
         cbState.active = nextKey === "brick-breaker";
         hxState.active = nextKey === "hextris";
         if (typeof mmState !== "undefined" && mmState) mmState.active = nextKey === "meme-merge";
+        if (typeof gzState !== "undefined" && gzState) gzState.active = nextKey === "godzilla-rampage";
 
         if (hubView) hubView.hidden = true;
         if (stageView) stageView.hidden = false;
@@ -124,6 +127,7 @@
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = false;
             if (msStage) msStage.hidden = true;
@@ -133,6 +137,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Mini Crossword";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Tap cells or clues · Type or use touch keys · <kbd>Space</kbd> flips direction";
@@ -143,6 +148,7 @@
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = false;
@@ -152,6 +158,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Minesweeper";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Tap to reveal · Long-press or <kbd>F</kbd> to flag · Chain big cascades";
@@ -166,6 +173,7 @@
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -175,6 +183,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Neon Slope";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "← → or <kbd>A</kbd> <kbd>D</kbd> steer · <kbd>Space</kbd> / ↑ jump · Touch controls";
@@ -190,6 +199,7 @@
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -199,6 +209,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "2048 Neon";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Swipe or Arrows / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to slide & merge · Reach 2048!";
@@ -210,6 +221,7 @@
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -219,6 +231,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Wacky Wheels";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "<kbd>W</kbd>/<kbd>↑</kbd> Gas · <kbd>S</kbd>/<kbd>↓</kbd> Brake · <kbd>A</kbd>/<kbd>D</kbd> Lean · <kbd>Space</kbd> Eject · <kbd>R</kbd> Restart";
@@ -234,6 +247,7 @@
             wwPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -243,6 +257,7 @@
             if (cbStage) cbStage.hidden = false;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Cyber Breakout";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Mouse / Touch / <kbd>A</kbd><kbd>D</kbd> steer · <kbd>Space</kbd> / Tap launch & fire · <kbd>R</kbd> restart";
@@ -255,6 +270,7 @@
             wwPause();
             cbPause();
             if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -264,6 +280,7 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = false;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Hextris Neon";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Tap Left/Right or <kbd>A</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> Rotate &middot; <kbd>S</kbd>/<kbd>&darr;</kbd> Drop &middot; Match 3+ colors";
@@ -276,6 +293,7 @@
             wwPause();
             cbPause();
             hxPause();
+            if (typeof gzPause === "function") gzPause();
             viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
@@ -285,19 +303,21 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = false;
+            if (gzStage) gzStage.hidden = true;
             if (activeTitleEl) activeTitleEl.textContent = "Meme Merge";
             if (stageHintEl) {
                 stageHintEl.innerHTML = "Aim with mouse/touch or <kbd>A</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> &middot; Drop with <kbd>Space</kbd> / <kbd>&darr;</kbd> or Tap &middot; Match memes to summon The Rock";
             }
             if (typeof mmEnsureGame === "function") mmEnsureGame();
             if (typeof mmResume === "function") mmResume();
-        } else {
+        } else if (nextKey === "godzilla-rampage") {
             msPauseClock();
             slopePause();
             wwPause();
             cbPause();
             hxPause();
             if (typeof mmPause === "function") mmPause();
+            viewport.hidden = true;
             if (cwStage) cwStage.hidden = true;
             if (msStage) msStage.hidden = true;
             if (slopeStage) slopeStage.hidden = true;
@@ -306,6 +326,32 @@
             if (cbStage) cbStage.hidden = true;
             if (hxStage) hxStage.hidden = true;
             if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = false;
+            if (activeTitleEl) activeTitleEl.textContent = "Godzilla Rampage";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "<kbd>WASD</kbd>/Arrows Move &middot; <kbd>Space</kbd>/Click Smash &middot; <kbd>E</kbd>/<kbd>Shift</kbd> Tail Whip &middot; <kbd>Q</kbd>/<kbd>F</kbd> Roar Beam";
+            }
+            requestAnimationFrame(function () {
+                if (typeof gzResize === "function") gzResize();
+                if (typeof gzResume === "function") gzResume();
+            });
+        } else {
+            msPauseClock();
+            slopePause();
+            wwPause();
+            cbPause();
+            hxPause();
+            if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
+            if (wwStage) wwStage.hidden = true;
+            if (cbStage) cbStage.hidden = true;
+            if (hxStage) hxStage.hidden = true;
+            if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
             viewport.hidden = false;
             if (activeTitleEl) activeTitleEl.textContent = "Stack 3D";
             if (stageHintEl) {
@@ -454,6 +500,8 @@
                 hxStartGame();
             } else if (GAME_KEY === "meme-merge") {
                 if (typeof mmStartGame === "function") mmStartGame();
+            } else if (GAME_KEY === "godzilla-rampage") {
+                if (typeof gzStartGame === "function") gzStartGame();
             } else {
                 startGame();
             }
@@ -709,6 +757,19 @@
             return;
         }
 
+        if (GAME_KEY === "godzilla-rampage") {
+            if (ev.key === "r" || ev.key === "R") {
+                ev.preventDefault();
+                if (typeof gzStartGame === "function") gzStartGame();
+                return;
+            }
+            if (typeof gzHandleKey === "function") {
+                var handled = gzHandleKey(ev, true);
+                if (handled) ev.preventDefault();
+            }
+            return;
+        }
+
         if (ev.code === "Space" || ev.code === "ArrowDown" || ev.code === "Enter") {
             if (state.mode === "playing") {
                 ev.preventDefault();
@@ -746,6 +807,10 @@
             if (ev.code === "ArrowDown" || ev.key === "s" || ev.key === "S") {
                 if (hxGame) hxGame.setSoftDrop(false);
             }
+        } else if (GAME_KEY === "godzilla-rampage") {
+            if (typeof gzHandleKey === "function") {
+                gzHandleKey(ev, false);
+            }
         }
     });
 
@@ -755,12 +820,14 @@
         wwInput.left = false;
         wwInput.right = false;
         wwSilenceAudio();
+        if (typeof gzClearInput === "function") gzClearInput();
     });
 
     // --- Boot ---
     function boot() {
         if (typeof initGraphics === "function") initGraphics();
         if (typeof slopeInitGraphics === "function") slopeInitGraphics();
+        if (typeof gzInitGraphics === "function") gzInitGraphics();
         if (typeof setupIdleDemo === "function") setupIdleDemo();
         if (typeof updateViewportBackground === "function" && typeof state !== "undefined" && state) {
             updateViewportBackground(state.baseHue);
@@ -800,7 +867,8 @@
         "games-wacky-wheels.js",
         "games-breakout.js",
         "games-hextris.js",
-        "games-meme-merge.js"
+        "games-meme-merge.js",
+        "games-godzilla.js"
     ];
 
     function ensureSubmodules(onReady) {

@@ -20,6 +20,7 @@ public static class GameScoreRules
     public const string BrickBreakerKey = "brick-breaker";
     public const string HextrisKey = "hextris";
     public const string MemeMergeKey = "meme-merge";
+    public const string GodzillaRampageKey = "godzilla-rampage";
 
     public const int MaxScore = 10_000;
     public const int MaxCombo = 10_000;
@@ -34,7 +35,8 @@ public static class GameScoreRules
         new(WackyWheelsKey, "Wacky Wheels", "Slapstick ragdoll obstacle course. Balance, boost, and flip your way to the finish line.", "Canvas 2D / Physics", true),
         new(BrickBreakerKey, "Cyber Breakout", "Arcade paddle physics with multiball and laser power-ups.", "Canvas 2D", true),
         new(HextrisKey, "Hextris Neon", "Hexagonal match-3 puzzle. Rotate the hexagon, catch incoming bars, and chain combos.", "Canvas 2D", true),
-        new(MemeMergeKey, "Meme Merge", "Drop and merge classic memes with juicy physics to summon The Rock.", "Canvas 2D / Physics", true)
+        new(MemeMergeKey, "Meme Merge", "Drop and merge classic memes with juicy physics to summon The Rock.", "Canvas 2D / Physics", true),
+        new(GodzillaRampageKey, "Godzilla Rampage", "Rampage a voxel pixel-art city, dodge army choppers & tanks, and rescue Baby Bronny!", "Three.js Voxel", true)
     ];
 
     public static string NormalizeGameKey(string? gameKey)

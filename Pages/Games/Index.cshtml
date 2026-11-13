@@ -1144,6 +1144,149 @@
                 <button type="button" class="mm-touch-btn" id="mm-touch-right" title="Move Right">&#x25B6;</button>
             </div>
         </div>
+
+        <div class="gz-stage" id="godzilla-stage" hidden>
+            <div class="gz-toolbar">
+                <div class="gz-toolbar-meters" aria-live="off">
+                    <div class="gz-meter is-hp" title="Monster Health">
+                        <span class="gz-meter-label">HP</span>
+                        <div class="gz-meter-track">
+                            <div class="gz-meter-fill" id="gz-hp-fill" style="width:100%"></div>
+                        </div>
+                        <strong class="gz-meter-val" id="gz-hp-val">100</strong>
+                    </div>
+                    <div class="gz-meter is-rage" id="gz-rage-wrap" title="Atomic Roar Rage Charge">
+                        <span class="gz-meter-label">RAGE</span>
+                        <div class="gz-meter-track">
+                            <div class="gz-meter-fill" id="gz-rage-fill" style="width:50%"></div>
+                        </div>
+                        <strong class="gz-meter-val" id="gz-rage-val">50%</strong>
+                    </div>
+                </div>
+                <div class="gz-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill gz-stat-pill" title="Current Rampage Score">
+                        Score <strong id="gz-hud-score">0</strong>
+                    </span>
+                    <span class="game-stat-pill gz-stat-pill is-combo" title="Destruction Combo Multiplier">
+                        Combo <strong id="gz-hud-combo">&times;1</strong>
+                    </span>
+                    <span class="game-stat-pill gz-stat-pill d-none d-sm-inline-flex" title="Percentage of City Wrecked">
+                        Wrecked <strong id="gz-hud-wrecked">0%</strong>
+                    </span>
+                    <span class="game-stat-pill gz-stat-pill is-tower" id="gz-tower-pill" title="Direction and distance to Baby Bronny's Mega Tower">
+                        <span class="gz-compass-arrow" id="gz-compass-arrow">&#x2191;</span>
+                        <span>Tower</span>
+                        <strong id="gz-hud-dist">84m</strong>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-success gz-restart-btn" id="gz-btn-restart" title="Quick Restart (R)" aria-label="Quick Restart">
+                        &#x27F2; <span>Restart</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="gz-viewport" id="godzilla-viewport">
+                <canvas id="godzilla-canvas" aria-label="Godzilla Rampage voxel city destruction canvas"></canvas>
+
+                <div class="gz-hud-float" aria-live="polite">
+                    <div class="gz-alert-pill" id="gz-alert-pill">
+                        <span class="gz-alert-label">ALERT</span>
+                        <span class="gz-alert-stars" id="gz-alert-stars">&#x2605;</span>
+                    </div>
+                    <div class="gz-boss-bar" id="gz-boss-bar" hidden>
+                        <div class="gz-boss-head">
+                            <span class="gz-boss-title">BRONNY MEGA TOWER</span>
+                            <span class="gz-boss-tiers" id="gz-boss-tiers">4/4 Tiers</span>
+                        </div>
+                        <div class="gz-boss-track">
+                            <div class="gz-boss-fill" id="gz-boss-fill" style="width:100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gz-pop-banner" id="gz-pop-banner" hidden>SKY CHOMP!</div>
+                <div class="gz-popup-layer" id="gz-popup-layer" aria-hidden="true"></div>
+
+                <div class="gz-touch-controls" id="gz-touch-controls" aria-label="Godzilla touch controls">
+                    <div class="gz-joy-zone" id="gz-joy-zone">
+                        <div class="gz-joy-base" id="gz-joy-base">
+                            <div class="gz-joy-knob" id="gz-joy-knob"></div>
+                        </div>
+                        <span class="gz-joy-hint">MOVE</span>
+                    </div>
+                    <div class="gz-action-pad" role="group" aria-label="Monster attacks">
+                        <button type="button" class="gz-act-btn is-roar" id="gz-btn-roar" title="Atomic Ember Roar (Q or F)" aria-label="Atomic Ember Roar">
+                            <span class="gz-act-title">ROAR</span>
+                            <span class="gz-act-sub" id="gz-roar-sub">40% RAGE</span>
+                        </button>
+                        <button type="button" class="gz-act-btn is-tail" id="gz-btn-tail" title="360 Tail Whip (E or Shift)" aria-label="Tail Whip">
+                            <span class="gz-act-title">TAIL</span>
+                            <span class="gz-act-sub" id="gz-tail-sub">WHIP</span>
+                        </button>
+                        <button type="button" class="gz-act-btn is-smash" id="gz-btn-smash" title="Chomp &amp; Claw Smash (Space or Click)" aria-label="Smash and Chomp">
+                            <span class="gz-act-title">SMASH</span>
+                            <span class="gz-act-sub">CHOMP</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="godzilla-start-overlay">
+                    <div class="game-overlay-card gz-overlay-card">
+                        <div class="game-overlay-badge gz-badge">VOXEL KAIJU ARCADE</div>
+                        <canvas id="gz-cameo-canvas" class="gz-cameo-canvas" width="168" height="84" aria-hidden="true"></canvas>
+                        <h3 class="game-overlay-title">Godzilla Rampage</h3>
+                        <p class="game-overlay-desc">
+                            Unleash the kid-crafted voxel orb-kaiju on a destructible pixel city! Chain building demolitions, swat circling choppers &amp; army tanks, grab <strong>+HP snacks</strong>, and topple the <strong>Bronny Mega Tower</strong> at North Plaza to rescue <strong>Baby Bronny James</strong>!
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn gz-play-btn" id="godzilla-start-btn">
+                            Play Godzilla Rampage
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd> Move</span>
+                            <span><kbd>Space</kbd> / Click Smash &amp; Leap-Chomp</span>
+                            <span><kbd>E</kbd> / <kbd>Shift</kbd> Tail Whip &middot; <kbd>Q</kbd> / <kbd>F</kbd> Ember Roar</span>
+                            <span><kbd>R</kbd> Quick Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="godzilla-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover gz-overlay-card" role="dialog" aria-labelledby="godzilla-over-title">
+                        <div class="game-record-banner" id="godzilla-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge" id="godzilla-over-badge">BABY BRONNY SAVED!</div>
+                        <canvas id="gz-over-cameo" class="gz-cameo-canvas is-small" width="144" height="72" aria-hidden="true"></canvas>
+                        <h3 class="game-overlay-title" id="godzilla-over-title">Victory Rampage!</h3>
+                        <p class="game-overlay-desc mb-2" id="godzilla-over-breakdown"></p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="godzilla-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Max Rampage</span>
+                                <strong class="game-over-val" id="godzilla-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="godzilla-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="godzilla-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="small text-white-50 mb-1" id="godzilla-over-stats-line"></p>
+                        <p class="game-save-status" id="godzilla-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn gz-play-btn" id="godzilla-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <aside class="card game-board-card" aria-label="Global High Scores">
@@ -1186,5 +1329,6 @@
     <script src="~/js/games-breakout.js" asp-append-version="true"></script>
     <script src="~/js/games-hextris.js" asp-append-version="true"></script>
     <script src="~/js/games-meme-merge.js" asp-append-version="true"></script>
+    <script src="~/js/games-godzilla.js" asp-append-version="true"></script>
     <script src="~/js/games.js" asp-append-version="true"></script>
 }

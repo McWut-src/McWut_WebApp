@@ -28,7 +28,8 @@ public class IndexModel : PageModel
             new("wacky-wheels", "Wacky Wheels", "#22c55e", "Ragdoll Stunt", "Slapstick ragdoll physics buggy obstacle course.", true, IsNew: false),
             new("brick-breaker", "Cyber Breakout", "#ec4899", "Laser Paddle", "Neon brick breaker with lasers and multiball.", true, IsNew: false),
             new("hextris", "Hextris Neon", "#a855f7", "Hex Match", "Catch falling colored bars on the rotating hexagon.", true, IsNew: false),
-            new("meme-merge", "Meme Merge", "#facc15", "Meme Drop", "Drop and merge classic memes with juicy physics to summon The Rock.", true, IsNew: true)
+            new("meme-merge", "Meme Merge", "#facc15", "Meme Drop", "Drop and merge classic memes with juicy physics to summon The Rock.", true, IsNew: false),
+            new("godzilla-rampage", "Godzilla Rampage", "#65a30d", "Voxel Kaiju", "Rampage a voxel city as the orb-kaiju and save Baby Bronny from the tower!", true, IsNew: true)
         ];
     }
 }
