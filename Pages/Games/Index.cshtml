@@ -1170,7 +1170,10 @@
                     <span class="game-stat-pill gz-stat-pill is-combo" title="Destruction Combo Multiplier">
                         Combo <strong id="gz-hud-combo">&times;1</strong>
                     </span>
-                    <span class="game-stat-pill gz-stat-pill d-none d-sm-inline-flex" title="Percentage of City Wrecked">
+                    <span class="game-stat-pill gz-stat-pill d-none d-sm-inline-flex" title="Elapsed Rampage Time">
+                        Time <strong id="gz-hud-time">0:00</strong>
+                    </span>
+                    <span class="game-stat-pill gz-stat-pill d-none d-md-inline-flex" title="Percentage of City Wrecked">
                         Wrecked <strong id="gz-hud-wrecked">0%</strong>
                     </span>
                     <span class="game-stat-pill gz-stat-pill is-tower" id="gz-tower-pill" title="Direction and distance to Baby Bronny's Mega Tower">
@@ -1188,9 +1191,17 @@
                 <canvas id="godzilla-canvas" aria-label="Godzilla Rampage voxel city destruction canvas"></canvas>
 
                 <div class="gz-hud-float" aria-live="polite">
-                    <div class="gz-alert-pill" id="gz-alert-pill">
-                        <span class="gz-alert-label">ALERT</span>
-                        <span class="gz-alert-stars" id="gz-alert-stars">&#x2605;</span>
+                    <div class="gz-hud-left">
+                        <div class="gz-alert-pill" id="gz-alert-pill">
+                            <span class="gz-alert-label">ALERT</span>
+                            <span class="gz-alert-stars" id="gz-alert-stars">&#x2605;</span>
+                        </div>
+                        <div class="gz-mission-strip" id="gz-mission-strip" hidden>
+                            <span class="gz-district-tag" id="gz-district-tag">DOWNTOWN GLASS</span>
+                            <span class="gz-bounty-chip is-vault" id="gz-vault-chip">Vaults 0/3</span>
+                            <span class="gz-bounty-chip" id="gz-bounty-0">Sky Swatter 0/3</span>
+                            <span class="gz-bounty-chip" id="gz-bounty-1">Chain Blast 0/2</span>
+                        </div>
                     </div>
                     <div class="gz-boss-bar" id="gz-boss-bar" hidden>
                         <div class="gz-boss-head">
@@ -1235,7 +1246,7 @@
                         <canvas id="gz-cameo-canvas" class="gz-cameo-canvas" width="168" height="84" aria-hidden="true"></canvas>
                         <h3 class="game-overlay-title">Godzilla Rampage</h3>
                         <p class="game-overlay-desc">
-                            Unleash the kid-crafted voxel orb-kaiju on a destructible pixel city! Chain building demolitions, swat circling choppers &amp; army tanks, grab <strong>+HP snacks</strong>, and topple the <strong>Bronny Mega Tower</strong> at North Plaza to rescue <strong>Baby Bronny James</strong>!
+                            Drop into a fresh procedural city every run! Chain demolitions, hunt <strong>Golden Vaults</strong> &amp; rotating <strong>Bounties</strong>, dodge tanks &amp; Ace Choppers, and race the clock to rescue <strong>Baby Bronny James</strong> atop the <strong>Bronny Mega Tower</strong>!
                         </p>
                         <button type="button" class="btn btn-primary game-play-btn gz-play-btn" id="godzilla-start-btn">
                             Play Godzilla Rampage

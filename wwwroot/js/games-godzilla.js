@@ -28,10 +28,16 @@
     var rageValEl = document.getElementById("gz-rage-val");
     var scoreEl = document.getElementById("gz-hud-score");
     var comboEl = document.getElementById("gz-hud-combo");
+    var timeEl = document.getElementById("gz-hud-time");
     var wreckedEl = document.getElementById("gz-hud-wrecked");
     var distEl = document.getElementById("gz-hud-dist");
     var compassEl = document.getElementById("gz-compass-arrow");
     var alertStarsEl = document.getElementById("gz-alert-stars");
+    var missionStripEl = document.getElementById("gz-mission-strip");
+    var districtTagEl = document.getElementById("gz-district-tag");
+    var vaultChipEl = document.getElementById("gz-vault-chip");
+    var bountyChip0El = document.getElementById("gz-bounty-0");
+    var bountyChip1El = document.getElementById("gz-bounty-1");
     var bossBarEl = document.getElementById("gz-boss-bar");
     var bossTiersEl = document.getElementById("gz-boss-tiers");
     var bossFillEl = document.getElementById("gz-boss-fill");
@@ -1283,22 +1289,55 @@
     }
 
     // =========================================================================
-    // --- Game State & City Generation ---
+    // --- Game State, Replay Districts, Arenas, & Run Bounties ---
     // =========================================================================
+
+    var CITY_DISTRICTS = [
+        { id: "downtown", name: "Downtown Glass", skyHex: 0x0c1428, fogHex: 0x131b33, canvasBg: "#0e1526", treeCut: 0.12, dinerCut: 0.24, reactorCut: 0.34, brickCut: 0.56, unitMult: 1.0, chopperBias: 0.55, tankBias: 0.36 },
+        { id: "reactor", name: "Reactor Sector", skyHex: 0x081921, fogHex: 0x0f252e, canvasBg: "#0a1c24", treeCut: 0.12, dinerCut: 0.24, reactorCut: 0.54, brickCut: 0.78, unitMult: 1.0, chopperBias: 0.44, tankBias: 0.42 },
+        { id: "neon", name: "Neon Strip", skyHex: 0x180e2c, fogHex: 0x22143a, canvasBg: "#150e28", treeCut: 0.14, dinerCut: 0.44, reactorCut: 0.56, brickCut: 0.78, unitMult: 1.0, chopperBias: 0.40, tankBias: 0.38 },
+        { id: "fortress", name: "Fortress Plaza", skyHex: 0x1c1018, fogHex: 0x261522, canvasBg: "#1b1018", treeCut: 0.10, dinerCut: 0.20, reactorCut: 0.32, brickCut: 0.76, unitMult: 1.25, chopperBias: 0.42, tankBias: 0.58 }
+    ];
+
+    var CITY_ARENAS = [
+        { id: "north", name: "North Plaza", towerX: 0, towerZ: -48, spawnX: 0, spawnZ: 36, spawnAngle: Math.PI * 0.92 },
+        { id: "nw", name: "NW Midtown", towerX: -24, towerZ: -48, spawnX: 24, spawnZ: 24, spawnAngle: -Math.PI * 0.75 },
+        { id: "ne", name: "NE Heights", towerX: 24, towerZ: -48, spawnX: -24, spawnZ: 24, spawnAngle: Math.PI * 0.75 },
+        { id: "south", name: "South Harbor", towerX: 0, towerZ: 24, spawnX: 0, spawnZ: -52, spawnAngle: 0.12 }
+    ];
+
+    var BOUNTY_POOL = [
+        { id: "choppers", title: "Sky Hunter", shortLabel: "Choppers", stat: "choppersDown", target: 3, reward: 400 },
+        { id: "reactors", title: "Chain Blast", shortLabel: "Reactors", stat: "reactorsWrecked", target: 2, reward: 400 },
+        { id: "glass", title: "Skyline Wreck", shortLabel: "Glass", stat: "glassWrecked", target: 6, reward: 425 },
+        { id: "tanks", title: "Tank Buster", shortLabel: "Tanks", stat: "tanksDown", target: 3, reward: 400 },
+        { id: "vaults", title: "Vault Raider", shortLabel: "Raider", stat: "vaultsSmashed", target: 2, reward: 425 },
+        { id: "combo", title: "Frenzy x10", shortLabel: "x10 Streak", stat: "frenzyReached", target: 1, reward: 400 }
+    ];
+
+    var lastDistrictIdx = -1;
+    var lastArenaIdx = -1;
 
     var gzState = {
         active: false,
         mode: "idle", // "idle" | "playing" | "victory_anim" | "gameover"
         outcome: null, // "win" | "loss"
+        citySeed: 0,
+        district: CITY_DISTRICTS[0],
+        arena: CITY_ARENAS[0],
         score: 0,
         destructionScore: 0,
+        bountyScore: 0,
         rescueBonus: 0,
+        timeBonus: 0,
         healthBonus: 0,
+        styleRank: "C",
         combo: 0,
         maxCombo: 0,
         comboTimer: 0,
         buildingsWrecked: 0,
         totalBuildings: 0,
+        vaultsSmashed: 0,
         unitsSmashed: 0,
         hp: 100,
         maxHp: 100,
@@ -1312,6 +1351,9 @@
         victoryTimer: 0,
         spawnTimer: 1.5,
         chopperTimer: 3.5,
+        aceTimer: 12.0,
+        aceTowerReinforced: false,
+        frenzySurgeHit: false,
         stepAccum: 0,
         lastStepSign: 1,
         gameId: 0,
@@ -1319,6 +1361,17 @@
         leaderboard: null,
         lastTime: 0,
         animFrame: null,
+
+        stats: {
+            choppersDown: 0,
+            reactorsWrecked: 0,
+            glassWrecked: 0,
+            tanksDown: 0,
+            vaultsSmashed: 0,
+            frenzyReached: 0
+        },
+
+        bounties: [],
 
         monster: {
             x: 0,
@@ -1342,6 +1395,7 @@
         },
 
         buildings: [],
+        vaults: [],
         megaTower: null,
         props: [],
         enemies: [],
@@ -1406,7 +1460,7 @@
         sharedMat.scorch = new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.65, side: THREE.DoubleSide });
     }
 
-    function gzInitGraphics() {
+    function gzInitGraphics(skipWorldBuild) {
         if (!canvasEl || !viewportEl) return;
 
         if (window.THREE && !threeRenderer) {
@@ -1473,7 +1527,9 @@
             fallbackCtx = canvasEl.getContext("2d");
         }
 
-        buildCityWorld();
+        if (!skipWorldBuild) {
+            buildCityWorld();
+        }
         gzResize();
         paintCameoBanner(cameoCanvas, false);
     }
@@ -1498,30 +1554,14 @@
         // Sidewalk pads inside each 24x24 block
         for (var bx = -36; bx <= 36; bx += 24) {
             for (var bz = -60; bz <= 36; bz += 24) {
-                var isPlaza = (bx === -12 || bx === 12) && (bz === -60 || bz === -36);
                 var pad = new THREE.Mesh(
                     new THREE.BoxGeometry(16.2, 0.14, 16.2),
-                    isPlaza ? plazaMat : blockMat
+                    blockMat
                 );
                 pad.position.set(bx, 0.05, bz);
                 roadLines.add(pad);
             }
         }
-
-        // Lakers North Plaza circle pad under Mega Tower
-        var plazaRing = new THREE.Mesh(
-            new THREE.CylinderGeometry(11.5, 12.2, 0.22, 16),
-            new THREE.MeshLambertMaterial({ color: 0x4c1d95 })
-        );
-        plazaRing.position.set(TOWER_X, 0.09, TOWER_Z);
-        roadLines.add(plazaRing);
-
-        var plazaGold = new THREE.Mesh(
-            new THREE.CylinderGeometry(7.2, 7.2, 0.24, 16),
-            new THREE.MeshLambertMaterial({ color: 0xeab308 })
-        );
-        plazaGold.position.set(TOWER_X, 0.10, TOWER_Z);
-        roadLines.add(plazaGold);
 
         // Yellow center dashes along avenues
         for (var ai = 0; ai < avenues.length; ai++) {
@@ -1559,6 +1599,7 @@
 
     function buildCityWorld() {
         gzState.buildings = [];
+        gzState.vaults = [];
         gzState.props = [];
         gzState.enemies = [];
         gzState.projectiles = [];
@@ -1574,12 +1615,54 @@
             clearGroup(dynamicGroup);
         }
 
-        // Seeded deterministic city generator so layout is consistently rich and readable
-        var seed = 4219;
+        // Procedural city seed per run for high replayability
+        if (!gzState.citySeed) {
+            gzState.citySeed = ((Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0) || 4219;
+        }
+        var seed = gzState.citySeed;
         function rand() {
             seed = (seed * 1664525 + 1013904223) >>> 0;
             return seed / 4294967296;
         }
+
+        var district = gzState.district || CITY_DISTRICTS[0];
+        var arena = gzState.arena || CITY_ARENAS[0];
+        TOWER_X = arena.towerX;
+        TOWER_Z = arena.towerZ;
+
+        if (useThree && threeRenderer && threeScene) {
+            threeRenderer.setClearColor(district.skyHex, 1);
+            if (threeScene.fog) threeScene.fog.color.setHex(district.fogHex);
+
+            // Dynamic Lakers Plaza circle pad under Mega Tower's chosen plaza
+            var plazaRing = new THREE.Mesh(
+                new THREE.CylinderGeometry(11.5, 12.2, 0.22, 16),
+                new THREE.MeshLambertMaterial({ color: 0x4c1d95 })
+            );
+            plazaRing.position.set(TOWER_X, 0.09, TOWER_Z);
+            cityGroup.add(plazaRing);
+
+            var plazaGold = new THREE.Mesh(
+                new THREE.CylinderGeometry(7.2, 7.2, 0.24, 16),
+                new THREE.MeshLambertMaterial({ color: 0xeab308 })
+            );
+            plazaGold.position.set(TOWER_X, 0.10, TOWER_Z);
+            cityGroup.add(plazaGold);
+        }
+
+        // Roll 2 distinct Run Bounties from pool
+        var bountyIndices = [];
+        for (var biPool = 0; biPool < BOUNTY_POOL.length; biPool++) bountyIndices.push(biPool);
+        for (var sh = bountyIndices.length - 1; sh > 0; sh--) {
+            var sw = Math.floor(rand() * (sh + 1));
+            var tmpIdx = bountyIndices[sh];
+            bountyIndices[sh] = bountyIndices[sw];
+            bountyIndices[sw] = tmpIdx;
+        }
+        gzState.bounties = [
+            { id: BOUNTY_POOL[bountyIndices[0]].id, title: BOUNTY_POOL[bountyIndices[0]].title, shortLabel: BOUNTY_POOL[bountyIndices[0]].shortLabel, stat: BOUNTY_POOL[bountyIndices[0]].stat, target: BOUNTY_POOL[bountyIndices[0]].target, reward: BOUNTY_POOL[bountyIndices[0]].reward, done: false },
+            { id: BOUNTY_POOL[bountyIndices[1]].id, title: BOUNTY_POOL[bountyIndices[1]].title, shortLabel: BOUNTY_POOL[bountyIndices[1]].shortLabel, stat: BOUNTY_POOL[bountyIndices[1]].stat, target: BOUNTY_POOL[bountyIndices[1]].target, reward: BOUNTY_POOL[bountyIndices[1]].reward, done: false }
+        ];
 
         var idCounter = 1;
 
@@ -1641,79 +1724,196 @@
             gzState.buildings.push(b);
         }
 
-        // Populate 4x4 city blocks (leaving Tower North Plaza at (0, -48) and Monster South Spawn at (0, 36) clear!)
+        function addVault(x, z) {
+            var v = {
+                id: idCounter++,
+                x: x,
+                z: z,
+                w: 3.4,
+                d: 3.4,
+                h: 3.6,
+                hp: 46,
+                maxHp: 46,
+                pts: 125,
+                bonus: 275,
+                destroyed: false,
+                shake: 0,
+                mesh: null,
+                coreMesh: null
+            };
+            if (useThree && cityGroup) {
+                var grp = new THREE.Group();
+                grp.position.set(x, 0, z);
+                var ped = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.9, 3.4), new THREE.MeshLambertMaterial({ color: 0x581c87 }));
+                ped.position.y = 0.45;
+                var trim = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.28, 3.6), new THREE.MeshLambertMaterial({ color: 0xfacc15 }));
+                trim.position.y = 0.95;
+                var core = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.1, 2.1), new THREE.MeshBasicMaterial({ color: 0xfde047 }));
+                core.position.y = 2.4;
+                core.rotation.set(0.35, 0.5, 0.25);
+                var halo = new THREE.Mesh(
+                    sharedGeo.ring,
+                    new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide })
+                );
+                halo.scale.setScalar(2.9);
+                halo.position.y = 0.14;
+                var beam = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.42, 1.0, 15, 8, 1, true),
+                    new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+                );
+                beam.position.y = 8.0;
+                grp.add(ped, trim, core, halo, beam);
+                cityGroup.add(grp);
+                v.mesh = grp;
+                v.coreMesh = core;
+            }
+            gzState.vaults.push(v);
+        }
+
+        // Populate 4x5 city blocks keeping Spawn and Tower Plazas clear
+        var spawnX = arena.spawnX;
+        var spawnZ = arena.spawnZ;
         var blockCentersX = [-36, -12, 12, 36];
         var blockCentersZ = [-60, -36, -12, 12, 36];
+        var slots = [
+            { dx: -4.1, dz: -4.1 },
+            { dx: 4.1, dz: -4.1 },
+            { dx: -4.1, dz: 4.1 },
+            { dx: 4.1, dz: 4.1 }
+        ];
+
+        var buildPlans = [];
+        var reactorCount = 0;
+        var glassCount = 0;
 
         for (var ix = 0; ix < blockCentersX.length; ix++) {
             for (var iz = 0; iz < blockCentersZ.length; iz++) {
                 var cx = blockCentersX[ix];
                 var cz = blockCentersZ[iz];
+                if (Math.hypot(cx - TOWER_X, cz - TOWER_Z) < 13.5) continue;
 
-                // Skip South spawn avenue area and North Mega Tower plaza overlap
-                var distTower = Math.hypot(cx - TOWER_X, cz - TOWER_Z);
-                if (distTower < 14) continue;
-
-                // 2 buildings + 1 mini corner shop or park per block
-                var slots = [
-                    { dx: -4.1, dz: -4.1 },
-                    { dx: 4.1, dz: -4.1 },
-                    { dx: -4.1, dz: 4.1 },
-                    { dx: 4.1, dz: 4.1 }
-                ];
                 for (var s = 0; s < slots.length; s++) {
                     var sx = cx + slots[s].dx;
                     var sz = cz + slots[s].dz;
-                    if (Math.hypot(sx - 0, sz - 36) < 9.5) continue; // Keep spawn clear
+                    if (Math.hypot(sx - spawnX, sz - spawnZ) < 10.5) continue;
+                    if (sx - spawnX > -2.5 && sx - spawnX < 13 && sz - spawnZ > 0 && sz - spawnZ < 16) continue;
                     if (Math.hypot(sx - TOWER_X, sz - TOWER_Z) < 14.5) continue;
 
                     var rVal = rand();
-                    if (rVal < 0.16) {
-                        // Mini park tree cluster
-                        addProp(sx, sz, "tree");
-                        addProp(sx + 1.8, sz - 1.5, "tree");
-                    } else if (rVal < 0.34) {
-                        addBuilding(sx, sz, 5.4, 5.4, 4.2 + rand() * 1.4, "diner", 38, 130);
-                    } else if (rVal < 0.44) {
-                        addBuilding(sx, sz, 5.2, 5.2, 5.5, "reactor", 42, 260);
-                    } else if (rVal < 0.74) {
-                        addBuilding(sx, sz, 5.8, 5.8, 7.2 + rand() * 3.2, "brick", 65, 240);
+                    var kind = "glass";
+                    if (rVal < district.treeCut) {
+                        kind = "tree";
+                    } else if (rVal < district.dinerCut) {
+                        kind = "diner";
+                    } else if (rVal < district.reactorCut) {
+                        kind = "reactor";
+                        reactorCount++;
+                    } else if (rVal < district.brickCut) {
+                        kind = "brick";
                     } else {
-                        addBuilding(sx, sz, 6.2, 6.2, 11.5 + rand() * 6.5, "glass", 105, 410);
+                        kind = "glass";
+                        glassCount++;
                     }
+                    buildPlans.push({ sx: sx, sz: sz, kind: kind, hRand: rand(), vaultCandidate: true });
                 }
+            }
+        }
+
+        // Select 3 well-spaced courtyard slots for Golden Bronny Vaults!
+        var vaultCandidates = [];
+        for (var vi = 0; vi < buildPlans.length; vi++) {
+            var vp = buildPlans[vi];
+            if (Math.hypot(vp.sx - spawnX, vp.sz - spawnZ) > 18 && Math.hypot(vp.sx - TOWER_X, vp.sz - TOWER_Z) > 15.5) {
+                vaultCandidates.push(vp);
+            }
+        }
+        var chosenVaults = [];
+        for (var vs = vaultCandidates.length - 1; vs > 0; vs--) {
+            var vr = Math.floor(rand() * (vs + 1));
+            var vTmp = vaultCandidates[vs];
+            vaultCandidates[vs] = vaultCandidates[vr];
+            vaultCandidates[vr] = vTmp;
+        }
+        for (var vc = 0; vc < vaultCandidates.length && chosenVaults.length < 3; vc++) {
+            var cand = vaultCandidates[vc];
+            var farEnough = true;
+            for (var cv = 0; cv < chosenVaults.length; cv++) {
+                if (Math.hypot(cand.sx - chosenVaults[cv].sx, cand.sz - chosenVaults[cv].sz) < 24) {
+                    farEnough = false;
+                    break;
+                }
+            }
+            if (farEnough) {
+                chosenVaults.push(cand);
+                if (cand.kind === "reactor") reactorCount--;
+                if (cand.kind === "glass") glassCount--;
+                cand.kind = "vault";
+            }
+        }
+
+        // Guarantee every rolled Bounty (reactors/glass) is 100% achievable
+        for (var piPlan = 0; piPlan < buildPlans.length && (reactorCount < 4 || glassCount < 8); piPlan++) {
+            var bp = buildPlans[piPlan];
+            if (bp.kind === "brick" || bp.kind === "diner") {
+                if (reactorCount < 4) {
+                    bp.kind = "reactor";
+                    reactorCount++;
+                } else if (glassCount < 8) {
+                    bp.kind = "glass";
+                    glassCount++;
+                }
+            }
+        }
+
+        for (var bpi = 0; bpi < buildPlans.length; bpi++) {
+            var item = buildPlans[bpi];
+            if (item.kind === "vault") {
+                addVault(item.sx, item.sz);
+            } else if (item.kind === "tree") {
+                addProp(item.sx, item.sz, "tree", rand);
+                addProp(item.sx + 1.8, item.sz - 1.5, "tree", rand);
+            } else if (item.kind === "diner") {
+                addBuilding(item.sx, item.sz, 5.4, 5.4, 4.2 + item.hRand * 1.4, "diner", 36, 45);
+            } else if (item.kind === "reactor") {
+                addBuilding(item.sx, item.sz, 5.2, 5.2, 5.5, "reactor", 42, 85);
+            } else if (item.kind === "brick") {
+                addBuilding(item.sx, item.sz, 5.8, 5.8, 7.2 + item.hRand * 3.2, "brick", 62, 75);
+            } else {
+                addBuilding(item.sx, item.sz, 6.2, 6.2, 11.5 + item.hRand * 6.5, "glass", 98, 125);
             }
         }
 
         gzState.totalBuildings = gzState.buildings.length;
 
-        // Add Street Props (cars, buses, streetlamps, hydrants) along avenues
+        // Add Street Props (cars, buses, streetlamps) — Neon Strip spawns extra buses/cars!
         var roadCoords = [-48, -24, 0, 24, 48];
+        var propStep = district.id === "neon" ? 11 : 14;
         for (var rx = 0; rx < roadCoords.length; rx++) {
-            for (var k = -54; k <= 42; k += 14) {
+            for (var k = -54; k <= 42; k += propStep) {
                 var px = roadCoords[rx] + (rand() > 0.5 ? 1.8 : -1.8);
                 var pz = k + rand() * 5;
-                if (Math.hypot(px, pz - 36) < 7) continue;
-                if (Math.hypot(px - TOWER_X, pz - TOWER_Z) < 12) continue;
-                addProp(px, pz, rand() < 0.25 ? "bus" : "car");
+                if (Math.hypot(px - spawnX, pz - spawnZ) < 8) continue;
+                if (Math.hypot(px - TOWER_X, pz - TOWER_Z) < 12.5) continue;
+                addProp(px, pz, rand() < 0.28 ? "bus" : "car", rand);
             }
         }
         for (var l = -50; l <= 40; l += 18) {
-            addProp(-4.2, l, "lamp");
-            addProp(4.2, l, "lamp");
+            addProp(-4.2, l, "lamp", rand);
+            addProp(4.2, l, "lamp", rand);
         }
 
-        // Build the Iconic 4-Tier Bronny Mega Tower at North Plaza!
+        // Build the Iconic 4-Tier Bronny Mega Tower at the active Plaza!
         buildMegaTower();
     }
 
-    function addProp(x, z, kind) {
+    function addProp(x, z, kind, rng) {
+        var rFn = rng || Math.random;
         var p = {
-            id: Math.random(),
+            id: rFn(),
             x: x,
             z: z,
             kind: kind,
-            pts: kind === "bus" ? 45 : (kind === "car" ? 30 : 18),
+            pts: kind === "bus" ? 25 : (kind === "car" ? 15 : 10),
             destroyed: false,
             mesh: null
         };
@@ -1722,7 +1922,7 @@
             grp.position.set(x, 0, z);
             if (kind === "car" || kind === "bus") {
                 var len = kind === "bus" ? 3.2 : 2.1;
-                var col = kind === "bus" ? 0xfacc15 : [0xef4444, 0x3b82f6, 0xe2e8f0, 0x10b981][Math.floor(Math.random() * 4)];
+                var col = kind === "bus" ? 0xfacc15 : [0xef4444, 0x3b82f6, 0xe2e8f0, 0x10b981][Math.floor(rFn() * 4)];
                 var body = new THREE.Mesh(new THREE.BoxGeometry(1.3, kind === "bus" ? 1.3 : 0.85, len), new THREE.MeshLambertMaterial({ color: col }));
                 body.position.y = kind === "bus" ? 0.7 : 0.5;
                 var roof = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, len * 0.55), new THREE.MeshLambertMaterial({ color: 0xf8fafc }));
@@ -1912,12 +2112,15 @@
         gzState.bannerTimer = 1.4;
     }
 
-    function spawnPickup(x, z) {
+    function spawnPickup(x, z, isSuper) {
         var pk = {
             x: x,
             y: 0.9,
             z: z,
-            life: 14,
+            isSuper: !!isSuper,
+            healAmt: isSuper ? 24 : 12,
+            rageAmt: isSuper ? 25 : 10,
+            life: isSuper ? 18 : 14,
             mesh: null
         };
         if (useThree && dynamicGroup) {
@@ -1930,10 +2133,11 @@
             var top = new THREE.Mesh(sharedGeo.cyl, sharedMat.burgerBun);
             top.scale.set(1.0, 0.42, 1.0);
             top.position.y = 0.25;
-            var ring = new THREE.Mesh(sharedGeo.ring, sharedMat.heal);
-            ring.scale.setScalar(1.2);
+            var ring = new THREE.Mesh(sharedGeo.ring, isSuper ? sharedMat.gold : sharedMat.heal);
+            ring.scale.setScalar(isSuper ? 1.55 : 1.2);
             ring.position.y = -0.6;
             g.add(bot, pat, top, ring);
+            if (isSuper) g.scale.setScalar(1.35);
             g.position.set(x, pk.y, z);
             dynamicGroup.add(g);
             pk.mesh = g;
@@ -1945,25 +2149,30 @@
     // --- Enemy Spawning & AI (Police, Tanks, Attack Helicopters) ---
     // =========================================================================
 
-    function spawnEnemy(kind) {
+    function spawnEnemy(kind, isAce) {
         var m = gzState.monster;
         var angle = Math.random() * Math.PI * 2;
         var dist = kind === "chopper" ? 28 + Math.random() * 10 : 25 + Math.random() * 12;
         var ex = Math.max(-CITY_HALF + 4, Math.min(CITY_HALF - 4, m.x + Math.cos(angle) * dist));
         var ez = Math.max(-CITY_HALF - 6, Math.min(CITY_HALF - 14, m.z + Math.sin(angle) * dist));
+        var unitMult = (gzState.district && gzState.district.unitMult) ? gzState.district.unitMult : 1.0;
+        var aceChopper = kind === "chopper" && !!isAce;
+        var baseHp = aceChopper ? 76 : (kind === "tank" ? 55 : (kind === "chopper" ? 42 : 20));
+        var basePts = aceChopper ? 240 : (kind === "chopper" ? 110 : (kind === "tank" ? 75 : 30));
 
         var e = {
             kind: kind, // "jeep" | "tank" | "chopper"
+            isAce: aceChopper,
             x: ex,
             y: kind === "chopper" ? 4.4 : 0,
             z: ez,
             vx: 0,
             vz: 0,
             angle: 0,
-            hp: kind === "tank" ? 55 : (kind === "chopper" ? 42 : 20),
-            maxHp: kind === "tank" ? 55 : (kind === "chopper" ? 42 : 20),
-            speed: kind === "chopper" ? 9.8 : (kind === "tank" ? 4.8 : 8.8),
-            pts: kind === "chopper" ? 220 : (kind === "tank" ? 150 : 65),
+            hp: baseHp,
+            maxHp: baseHp,
+            speed: aceChopper ? 11.2 : (kind === "chopper" ? 9.8 : (kind === "tank" ? 4.8 : 8.8)),
+            pts: Math.round(basePts * unitMult),
             fireTimer: 1.2 + Math.random() * 1.4,
             telegraphTimer: 0,
             orbitDir: Math.random() > 0.5 ? 1 : -1,
@@ -1978,21 +2187,25 @@
         if (useThree && dynamicGroup) {
             var grp = new THREE.Group();
             if (kind === "chopper") {
-                var fuse = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.1, 3.2), new THREE.MeshLambertMaterial({ color: 0x365314 }));
-                var cock = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.1), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+                var fuseCol = aceChopper ? 0x312e81 : 0x365314;
+                var tailCol = aceChopper ? 0xfacc15 : 0x4d7c0f;
+                var bladeCol = aceChopper ? 0xfacc15 : 0xe2e8f0;
+                var fuse = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.1, 3.2), new THREE.MeshLambertMaterial({ color: fuseCol }));
+                var cock = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.1), new THREE.MeshBasicMaterial({ color: aceChopper ? 0xf97316 : 0x38bdf8 }));
                 cock.position.set(0, 0.1, 1.3);
-                var tailB = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 2.2), new THREE.MeshLambertMaterial({ color: 0x4d7c0f }));
+                var tailB = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 2.2), new THREE.MeshLambertMaterial({ color: tailCol }));
                 tailB.position.set(0, 0.25, -2.2);
                 var rotor = new THREE.Group();
                 rotor.position.y = 0.8;
-                var blade1 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.08, 0.26), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
-                var blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 4.4), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
+                var blade1 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.08, 0.26), new THREE.MeshBasicMaterial({ color: bladeCol }));
+                var blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 4.4), new THREE.MeshBasicMaterial({ color: bladeCol }));
                 rotor.add(blade1, blade2);
                 grp.add(fuse, cock, tailB, rotor);
+                if (aceChopper) grp.scale.setScalar(1.28);
                 e.rotor = rotor;
 
-                var spot = new THREE.Mesh(sharedGeo.ring, sharedMat.spot);
-                spot.scale.setScalar(2.4);
+                var spot = new THREE.Mesh(sharedGeo.ring, aceChopper ? sharedMat.gold : sharedMat.spot);
+                spot.scale.setScalar(aceChopper ? 2.9 : 2.4);
                 spot.position.set(ex, 0.06, ez);
                 dynamicGroup.add(spot);
                 e.shadowMesh = spot;
@@ -2061,26 +2274,81 @@
     // --- Combat & Destruction Actions ---
     // =========================================================================
 
+    function checkBounties() {
+        if (!gzState.bounties || gzState.mode !== "playing") return;
+        for (var i = 0; i < gzState.bounties.length; i++) {
+            var bty = gzState.bounties[i];
+            if (bty.done) continue;
+            var val = bty.stat === "vaultsSmashed" ? gzState.vaultsSmashed : (gzState.stats[bty.stat] || 0);
+            if (val >= bty.target) {
+                bty.done = true;
+                gzState.bountyScore += bty.reward;
+                gzState.score = Math.min(MAX_SCORE, gzState.destructionScore + gzState.bountyScore);
+                gzState.hp = Math.min(gzState.maxHp, gzState.hp + 10);
+                addRage(20);
+                showBanner("BOUNTY: " + bty.title.toUpperCase() + " +" + bty.reward + "!");
+                spawnPopup(gzState.monster.x, 3.2, gzState.monster.z, "BOUNTY +" + bty.reward + "!", "#4ade80");
+                spawnBurst(gzState.monster.x, 2.0, gzState.monster.z, 0x4ade80, 16, 12);
+                playPickupSfx();
+            }
+        }
+    }
+
     function addScore(basePts, x, y, z, label) {
         if (gzState.mode !== "playing") return;
         gzState.combo++;
         if (gzState.combo > gzState.maxCombo) {
             gzState.maxCombo = gzState.combo;
         }
-        gzState.comboTimer = 3.4;
+        gzState.comboTimer = 3.2;
 
-        var mult = 1 + Math.min(gzState.combo - 1, 8) * 0.14;
+        if (gzState.combo >= 10 && !gzState.frenzySurgeHit) {
+            gzState.frenzySurgeHit = true;
+            gzState.stats.frenzyReached = 1;
+            gzState.bountyScore += 150;
+            addRage(15);
+            showBanner("FRENZY x10 SURGE! +150");
+            checkBounties();
+        }
+
+        var mult = 1 + Math.min(gzState.combo - 1, 12) * 0.06;
         var pts = Math.round(basePts * mult);
         gzState.destructionScore = Math.min(MAX_SCORE, gzState.destructionScore + pts);
-        gzState.score = Math.min(MAX_SCORE, gzState.destructionScore);
+        gzState.score = Math.min(MAX_SCORE, gzState.destructionScore + gzState.bountyScore);
 
         var txt = (label ? label + " " : "") + "+" + pts;
-        spawnPopup(x, y + 1.5, z, txt, gzState.combo >= 4 ? "#fb923c" : "#facc15");
+        spawnPopup(x, y + 1.5, z, txt, gzState.combo >= 6 ? "#fb923c" : "#facc15");
         updateHud();
     }
 
     function addRage(amt) {
         gzState.rage = Math.min(gzState.maxRage, gzState.rage + amt);
+    }
+
+    function damageVault(v, dmg) {
+        if (!v || v.destroyed || gzState.mode !== "playing") return;
+        v.hp -= dmg;
+        v.shake = 0.24;
+        addRage(6);
+        spawnDebris(v.x, 1.8, v.z, 0xfacc15, 4, false);
+        if (v.hp <= 0) {
+            v.destroyed = true;
+            gzState.vaultsSmashed++;
+            gzState.bountyScore += v.bonus;
+            gzState.hp = Math.min(gzState.maxHp, gzState.hp + 14);
+            gzState.trauma = Math.min(1.0, gzState.trauma + 0.45);
+            gzState.hitstop = 0.032;
+            if (v.mesh && cityGroup) cityGroup.remove(v.mesh);
+            playCollapseSfx(true);
+            playPickupSfx();
+            spawnBurst(v.x, 2.0, v.z, 0xfacc15, 22, 14);
+            spawnDebris(v.x, 2.2, v.z, 0x581c87, 10, false);
+            addScore(v.pts, v.x, 2.0, v.z, "");
+            addRage(25);
+            spawnPopup(v.x, 3.3, v.z, "VAULT +" + v.bonus + " & +14 HP!", "#fde047");
+            showBanner("GOLDEN VAULT SMASHED! +" + v.bonus);
+            checkBounties();
+        }
     }
 
     function damageBuilding(b, dmg) {
@@ -2100,6 +2368,8 @@
             b.destroyed = true;
             b.collapseAnim = 0.45;
             gzState.buildingsWrecked++;
+            if (b.kind === "reactor") gzState.stats.reactorsWrecked++;
+            if (b.kind === "glass") gzState.stats.glassWrecked++;
             gzState.trauma = Math.min(1.0, gzState.trauma + (b.kind === "glass" ? 0.52 : 0.36));
             gzState.hitstop = 0.032;
             playCollapseSfx(b.kind === "glass" || b.kind === "reactor");
@@ -2108,25 +2378,28 @@
             spawnDebris(b.x, Math.min(b.h * 0.6, 5), b.z, 0x94a3b8, 12, true);
             addScore(b.pts, b.x, 2.0, b.z, b.kind === "glass" ? "TOWER DOWN!" : "");
             addRage(10);
+            checkBounties();
 
-            if (b.kind === "diner" || (b.kind === "reactor" && Math.random() < 0.8) || Math.random() < 0.24) {
-                spawnPickup(b.x, b.z);
+            var pickupChance = (gzState.district && gzState.district.id === "neon") ? 0.36 : 0.24;
+            if (b.kind === "diner" || (b.kind === "reactor" && Math.random() < 0.8) || Math.random() < pickupChance) {
+                spawnPickup(b.x, b.z, false);
             }
 
             // Fuel Reactor Chain Reaction Explosion!
             if (b.kind === "reactor") {
                 showBanner("REACTOR CHAIN BLAST!");
                 spawnBurst(b.x, 2.2, b.z, 0xf97316, 22, 17);
+                var chainRad = (gzState.district && gzState.district.id === "reactor") ? 13.5 : 11.5;
                 for (var i = 0; i < gzState.buildings.length; i++) {
                     var ob = gzState.buildings[i];
-                    if (!ob.destroyed && Math.hypot(ob.x - b.x, ob.z - b.z) < 11.5) {
-                        damageBuilding(ob, 55);
+                    if (!ob.destroyed && Math.hypot(ob.x - b.x, ob.z - b.z) < chainRad) {
+                        damageBuilding(ob, 58);
                     }
                 }
                 for (var ei = gzState.enemies.length - 1; ei >= 0; ei--) {
                     var en = gzState.enemies[ei];
-                    if (Math.hypot(en.x - b.x, en.z - b.z) < 12) {
-                        damageEnemy(en, 80, "REACTOR BLAST!");
+                    if (Math.hypot(en.x - b.x, en.z - b.z) < chainRad + 0.5) {
+                        damageEnemy(en, 85, "REACTOR BLAST!");
                     }
                 }
             }
@@ -2149,7 +2422,19 @@
             gzState.trauma = Math.min(1.0, gzState.trauma + 0.6);
             playCollapseSfx(true);
             spawnBurst(mt.x, 2.5, mt.z, 0xfacc15, 18, 13);
-            addScore(250, mt.x, 4.5, mt.z, "TIER SMASHED!");
+            addScore(125, mt.x, 4.5, mt.z, "TIER SMASHED!");
+
+            if (mt.tiersLeft <= 2 && !gzState.aceTowerReinforced) {
+                gzState.aceTowerReinforced = true;
+                var hasAce = false;
+                for (var ac = 0; ac < gzState.enemies.length; ac++) {
+                    if (gzState.enemies[ac].isAce && !gzState.enemies[ac].dead) hasAce = true;
+                }
+                if (!hasAce) {
+                    spawnEnemy("chopper", true);
+                    showBanner("ACE COMMANDER INBOUND!");
+                }
+            }
 
             if (useThree && mt.tierMeshes.length > 0) {
                 var removed = mt.tierMeshes.shift();
@@ -2180,17 +2465,21 @@
         if (e.hp <= 0) {
             e.dead = true;
             gzState.unitsSmashed++;
+            if (e.kind === "chopper") gzState.stats.choppersDown++;
+            if (e.kind === "tank") gzState.stats.tanksDown++;
             gzState.trauma = Math.min(1.0, gzState.trauma + 0.3);
             playCollapseSfx(e.kind === "chopper" || e.kind === "tank");
-            spawnBurst(e.x, e.y + 0.8, e.z, 0xf97316, 15, 11);
+            spawnBurst(e.x, e.y + 0.8, e.z, e.isAce ? 0xfacc15 : 0xf97316, 15, 11);
             spawnDebris(e.x, e.y + 0.8, e.z, 0x64748b, 6, false);
-            addScore(e.pts, e.x, e.y + 1.2, e.z, bannerTag || (e.kind === "chopper" ? "CHOPPER DOWN!" : ""));
-            addRage(e.kind === "chopper" ? 16 : 12);
+            var tag = bannerTag || (e.isAce ? "ACE CHOPPER DOWN!" : (e.kind === "chopper" ? "CHOPPER DOWN!" : ""));
+            addScore(e.pts, e.x, e.y + 1.2, e.z, tag);
+            addRage(e.isAce ? 24 : (e.kind === "chopper" ? 16 : 12));
+            checkBounties();
 
-            if (e.kind === "chopper" || e.kind === "tank" || Math.random() < 0.35) {
-                spawnPickup(e.x, e.z);
+            if (e.isAce || e.kind === "chopper" || e.kind === "tank" || Math.random() < 0.35) {
+                spawnPickup(e.x, e.z, !!e.isAce);
             }
-            if (bannerTag) showBanner(bannerTag);
+            if (tag) showBanner(tag);
         }
     }
 
@@ -2207,6 +2496,15 @@
             if (dt < bestDist + 2.5) {
                 bestDist = dt;
                 bestAng = Math.atan2(gzState.megaTower.x - m.x, gzState.megaTower.z - m.z);
+            }
+        }
+        for (var vi = 0; vi < gzState.vaults.length; vi++) {
+            var v = gzState.vaults[vi];
+            if (v.destroyed) continue;
+            var dv = Math.hypot(v.x - m.x, v.z - m.z);
+            if (dv < bestDist + 1.5) {
+                bestDist = dv;
+                bestAng = Math.atan2(v.x - m.x, v.z - m.z);
             }
         }
         for (var i = 0; i < gzState.enemies.length; i++) {
@@ -2268,7 +2566,7 @@
         var hitCenterX = m.x + fx * 2.5;
         var hitCenterZ = m.z + fz * 2.5;
 
-        // Hit Buildings
+        // Hit Buildings & Vaults
         for (var i = 0; i < gzState.buildings.length; i++) {
             var b = gzState.buildings[i];
             if (b.destroyed) continue;
@@ -2276,6 +2574,12 @@
             var dz = Math.abs(hitCenterZ - b.z);
             if (dx < b.w * 0.5 + 3.0 && dz < b.d * 0.5 + 3.0) {
                 damageBuilding(b, 38);
+            }
+        }
+        for (var vi = 0; vi < gzState.vaults.length; vi++) {
+            var v = gzState.vaults[vi];
+            if (!v.destroyed && Math.abs(hitCenterX - v.x) < v.w * 0.5 + 3.2 && Math.abs(hitCenterZ - v.z) < v.d * 0.5 + 3.2) {
+                damageVault(v, 48);
             }
         }
 
@@ -2335,6 +2639,12 @@
                 damageBuilding(b, 28);
             }
         }
+        for (var vi = 0; vi < gzState.vaults.length; vi++) {
+            var v = gzState.vaults[vi];
+            if (!v.destroyed && Math.hypot(v.x - m.x, v.z - m.z) < rad + v.w * 0.5) {
+                damageVault(v, 30);
+            }
+        }
 
         var mt = gzState.megaTower;
         if (mt && !mt.destroyed && Math.hypot(mt.x - m.x, mt.z - m.z) < rad + mt.w * 0.48) {
@@ -2387,14 +2697,39 @@
     // --- End Conditions & Score Submission ---
     // =========================================================================
 
+    function computeStyleRank(win, score) {
+        if (win) {
+            if (score >= 8800) return "S+";
+            if (score >= 7000) return "S";
+            if (score >= 5200) return "A";
+            if (score >= 3500) return "B";
+            return "C";
+        }
+        return score >= 3000 ? "B" : "C";
+    }
+
+    function formatClock(sec) {
+        var s = Math.max(0, Math.floor(sec));
+        var m = Math.floor(s / 60);
+        var r = s % 60;
+        return m + ":" + (r < 10 ? "0" : "") + r;
+    }
+
     function triggerVictory() {
         if (gzState.mode !== "playing") return;
         gzState.mode = "victory_anim";
         gzState.outcome = "win";
         gzState.victoryTimer = 1.45;
-        gzState.rescueBonus = 2000;
-        gzState.healthBonus = Math.round((gzState.hp / gzState.maxHp) * 1500);
-        gzState.score = Math.min(MAX_SCORE, gzState.destructionScore + gzState.rescueBonus + gzState.healthBonus);
+        gzState.rescueBonus = 900;
+        gzState.timeBonus = gzState.elapsed <= 35
+            ? 1200
+            : Math.max(0, Math.round(((155 - gzState.elapsed) / 120) * 1200));
+        gzState.healthBonus = Math.round((gzState.hp / gzState.maxHp) * 900);
+        gzState.score = Math.min(
+            MAX_SCORE,
+            gzState.destructionScore + gzState.bountyScore + gzState.rescueBonus + gzState.timeBonus + gzState.healthBonus
+        );
+        gzState.styleRank = computeStyleRank(true, gzState.score);
 
         // Clear active hostile fire and celebrate!
         for (var pi = 0; pi < gzState.projectiles.length; pi++) {
@@ -2424,8 +2759,10 @@
         gzState.mode = "gameover";
         gzState.outcome = "loss";
         gzState.rescueBonus = 0;
+        gzState.timeBonus = 0;
         gzState.healthBonus = 0;
-        gzState.score = Math.min(MAX_SCORE, gzState.destructionScore);
+        gzState.score = Math.min(MAX_SCORE, gzState.destructionScore + gzState.bountyScore);
+        gzState.styleRank = computeStyleRank(false, gzState.score);
         if (monsterRig) monsterRig.beamGroup.visible = false;
         if (typeof playGameOverSound === "function") playGameOverSound();
         showEndOverlay();
@@ -2433,18 +2770,25 @@
 
     function showEndOverlay() {
         var win = gzState.outcome === "win";
+        var dName = gzState.district ? gzState.district.name : "Downtown";
+        var aName = gzState.arena ? gzState.arena.name : "North Plaza";
         if (overRecordBanner) overRecordBanner.hidden = true;
-        if (overBadge) overBadge.textContent = win ? "VICTORY - BABY BRONNY SAVED!" : "KAIJU OVERWHELMED";
+        if (overBadge) overBadge.textContent = (win ? "RANK " + gzState.styleRank + " - BABY BRONNY SAVED!" : "RANK " + gzState.styleRank + " - KAIJU OVERWHELMED");
         if (overTitle) overTitle.textContent = win ? "Baby Bronny Rescued!" : "Taken Down by the Army!";
         if (overBreakdown) {
             overBreakdown.textContent = win
-                ? "Destruction: " + gzState.destructionScore.toLocaleString() + " + Rescue: +" + gzState.rescueBonus.toLocaleString() + " + HP Bonus: +" + gzState.healthBonus.toLocaleString()
-                : "Destroyed " + gzState.buildingsWrecked + " buildings & " + gzState.unitsSmashed + " military units before falling!";
+                ? "Destruction: " + gzState.destructionScore.toLocaleString()
+                    + " + Bounties: +" + gzState.bountyScore.toLocaleString()
+                    + " + Rescue: +" + gzState.rescueBonus.toLocaleString()
+                    + " + Speed: +" + gzState.timeBonus.toLocaleString()
+                    + " + HP: +" + gzState.healthBonus.toLocaleString()
+                : dName + " (" + aName + ") \u00b7 Destruction: " + gzState.destructionScore.toLocaleString()
+                    + " + Bounties: +" + gzState.bountyScore.toLocaleString();
         }
         if (overScore) overScore.textContent = gzState.score.toLocaleString();
         if (overCombo) overCombo.textContent = "\u00d7" + gzState.maxCombo;
         if (overStatsLine) {
-            overStatsLine.textContent = "Buildings Wrecked: " + gzState.buildingsWrecked + "/" + gzState.totalBuildings + " \u00b7 Choppers & Tanks Smashed: " + gzState.unitsSmashed;
+            overStatsLine.textContent = dName + " (" + formatClock(gzState.elapsed) + ") \u00b7 Buildings: " + gzState.buildingsWrecked + "/" + gzState.totalBuildings + " \u00b7 Vaults: " + gzState.vaultsSmashed + "/3 \u00b7 Units: " + gzState.unitsSmashed;
         }
         if (overBest) overBest.textContent = "\u2014";
         if (overRank) overRank.textContent = "\u2014";
@@ -2569,6 +2913,17 @@
                     damageBuilding(b, dps);
                 }
             }
+            for (var vi = 0; vi < gzState.vaults.length; vi++) {
+                var v = gzState.vaults[vi];
+                if (v.destroyed) continue;
+                var vx = v.x - m.x;
+                var vz = v.z - m.z;
+                var vproj = vx * rfx + vz * rfz;
+                var vperp = Math.abs(vx * rfz - vz * rfx);
+                if (vproj > 0 && vproj < beamLen && vperp < v.w * 0.5 + 2.2) {
+                    damageVault(v, dps);
+                }
+            }
             if (gzState.megaTower && !gzState.megaTower.destroyed) {
                 var mtx = gzState.megaTower.x - m.x;
                 var mtz = gzState.megaTower.z - m.z;
@@ -2687,6 +3042,14 @@
             if (bld.flash > 0) bld.flash = Math.max(0, bld.flash - dt);
         }
 
+        for (var vi2 = 0; vi2 < gzState.vaults.length; vi2++) {
+            var vlt = gzState.vaults[vi2];
+            if (!vlt.destroyed) {
+                pushOutBox(vlt.x, vlt.z, vlt.w, vlt.d);
+                if (vlt.shake > 0) vlt.shake = Math.max(0, vlt.shake - dt);
+            }
+        }
+
         if (gzState.megaTower && !gzState.megaTower.destroyed) {
             pushOutBox(gzState.megaTower.x, gzState.megaTower.z, gzState.megaTower.w, gzState.megaTower.d);
             if (gzState.megaTower.shake > 0) gzState.megaTower.shake = Math.max(0, gzState.megaTower.shake - dt);
@@ -2706,7 +3069,7 @@
             }
         }
 
-        // Collect Heal Burgers
+        // Collect Heal Burgers (including Ace Super Burgers)
         for (var pki = gzState.pickups.length - 1; pki >= 0; pki--) {
             var pk = gzState.pickups[pki];
             pk.life -= dt;
@@ -2716,9 +3079,11 @@
                 pk.z += ((m.z - pk.z) / (pd || 1)) * 12 * dt;
             }
             if (pd < 2.2) {
-                gzState.hp = Math.min(gzState.maxHp, gzState.hp + 12);
-                addRage(10);
-                spawnPopup(m.x, 2.5, m.z, "+12 HP!", "#4ade80");
+                var heal = pk.healAmt || 12;
+                var rageGain = pk.rageAmt || 10;
+                gzState.hp = Math.min(gzState.maxHp, gzState.hp + heal);
+                addRage(rageGain);
+                spawnPopup(m.x, 2.5, m.z, (pk.isSuper ? "SUPER +" : "+") + heal + " HP!", pk.isSuper ? "#fde047" : "#4ade80");
                 playPickupSfx();
                 if (pk.mesh && dynamicGroup) dynamicGroup.remove(pk.mesh);
                 gzState.pickups.splice(pki, 1);
@@ -2731,29 +3096,43 @@
             }
         }
 
-        // Update Threat Level & Enemy Spawning
+        // Update Threat Level & Enemy Spawning (District-weighted + Ace Commander Choppers)
         var wreckPct = gzState.totalBuildings > 0 ? gzState.buildingsWrecked / gzState.totalBuildings : 0;
         var nearTower = Math.hypot(m.x - TOWER_X, m.z - TOWER_Z) < 28;
         gzState.threatLevel = Math.min(5, 1 + Math.floor(wreckPct * 4.5 + gzState.elapsed / 32) + (nearTower ? 1 : 0));
 
+        var distCfg = gzState.district || CITY_DISTRICTS[0];
         var maxGround = 3 + gzState.threatLevel;
         var maxChoppers = gzState.threatLevel >= 4 ? 3 : (gzState.threatLevel >= 2 ? 2 : 1);
         var curGround = 0;
         var curChoppers = 0;
+        var hasAceAlive = false;
         for (var ci = 0; ci < gzState.enemies.length; ci++) {
-            if (gzState.enemies[ci].kind === "chopper") curChoppers++;
-            else curGround++;
+            if (gzState.enemies[ci].kind === "chopper") {
+                curChoppers++;
+                if (gzState.enemies[ci].isAce) hasAceAlive = true;
+            } else {
+                curGround++;
+            }
         }
 
         gzState.spawnTimer -= dt;
         if (gzState.spawnTimer <= 0 && curGround < maxGround) {
             gzState.spawnTimer = Math.max(1.4, 3.2 - gzState.threatLevel * 0.35);
-            spawnEnemy(gzState.threatLevel >= 2 && Math.random() < 0.45 ? "tank" : "jeep");
+            spawnEnemy(gzState.threatLevel >= 2 && Math.random() < distCfg.tankBias ? "tank" : "jeep");
         }
         gzState.chopperTimer -= dt;
         if (gzState.chopperTimer <= 0 && curChoppers < maxChoppers) {
-            gzState.chopperTimer = Math.max(2.6, 5.2 - gzState.threatLevel * 0.5);
-            spawnEnemy("chopper");
+            gzState.chopperTimer = Math.max(2.4, 5.2 - gzState.threatLevel * 0.5 - (distCfg.chopperBias - 0.45));
+            spawnEnemy("chopper", false);
+        }
+        if (gzState.threatLevel >= 3 && !hasAceAlive) {
+            gzState.aceTimer -= dt;
+            if (gzState.aceTimer <= 0 && curChoppers <= maxChoppers) {
+                gzState.aceTimer = 24;
+                spawnEnemy("chopper", true);
+                showBanner("ACE COMMANDER CHOPPER!");
+            }
         }
 
         // Update Enemy AI & Attacks
@@ -2791,9 +3170,17 @@
                 e.fireTimer -= dt;
                 if (e.fireTimer <= 0 && dist < 26) {
                     e.fireTimer = Math.max(1.25, 2.35 - gzState.threatLevel * 0.18);
-                    var mSpd = 17.5;
+                    var mSpd = e.isAce ? 19.0 : 17.5;
                     var aimVy = ((m.y + 1.1) - e.y) / (dist / mSpd);
-                    spawnProjectile(e.x, e.y - 0.3, e.z, dirX * mSpd, aimVy, dirZ * mSpd, "missile", 5);
+                    if (e.isAce) {
+                        var baseAng = Math.atan2(dirZ, dirX);
+                        for (var sp = -1; sp <= 1; sp += 2) {
+                            var sa = baseAng + sp * 0.16;
+                            spawnProjectile(e.x, e.y - 0.3, e.z, Math.cos(sa) * mSpd, aimVy, Math.sin(sa) * mSpd, "missile", 5);
+                        }
+                    } else {
+                        spawnProjectile(e.x, e.y - 0.3, e.z, dirX * mSpd, aimVy, dirZ * mSpd, "missile", 5);
+                    }
                 }
             } else if (e.kind === "tank") {
                 if (dist > 14) {
@@ -2946,9 +3333,33 @@
 
         if (scoreEl) scoreEl.textContent = gzState.score.toLocaleString();
         if (comboEl) comboEl.textContent = "\u00d7" + Math.max(1, gzState.combo);
+        if (timeEl) timeEl.textContent = formatClock(gzState.elapsed);
         if (wreckedEl) {
             var wp = gzState.totalBuildings > 0 ? Math.round((gzState.buildingsWrecked / gzState.totalBuildings) * 100) : 0;
             wreckedEl.textContent = wp + "%";
+        }
+
+        if (missionStripEl) {
+            missionStripEl.hidden = gzState.mode !== "playing";
+            if (!missionStripEl.hidden) {
+                if (districtTagEl && gzState.district) {
+                    districtTagEl.textContent = gzState.district.name.toUpperCase();
+                }
+                if (vaultChipEl) {
+                    vaultChipEl.textContent = "Vaults " + gzState.vaultsSmashed + "/3";
+                    vaultChipEl.classList.toggle("is-done", gzState.vaultsSmashed >= 3);
+                }
+                var bEls = [bountyChip0El, bountyChip1El];
+                for (var bi = 0; bi < bEls.length; bi++) {
+                    var bEl = bEls[bi];
+                    var bty = gzState.bounties && gzState.bounties[bi];
+                    if (bEl && bty) {
+                        var curVal = Math.min(bty.target, bty.stat === "vaultsSmashed" ? gzState.vaultsSmashed : (gzState.stats[bty.stat] || 0));
+                        bEl.textContent = bty.shortLabel + " " + curVal + "/" + bty.target;
+                        bEl.classList.toggle("is-done", !!bty.done);
+                    }
+                }
+            }
         }
 
         // Compass pointing from Monster to Bronny Mega Tower
@@ -3099,7 +3510,18 @@
             em.mesh.rotation.y = t * 4;
         }
 
-        // Animate Building Shakes & Baby Bronny waving on Mega Tower
+        // Animate Building Shakes, Golden Vaults, & Baby Bronny waving on Mega Tower
+        for (var vi = 0; vi < gzState.vaults.length; vi++) {
+            var vlt = gzState.vaults[vi];
+            if (!vlt.destroyed && vlt.coreMesh) {
+                vlt.coreMesh.rotation.y = t * 2.2 + vi;
+                vlt.coreMesh.position.y = 2.4 + Math.sin(t * 3.8 + vi) * 0.25;
+                if (vlt.mesh) {
+                    vlt.mesh.position.x = vlt.x + (vlt.shake > 0 ? (Math.random() - 0.5) * 0.3 : 0);
+                    vlt.mesh.position.z = vlt.z + (vlt.shake > 0 ? (Math.random() - 0.5) * 0.3 : 0);
+                }
+            }
+        }
         for (var bi = 0; bi < gzState.buildings.length; bi++) {
             var b = gzState.buildings[bi];
             if (!b.destroyed && b.mesh) {
@@ -3149,8 +3571,38 @@
             threeCamera.position.set(m.x + 3.6 + sx, 5.4 + sy, m.z + 7.6);
             threeCamera.lookAt(m.x, 2.35, m.z);
         } else {
-            threeCamera.position.set(m.x + 8.6 + sx, 15.4 + sy, m.z + 15.8);
-            threeCamera.lookAt(m.x - 0.6, 1.5, m.z - 1.6);
+            threeCamera.position.set(m.x + 6.8 + sx, 16.5 + sy, m.z + 13.8);
+            threeCamera.lookAt(m.x - 0.3, 1.5, m.z - 1.2);
+        }
+
+        // Fade skyscrapers sitting directly between Camera and Godzilla so monster stays visible
+        var camRayX = threeCamera.position.x - m.x;
+        var camRayZ = threeCamera.position.z - m.z;
+        var camRayLen = Math.hypot(camRayX, camRayZ) || 1;
+        var camDirX = camRayX / camRayLen;
+        var camDirZ = camRayZ / camRayLen;
+
+        for (var oi = 0; oi < gzState.buildings.length; oi++) {
+            var ob = gzState.buildings[oi];
+            if (!ob.bodyMesh || !ob.bodyMesh.material) continue;
+            var mat = ob.bodyMesh.material;
+            var occludes = false;
+            if (!ob.destroyed && gzState.mode === "playing" && ob.h > 6.5) {
+                var rbx = ob.x - m.x;
+                var rbz = ob.z - m.z;
+                var proj = rbx * camDirX + rbz * camDirZ;
+                if (proj > 1.2 && proj < camRayLen - 0.8) {
+                    var perp = Math.abs(rbx * camDirZ - rbz * camDirX);
+                    if (perp < ob.w * 0.65 + 2.4) {
+                        occludes = true;
+                    }
+                }
+            }
+            if (!!mat.transparent !== occludes) {
+                mat.transparent = occludes;
+                mat.opacity = occludes ? 0.24 : 1.0;
+                mat.needsUpdate = true;
+            }
         }
 
         threeRenderer.render(threeScene, threeCamera);
@@ -3165,7 +3617,7 @@
         var t = gzState.elapsed;
 
         ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = "#0e1526";
+        ctx.fillStyle = (gzState.district && gzState.district.canvasBg) ? gzState.district.canvasBg : "#0e1526";
         ctx.fillRect(0, 0, w, h);
 
         var scale = Math.min(w, h) / 46;
@@ -3199,6 +3651,29 @@
             if (p.destroyed) continue;
             ctx.fillStyle = p.kind === "tree" ? "#22c55e" : (p.kind === "bus" ? "#facc15" : "#38bdf8");
             ctx.fillRect(wx(p.x) - scale * 0.6, wz(p.z) - scale * 0.6, scale * 1.2, scale * 1.2);
+        }
+
+        // Golden Vaults & Heal Burgers
+        for (var vi = 0; vi < gzState.vaults.length; vi++) {
+            var vlt = gzState.vaults[vi];
+            if (vlt.destroyed) continue;
+            ctx.fillStyle = "rgba(250, 204, 21, 0.25)";
+            ctx.beginPath();
+            ctx.arc(wx(vlt.x), wz(vlt.z), scale * 2.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#581c87";
+            ctx.fillRect(wx(vlt.x) - scale * 1.4, wz(vlt.z) - scale * 1.1, scale * 2.8, scale * 2.2);
+            ctx.fillStyle = "#fde047";
+            ctx.fillRect(wx(vlt.x) - scale * 0.9, wz(vlt.z) - scale * 1.5 - Math.abs(Math.sin(t * 4 + vi)) * scale * 0.4, scale * 1.8, scale * 1.8);
+        }
+        for (var pki = 0; pki < gzState.pickups.length; pki++) {
+            var pk = gzState.pickups[pki];
+            ctx.fillStyle = pk.isSuper ? "rgba(250, 204, 21, 0.45)" : "rgba(34, 197, 94, 0.35)";
+            ctx.beginPath();
+            ctx.arc(wx(pk.x), wz(pk.z), scale * (pk.isSuper ? 1.4 : 1.0), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = pk.isSuper ? "#fde047" : "#f59e0b";
+            ctx.fillRect(wx(pk.x) - scale * 0.5, wz(pk.z) - scale * 0.4, scale, scale * 0.8);
         }
 
         // Buildings (2.5D extruded pixel blocks)
@@ -3273,14 +3748,14 @@
             var ex = wx(e.x);
             var ez = wz(e.z) - e.y * scale * 0.55;
             if (e.kind === "chopper") {
-                ctx.fillStyle = "rgba(254, 249, 195, 0.2)";
+                ctx.fillStyle = e.isAce ? "rgba(250, 204, 21, 0.28)" : "rgba(254, 249, 195, 0.2)";
                 ctx.beginPath();
-                ctx.arc(wx(e.x), wz(e.z), scale * 1.6, 0, Math.PI * 2);
+                ctx.arc(wx(e.x), wz(e.z), scale * (e.isAce ? 2.0 : 1.6), 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = "#4d7c0f";
-                ctx.fillRect(ex - scale, ez - scale * 0.5, scale * 2, scale);
-                ctx.fillStyle = "#e2e8f0";
-                ctx.fillRect(ex - scale * 1.8, ez - scale * 0.15, scale * 3.6, scale * 0.3);
+                ctx.fillStyle = e.isAce ? "#312e81" : "#4d7c0f";
+                ctx.fillRect(ex - scale * (e.isAce ? 1.25 : 1), ez - scale * 0.5, scale * (e.isAce ? 2.5 : 2), scale);
+                ctx.fillStyle = e.isAce ? "#facc15" : "#e2e8f0";
+                ctx.fillRect(ex - scale * (e.isAce ? 2.1 : 1.8), ez - scale * 0.15, scale * (e.isAce ? 4.2 : 3.6), scale * 0.3);
             } else {
                 ctx.fillStyle = e.kind === "tank" ? "#65a30d" : "#2563eb";
                 ctx.fillRect(ex - scale * 0.9, ez - scale * 0.6, scale * 1.8, scale * 1.2);
@@ -3335,20 +3810,41 @@
         }
     }
 
+    function pickNextIndex(len, lastIdx) {
+        if (len <= 1) return 0;
+        var idx = Math.floor(Math.random() * len);
+        if (idx === lastIdx) idx = (idx + 1 + Math.floor(Math.random() * (len - 1))) % len;
+        return idx;
+    }
+
     function gzStartGame() {
-        gzInitGraphics();
+        var dIdx = pickNextIndex(CITY_DISTRICTS.length, lastDistrictIdx);
+        var aIdx = pickNextIndex(CITY_ARENAS.length, lastArenaIdx);
+        lastDistrictIdx = dIdx;
+        lastArenaIdx = aIdx;
+
+        gzState.district = CITY_DISTRICTS[dIdx];
+        gzState.arena = CITY_ARENAS[aIdx];
+        gzState.citySeed = ((Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0) || 1337;
+        TOWER_X = gzState.arena.towerX;
+        TOWER_Z = gzState.arena.towerZ;
+
         gzState.gameId++;
         gzState.submitted = false;
         gzState.mode = "playing";
         gzState.outcome = null;
         gzState.score = 0;
         gzState.destructionScore = 0;
+        gzState.bountyScore = 0;
         gzState.rescueBonus = 0;
+        gzState.timeBonus = 0;
         gzState.healthBonus = 0;
+        gzState.styleRank = "C";
         gzState.combo = 0;
         gzState.maxCombo = 0;
         gzState.comboTimer = 0;
         gzState.buildingsWrecked = 0;
+        gzState.vaultsSmashed = 0;
         gzState.unitsSmashed = 0;
         gzState.hp = 100;
         gzState.rage = 50;
@@ -3358,21 +3854,32 @@
         gzState.hitstop = 0;
         gzState.spawnTimer = 1.6;
         gzState.chopperTimer = 3.2;
+        gzState.aceTimer = 11.0;
+        gzState.aceTowerReinforced = false;
+        gzState.frenzySurgeHit = false;
+        gzState.stats.choppersDown = 0;
+        gzState.stats.reactorsWrecked = 0;
+        gzState.stats.glassWrecked = 0;
+        gzState.stats.tanksDown = 0;
+        gzState.stats.vaultsSmashed = 0;
+        gzState.stats.frenzyReached = 0;
 
-        gzState.monster.x = 0;
+        gzState.monster.x = gzState.arena.spawnX;
         gzState.monster.y = 0;
-        gzState.monster.z = 36;
+        gzState.monster.z = gzState.arena.spawnZ;
         gzState.monster.vx = 0;
         gzState.monster.vz = 0;
         gzState.monster.vy = 0;
-        gzState.monster.angle = Math.PI * 0.85;
-        gzState.monster.targetAngle = Math.PI * 0.85;
+        gzState.monster.angle = gzState.arena.spawnAngle;
+        gzState.monster.targetAngle = gzState.arena.spawnAngle;
         gzState.monster.smashCd = 0;
         gzState.monster.smashAnim = 0;
         gzState.monster.tailCd = 0;
         gzState.monster.tailAnim = 0;
         gzState.monster.roarTimer = 0;
         gzState.monster.hurtTimer = 0;
+
+        gzInitGraphics(true);
 
         if (monsterRig) {
             monsterRig.riderSprite.visible = false;
@@ -3386,6 +3893,7 @@
         if (overOverlay) overOverlay.hidden = true;
         if (popBannerEl) popBannerEl.hidden = true;
         if (bossBarEl) bossBarEl.hidden = true;
+        showBanner(gzState.district.name.toUpperCase() + " \u00b7 " + gzState.arena.name.toUpperCase());
 
         try {
             if (stageEl && stageEl.scrollIntoView) {
