@@ -27,7 +27,11 @@
     var WALL_LEFT = 16;
     var WALL_RIGHT = 364;
     var FLOOR_Y = 544;
-    var DANGER_Y = 96;
+    var JAR_TOP_Y = 96;
+    // Overflow line sits inside the jar, not at its rim. A pile that is
+    // visually all the way up must actually end the run instead of idling
+    // just under the rim while the player keeps dropping memes.
+    var DANGER_Y = 150;
     var DROP_Y = 46;
     var GRAVITY = 980;
 
@@ -265,6 +269,7 @@
         this.dangerTimer = 0;
         this.dangerMaxTime = 3.0; // 3 seconds above line to overflow
         this.dangerWarningTick = 0;
+        this.jarFill = 0;
 
         this.trauma = 0;
         this.running = false;
@@ -274,8 +279,12 @@
         this.lastTime = 0;
 
         this.dpr = window.devicePixelRatio || 1;
-        this.scaleX = 1;
-        this.scaleY = 1;
+        this.cssScale = 1;
+        this.cssOffsetX = 0;
+        this.cssOffsetY = 0;
+        this.viewScale = 1;
+        this.viewOffsetX = 0;
+        this.viewOffsetY = 0;
 
         this.bindEvents();
         this.resize();
@@ -293,16 +302,24 @@
     };
 
     MemeMergeGame.prototype.resize = function () {
-        var rect = this.viewport.getBoundingClientRect();
-        var width = Math.max(300, rect.width || SIM_WIDTH);
-        var height = Math.max(440, rect.height || SIM_HEIGHT);
+        var rect = this.canvas.getBoundingClientRect();
+        var cssWidth = Math.max(1, rect.width || SIM_WIDTH);
+        var cssHeight = Math.max(1, rect.height || SIM_HEIGHT);
 
-        this.dpr = window.devicePixelRatio || 1;
-        this.canvas.width = width * this.dpr;
-        this.canvas.height = height * this.dpr;
+        // Cap DPR so large tablets do not allocate huge bitmaps.
+        this.dpr = Math.min(2, window.devicePixelRatio || 1);
+        this.canvas.width = Math.max(1, Math.round(cssWidth * this.dpr));
+        this.canvas.height = Math.max(1, Math.round(cssHeight * this.dpr));
 
-        this.scaleX = (width * this.dpr) / SIM_WIDTH;
-        this.scaleY = (height * this.dpr) / SIM_HEIGHT;
+        // Fit the simulation uniformly and letterbox the leftover space, so
+        // circles stay circles no matter how the viewport is resized.
+        this.cssScale = Math.min(cssWidth / SIM_WIDTH, cssHeight / SIM_HEIGHT);
+        this.cssOffsetX = (cssWidth - SIM_WIDTH * this.cssScale) / 2;
+        this.cssOffsetY = (cssHeight - SIM_HEIGHT * this.cssScale) / 2;
+
+        this.viewScale = this.cssScale * this.dpr;
+        this.viewOffsetX = this.cssOffsetX * this.dpr;
+        this.viewOffsetY = this.cssOffsetY * this.dpr;
     };
 
     MemeMergeGame.prototype.bindEvents = function () {
@@ -313,12 +330,16 @@
             if (!self.running || self.gameOver || self.paused) return;
             var rect = self.canvas.getBoundingClientRect();
             var clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
-            var relX = (clientX - rect.left) / rect.width * SIM_WIDTH;
+            var relX = (clientX - rect.left - self.cssOffsetX) / (self.cssScale || 1);
             self.setDropperTargetX(relX);
         }
 
         this.canvas.addEventListener("mousemove", handlePointerMove, { passive: true });
         this.canvas.addEventListener("touchmove", handlePointerMove, { passive: true });
+        // Aim on press as well, so a quick tap drops where the player tapped
+        // even when no move event fired first.
+        this.canvas.addEventListener("mousedown", handlePointerMove);
+        this.canvas.addEventListener("touchstart", handlePointerMove, { passive: true });
 
         // Click / Touch release to drop
         this.canvas.addEventListener("mouseup", function (e) {
@@ -389,7 +410,11 @@
         if (this.dropCooldown > 0 || this.gameOver || !this.running || this.paused) return;
 
         var tierDef = this.currentTier;
+        // Snap to the aim point so the meme lands where the player pointed
+        // instead of inheriting a sideways fling from the smoothing lag.
+        this.dropperX = this.targetDropperX;
         var x = Math.max(WALL_LEFT + tierDef.r + 2, Math.min(WALL_RIGHT - tierDef.r - 2, this.dropperX));
+        this.dropperX = x;
         var y = DROP_Y + tierDef.r;
 
         var body = {
@@ -404,12 +429,13 @@
             file: tierDef.file,
             x: x,
             y: y,
-            vx: (this.dropperX - this.targetDropperX) * -0.5,
-            vy: 40,
+            vx: 0,
+            vy: 25,
             angle: 0,
             omega: (Math.random() - 0.5) * 2,
             mass: tierDef.r * tierDef.r,
             age: 0,
+            restTimer: 0,
             merging: false,
             scaleX: 0.85,
             scaleY: 1.15
@@ -420,7 +446,7 @@
 
         this.currentTier = this.nextTier;
         this.nextTier = this.randomDropTier();
-        this.dropCooldown = 0.45; // 450ms cooldown
+        this.dropCooldown = 0.8; // ~800ms between drops
         this.updateHUD();
     };
 
@@ -435,6 +461,8 @@
         this.highestTierAchieved = 1;
         this.comboResetTimer = 0;
         this.dangerTimer = 0;
+        this.dangerWarningTick = 0;
+        this.jarFill = 0;
         this.trauma = 0;
         this.gameOver = false;
         this.running = true;
@@ -519,18 +547,35 @@
             b.scaleY += (1.0 - b.scaleY) * Math.min(1, dt * 12);
         }
 
-        // Danger line evaluation
-        var settledAboveDanger = false;
+        // Jar fill + overflow evaluation. Driven by pile height (a position
+        // test with hysteresis), not instantaneous velocity: a jittering or
+        // spinning pile used to keep |vy| high and the lose condition never
+        // fired, letting the player stack forever.
+        var highestTop = Infinity;
         for (var d = 0; d < this.bodies.length; d++) {
             var body = this.bodies[d];
-            if (body.age > 1.2 && Math.abs(body.vy) < 25 && (body.y - body.r) < DANGER_Y) {
-                settledAboveDanger = true;
-                break;
+            if (body.age > 0.5) {
+                highestTop = Math.min(highestTop, body.y - body.r);
             }
         }
 
-        if (settledAboveDanger) {
+        if (highestTop === Infinity) {
+            this.jarFill = 0;
+        } else {
+            var usableHeight = FLOOR_Y - DANGER_Y;
+            this.jarFill = Math.max(0, Math.min(1, (FLOOR_Y - highestTop) / usableHeight));
+        }
+
+        if (highestTop < DANGER_Y) {
             this.dangerTimer += dt;
+        } else if (highestTop > DANGER_Y + 24) {
+            // Only drain once the pile is clearly below the line. The wide
+            // dead band stops a wobbly top ball from resetting the countdown.
+            this.dangerTimer = Math.max(0, this.dangerTimer - dt * 1.5);
+            this.dangerWarningTick = 0;
+        }
+
+        if (this.dangerTimer > 0) {
             this.dangerWarningTick += dt;
             if (this.dangerWarningTick >= 0.5) {
                 this.dangerWarningTick = 0;
@@ -540,9 +585,6 @@
                 this.triggerGameOver();
                 return;
             }
-        } else {
-            this.dangerTimer = Math.max(0, this.dangerTimer - dt * 2);
-            this.dangerWarningTick = 0;
         }
 
         // Screen trauma decay
@@ -600,22 +642,24 @@
             // Air damping
             b.vx *= Math.pow(0.995, dt * 60);
             b.vy *= Math.pow(0.998, dt * 60);
-            b.omega *= Math.pow(0.97, dt * 60);
+            // Angular damping is deliberately strong: stickers should settle
+            // instead of spinning on forever once the pile comes to rest.
+            b.omega *= Math.pow(0.90, dt * 60);
+            b.omega = Math.max(-8, Math.min(8, b.omega));
 
-            // Wall collisions (Left & Right)
+            // Wall collisions (Left & Right). Do not assign spin here: a
+            // wedged ball re-hits the wall every step and would spin forever.
             if (b.x - b.r < WALL_LEFT) {
                 b.x = WALL_LEFT + b.r;
                 if (b.vx < 0) {
-                    this.audio.playImpact(b.tier, Math.abs(b.vx));
-                    b.vx = -b.vx * 0.3;
-                    b.omega = b.vy * 0.05;
+                    if (Math.abs(b.vx) > 40) this.audio.playImpact(b.tier, Math.abs(b.vx));
+                    b.vx = -b.vx * 0.25;
                 }
             } else if (b.x + b.r > WALL_RIGHT) {
                 b.x = WALL_RIGHT - b.r;
                 if (b.vx > 0) {
-                    this.audio.playImpact(b.tier, Math.abs(b.vx));
-                    b.vx = -b.vx * 0.3;
-                    b.omega = -b.vy * 0.05;
+                    if (Math.abs(b.vx) > 40) this.audio.playImpact(b.tier, Math.abs(b.vx));
+                    b.vx = -b.vx * 0.25;
                 }
             }
 
@@ -623,10 +667,23 @@
             if (b.y + b.r > FLOOR_Y) {
                 b.y = FLOOR_Y - b.r;
                 if (b.vy > 0) {
-                    if (b.vy > 60) this.audio.playImpact(b.tier, b.vy);
-                    b.vy = -b.vy * 0.25;
-                    b.vx *= 0.88; // Floor friction
-                    b.omega = (b.vx / b.r) * 1.2;
+                    if (b.vy > 90) this.audio.playImpact(b.tier, b.vy);
+                    // Kill tiny bounces so balls settle instead of vibrating.
+                    b.vy = b.vy > 45 ? -b.vy * 0.18 : 0;
+                }
+                // Rolling friction while in contact with the floor. Only
+                // couple spin to travel when the ball is actually rolling:
+                // at low speeds solver jitter made omega chase tiny vx
+                // values forever.
+                b.vx *= Math.pow(0.90, dt * 60);
+                if (Math.abs(b.vx) < 30) {
+                    b.omega *= Math.pow(0.75, dt * 60);
+                    if (Math.abs(b.omega) < 0.05) {
+                        b.omega = 0;
+                    }
+                } else {
+                    var rollTarget = Math.max(-10, Math.min(10, b.vx / b.r));
+                    b.omega += (rollTarget - b.omega) * Math.min(1, dt * 12);
                 }
             }
         }
@@ -671,24 +728,42 @@
                     b2.x += nx * overlap * m2Ratio;
                     b2.y += ny * overlap * m2Ratio;
 
-                    // Impulse resolution
+                    // Impulse resolution. Positive approach means the bodies
+                    // are closing; only those contacts get an impulse.
+                    // (Resolving separating contacts pulled piles together
+                    // and injected energy every step.)
                     var kx = b1.vx - b2.vx;
                     var ky = b1.vy - b2.vy;
-                    var p = 2 * (nx * kx + ny * ky) / totalMass;
+                    var approach = nx * kx + ny * ky;
 
-                    var restitution = 0.22;
-                    b1.vx -= p * b2.mass * nx * (1 + restitution);
-                    b1.vy -= p * b2.mass * ny * (1 + restitution);
-                    b2.vx += p * b1.mass * nx * (1 + restitution);
-                    b2.vy += p * b1.mass * ny * (1 + restitution);
+                    if (approach > 0) {
+                        // No bounce for slow contacts, so resting stacks can
+                        // actually fall asleep instead of micro-bouncing.
+                        var restitution = approach > 40 ? 0.2 : 0;
+                        var p = approach / totalMass;
 
-                    // Rolling friction exchange
-                    var tangentX = -ny;
-                    var tangentY = nx;
-                    var relTangentVel = (b1.vx - b2.vx) * tangentX + (b1.vy - b2.vy) * tangentY;
-                    var frictionImpulse = relTangentVel * 0.15;
-                    b1.omega -= (frictionImpulse / b1.r) * 0.5;
-                    b2.omega += (frictionImpulse / b2.r) * 0.5;
+                        b1.vx -= p * b2.mass * nx * (1 + restitution);
+                        b1.vy -= p * b2.mass * ny * (1 + restitution);
+                        b2.vx += p * b1.mass * nx * (1 + restitution);
+                        b2.vy += p * b1.mass * ny * (1 + restitution);
+
+                        // Linear contact friction only (no omega exchange).
+                        // This stops piles from sliding apart and is part of
+                        // why the old tangent-spin pump is gone for good.
+                        var tx = -ny;
+                        var ty = nx;
+                        var tangentVel = kx * tx + ky * ty;
+                        var jt = -tangentVel * 0.03 / totalMass;
+                        b1.vx += jt * b2.mass * tx;
+                        b1.vy += jt * b2.mass * ty;
+                        b2.vx -= jt * b1.mass * tx;
+                        b2.vy -= jt * b1.mass * ty;
+                    }
+
+                    // No ball-to-ball spin transfer: the old tangent-velocity
+                    // exchange had no matching linear impulse, so dense piles
+                    // pumped omega to the clamp and never stopped spinning.
+                    // Rotation comes from wall/floor rolling only.
                 }
             }
         }
@@ -704,6 +779,58 @@
                 return !body.merging;
             });
         }
+
+        // Put slow bodies to sleep so residual solver jitter cannot keep
+        // stickers rotating (or vibrating) forever once a pile settles.
+        var settledBodies = this.bodies;
+        for (var r = 0; r < settledBodies.length; r++) {
+            var rb = settledBodies[r];
+            if (rb.merging) continue;
+
+            // Re-clamp after positional separation in case a collision pushed
+            // a body through a wall or the floor.
+            if (rb.x - rb.r < WALL_LEFT) rb.x = WALL_LEFT + rb.r;
+            else if (rb.x + rb.r > WALL_RIGHT) rb.x = WALL_RIGHT - rb.r;
+            if (rb.y + rb.r > FLOOR_Y) rb.y = FLOOR_Y - rb.r;
+
+            var speedSq = rb.vx * rb.vx + rb.vy * rb.vy;
+            // Sleep on linear speed alone. Requiring |omega| to be small as
+            // well let a ball sit still while slowly rotating forever.
+            if (speedSq < 1600) {
+                rb.restTimer = (rb.restTimer || 0) + dt;
+                if (rb.restTimer > 0.4) {
+                    rb.vx = 0;
+                    rb.vy = 0;
+                    rb.omega = 0;
+                }
+            } else {
+                rb.restTimer = 0;
+            }
+            // Extra angular damping for near-stationary bodies so any spin
+            // picked up from a merge or a collision bleeds off quickly.
+            if (speedSq < 2500) {
+                rb.omega *= Math.pow(0.9, dt * 60);
+            }
+
+            // Position-based spin cutoff: if a body barely moved over the
+            // last 0.25s it is not rolling, no matter what solver jitter says.
+            if (rb.trackX === undefined) {
+                rb.trackX = rb.x;
+                rb.trackY = rb.y;
+                rb.trackTimer = 0;
+            }
+            rb.trackTimer += dt;
+            if (rb.trackTimer >= 0.25) {
+                var netX = rb.x - rb.trackX;
+                var netY = rb.y - rb.trackY;
+                if (netX * netX + netY * netY < 36) {
+                    rb.omega = 0;
+                }
+                rb.trackX = rb.x;
+                rb.trackY = rb.y;
+                rb.trackTimer = 0;
+            }
+        }
     };
 
     MemeMergeGame.prototype.handleMerge = function (a, b) {
@@ -713,7 +840,7 @@
         var midX = (a.x + b.x) / 2;
         var midY = (a.y + b.y) / 2;
         var avgVx = (a.vx + b.vx) / 2;
-        var avgVy = (a.vy + b.vy) / 2 - 25; // Gentle upward pop
+        var avgVy = (a.vy + b.vy) / 2 - 10; // Gentle upward pop
 
         // Check if two apex tier (The Rock) merge: Cosmic Ultra Vine Boom & clear!
         if (a.tier === 10) {
@@ -748,6 +875,7 @@
             omega: (Math.random() - 0.5) * 4,
             mass: nextDef.r * nextDef.r,
             age: 0,
+            restTimer: 0,
             merging: false,
             scaleX: 1.35,
             scaleY: 0.75
@@ -781,9 +909,9 @@
             var pdy = other.y - midY;
             var pdist = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
             if (pdist < shockR) {
-                var force = (1 - pdist / shockR) * 120;
+                var force = (1 - pdist / shockR) * 55;
                 other.vx += (pdx / pdist) * force;
-                other.vy += (pdy / pdist) * force - 15;
+                other.vy += (pdy / pdist) * force - 6;
             }
         }
 
@@ -892,8 +1020,15 @@
     // --- Rendering ---
     MemeMergeGame.prototype.draw = function () {
         var ctx = this.ctx;
+
+        // Clear in device space (also paints the letterbox bars).
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "#090d16";
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Uniform scale + centered offset keeps every disc perfectly round.
         ctx.save();
-        ctx.scale(this.scaleX, this.scaleY);
+        ctx.setTransform(this.viewScale, 0, 0, this.viewScale, this.viewOffsetX, this.viewOffsetY);
 
         // Screen shake
         if (this.trauma > 0) {
@@ -912,7 +1047,7 @@
         ctx.strokeStyle = "rgba(56, 189, 248, 0.18)";
         ctx.lineWidth = 4;
         ctx.lineJoin = "round";
-        ctx.strokeRect(WALL_LEFT, DANGER_Y, WALL_RIGHT - WALL_LEFT, FLOOR_Y - DANGER_Y);
+        ctx.strokeRect(WALL_LEFT, JAR_TOP_Y, WALL_RIGHT - WALL_LEFT, FLOOR_Y - JAR_TOP_Y);
 
         // Danger Line
         var dangerActive = this.dangerTimer > 0;
@@ -925,14 +1060,6 @@
         ctx.lineTo(WALL_RIGHT, DANGER_Y);
         ctx.stroke();
         ctx.setLineDash([]);
-
-        if (dangerActive) {
-            ctx.fillStyle = "rgba(239, 68, 68, 0.9)";
-            ctx.font = "bold 11px system-ui, sans-serif";
-            ctx.textAlign = "right";
-            var timeLeft = Math.max(0, this.dangerMaxTime - this.dangerTimer).toFixed(1);
-            ctx.fillText("OVERFLOW WARNING: " + timeLeft + "s", WALL_RIGHT - 8, DANGER_Y - 6);
-        }
         ctx.restore();
 
         // Dropper guide line and current meme preview
@@ -948,8 +1075,13 @@
             ctx.stroke();
             ctx.restore();
 
-            // Draw floating dropper meme
+            // Draw floating dropper meme (dimmed while the drop reloads)
+            ctx.save();
+            if (this.dropCooldown > 0) {
+                ctx.globalAlpha = 0.55;
+            }
             this.drawMemeDisc(ctx, curX, DROP_Y, this.currentTier, 0, 1.0, 1.0);
+            ctx.restore();
         }
 
         // Draw settled bodies
@@ -995,6 +1127,59 @@
             ctx.globalAlpha = Math.min(1, pop.life * 1.5);
             ctx.fillText(pop.text, pop.x, pop.y);
             ctx.restore();
+        }
+
+        // Fill meter is drawn last so no body can hide it.
+        this.drawJarFillMeter(ctx);
+
+        ctx.restore();
+    };
+
+    MemeMergeGame.prototype.drawJarFillMeter = function (ctx) {
+        var barX = WALL_LEFT;
+        var barY = FLOOR_Y + 3;
+        var barW = WALL_RIGHT - WALL_LEFT;
+        var barH = 10;
+        var ratio = Math.max(0, Math.min(1, this.jarFill || 0));
+        var overflow = this.dangerTimer > 0;
+        var pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() * 0.008));
+
+        ctx.save();
+
+        // Track
+        ctx.fillStyle = "rgba(2, 6, 23, 0.9)";
+        ctx.strokeStyle = overflow
+            ? "rgba(239, 68, 68, " + pulse.toFixed(2) + ")"
+            : "rgba(148, 163, 184, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.strokeRect(barX + 0.5, barY + 0.5, barW - 1, barH - 1);
+
+        // Fill: green -> amber -> red as the jar approaches the danger line.
+        if (ratio > 0.005) {
+            var hue = Math.round(150 - 150 * ratio);
+            ctx.fillStyle = "hsl(" + hue + ", 85%, 48%)";
+            ctx.fillRect(barX + 2, barY + 2, (barW - 4) * ratio, barH - 4);
+        }
+
+        // Label + percentage
+        ctx.font = "bold 8px system-ui, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
+        ctx.fillText("JAR FILL", barX + 6, barY + barH / 2 + 0.5);
+        ctx.textAlign = "right";
+        ctx.fillText(Math.round(ratio * 100) + "%", barX + barW - 6, barY + barH / 2 + 0.5);
+
+        // Countdown sits above the bar, on top of every body.
+        if (overflow) {
+            var timeLeft = Math.max(0, this.dangerMaxTime - this.dangerTimer).toFixed(1);
+            ctx.textAlign = "center";
+            ctx.font = "bold 11px system-ui, sans-serif";
+            ctx.fillStyle = "rgba(248, 113, 113, " + pulse.toFixed(2) + ")";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+            ctx.shadowBlur = 4;
+            ctx.fillText("JAR FULL - " + timeLeft + "s", SIM_WIDTH / 2, DANGER_Y - 8);
         }
 
         ctx.restore();
