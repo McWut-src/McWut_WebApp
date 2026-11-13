@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000047`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000048`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**13 November 2026, 11:51 UTC.** Production was moved on purpose to ship the Meme Merge physics and overflow fix at `93221b5`. Balls now resolve only closing contacts, never exchange tangent velocity into `omega`, sleep at low speed, and zero spin once they stop moving. The overflow line moved inside the jar (`DANGER_Y = 150`) and drives a persistent **JAR FILL** meter with a 3-second countdown, so a full jar actually ends the run. The mobile touch bar sits below the play area.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000047` | `ghcr.io/mcwut-src/mcwut_webapp:db41d8716236ae1f40c5c265c4fc326ecbd8c42d` |
+| Live | `ca-mcwut--0000048` | `ghcr.io/mcwut-src/mcwut_webapp:93221b52c2c34f31101f908bc2542130b6a95ca7` |
+
+`0000048` has 100% of the traffic and is Healthy. `0000047` is the previous revision and can be brought back.
+
+Checked while signed out, on `0000048`: both hosts `/health` return `ok`, Register is 404, and `/js/games-meme-merge.js` serves the new physics (`restTimer`, `jarFill`, `DANGER_Y = 150`) with the old wall-spin code absent.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000047
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000047=100
+```
 
 **12 November 2026, 02:08 UTC.** Production was moved on purpose to unlock and release **Meme Merge** (`meme-merge`) — a Suika-style 2D physics puzzle game in pure Canvas 2D dropping and merging classic meme stickers across a 10-tier neon color gradient ladder from Skull up to The Rock Side-Eye, featuring 8-substep circle physics with mass-proportional impulse, rolling friction, elastic squash-and-stretch, overflow danger line with 3-second countdown, synthesized Web Audio Vine Boom with sub-bass drop, on-screen touch and keyboard controls, and global high-score leaderboard integration backed by `GameScoreRules`.
 
