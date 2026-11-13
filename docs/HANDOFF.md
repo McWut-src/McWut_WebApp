@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000050`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000051`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**13 November 2026, 16:09 UTC.** Production was moved on purpose to raise the arcade score ceiling from `10,000` to `1,000,000` at `0e06990`. Raised `GameScoreRules.MaxScore` to `1,000,000` (and `MaxCombo` to `100,000`), lifted the client `10000` caps in **Godzilla Rampage** (`godzilla-rampage`) and sibling arcade games (`merge-2048`, `brick-breaker`, `hextris`, `meme-merge`, `minesweeper`, `neon-slope`, `wacky-wheels`), extended Godzilla combo scaling up to `1.96x` with updated rank thresholds (`S+` &ge; `12,000`), and formatted leaderboard/best scores with `.toLocaleString()`.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000050` | `ghcr.io/mcwut-src/mcwut_webapp:5bcbe3ce6eb2689a5d15e132cb388ecfa0eb66af` |
+| Live | `ca-mcwut--0000051` | `ghcr.io/mcwut-src/mcwut_webapp:0e06990e91509079ca84c44e6963b1ecc0123854` |
+
+`0000051` has 100% of the traffic and is Healthy. `0000050` is the previous revision and can be brought back.
+
+Checked while signed out, on `0000051`: both hosts `/health` return `ok`, Register is 404, `/files` and `/games` redirect (302) to sign-in, and `/js/games-godzilla.js`, `/js/games-leaderboard.js`, and `/js/games-2048.js` serve HTTP 200 with `MAX_SCORE = 1000000`, `score >= 12000`, `toLocaleString()`, and `1000000`.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000050
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000050=100
+```
 
 **13 November 2026, 15:24 UTC.** Production was moved on purpose to ship the **Godzilla Rampage** (`godzilla-rampage`) replayability and scoring rebalance at `5bcbe3c`. Every run now rolls a fresh procedural `citySeed`, rotates among 4 District Archetypes (Downtown Glass, Reactor Sector, Neon Strip, Fortress Plaza) and 4 Tower/Spawn Arenas with clear spawn camera sightlines and skyscraper occlusion fading, adds 3 Golden Bronny Vaults (`+275`), 2 dynamic Run Bounties (`+400`–`+425`), twin-missile Ace Commander Choppers dropping `+24 HP` Super Burgers, and a rebalanced `0`–`10,000` curve blending Destruction, Bounties/Vaults, Rescue (`+900`), Speed Bonus (up to `+1,200`), and HP Bonus (up to `+900`) with `S+`/`S`/`A`/`B`/`C` ranks in both Three.js 3D and 2.5D Canvas fallback.
 
