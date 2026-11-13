@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000051`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000052`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**13 November 2026, 17:44 UTC.** Production was moved on purpose to ship the **Godzilla Rampage** (`godzilla-rampage`) Baby Bronny 3D voxel rig and difficulty/engagement combat overhaul at `9edc5df`. Replaced the flat Baby Bronny tower graphic with an articulated 3D voxel rig (`createBronnyVoxelRig` / `animateBronnyVoxelRig`) in a #6 purple jersey dribbling a spinning basketball on the Mega Tower and fist-pumping atop Godzilla's head at victory alongside updated 34×24 pixel sprites, locked the Mega Tower behind a Golden Vault shield (`getTowerShieldMult`: `80%` → `60%` → `35%` → `0%` damage reduction with `+300` Shield Breaker bonus), added Multi-Phase Mega Tower radial shockwaves/turrets/Final Surge below 65%/35% HP, upgraded Reactor Meltdowns (`detonateReactor`) with pulsing `0.78s`/`0.38s` telegraphs that damage Godzilla while wiping nearby threats, and tuned combat/heal pacing in both Three.js 3D and 2.5D Canvas fallback.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000051` | `ghcr.io/mcwut-src/mcwut_webapp:0e06990e91509079ca84c44e6963b1ecc0123854` |
+| Live | `ca-mcwut--0000052` | `ghcr.io/mcwut-src/mcwut_webapp:9edc5dfea2846eaea17a56cce96955ded3dffe1e` |
+
+`0000052` has 100% of the traffic and is Healthy. `0000051` is the previous revision and can be brought back.
+
+Checked while signed out, on `0000052` across both `https://mcwut.com` and `https://www.mcwut.com`: `/health` returns 200 `ok`, `/Identity/Account/Login` returns 200, `/Identity/Account/Register` is 404, `/files` and `/games` redirect (302) to sign-in, `/js/games-godzilla.js` serves HTTP 200 with `createBronnyVoxelRig`, `getTowerShieldMult`, and `detonateReactor`, and `/css/site.css` serves HTTP 200 with `gz-boss-bar.is-shielded`.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000051
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000051=100
+```
 
 **13 November 2026, 16:09 UTC.** Production was moved on purpose to raise the arcade score ceiling from `10,000` to `1,000,000` at `0e06990`. Raised `GameScoreRules.MaxScore` to `1,000,000` (and `MaxCombo` to `100,000`), lifted the client `10000` caps in **Godzilla Rampage** (`godzilla-rampage`) and sibling arcade games (`merge-2048`, `brick-breaker`, `hextris`, `meme-merge`, `minesweeper`, `neon-slope`, `wacky-wheels`), extended Godzilla combo scaling up to `1.96x` with updated rank thresholds (`S+` &ge; `12,000`), and formatted leaderboard/best scores with `.toLocaleString()`.
 
