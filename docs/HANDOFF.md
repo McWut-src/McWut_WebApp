@@ -14,7 +14,7 @@ An agent should read [AGENT.md](AGENT.md) first. The archive copy `docs/archive/
 
 ## What the site is
 
-A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, and Messages are there too. The live revision is `ca-mcwut--0000053`.
+A private family file drop. Home is the dashboard. Profile, the color picker, the icon sidebar, and signed-in Privacy are on https://mcwut.com. Markdown notes, including Mermaid diagrams, are rendered there too. AI, Games, Gift Lists, and Messages are there too. The live revision is `ca-mcwut--0000054`.
 
 - Sign in with email and password. Before you are signed in, the site shows that form and nothing else. Open Register is **404**. New people join only from a link you create under **Invites**. A file share link (`/s/…`) and an invite link (`/join/…`) still open without an account.
 - After sign-in, home is six cards: **My files**, **Vault**, **URLs**, **Messages**, **AI**, **Profile**. The sidebar uses the same order and can fold down to icons. The phone bar has the same six icons.
@@ -210,6 +210,24 @@ Startup listens on port 8080 without opening Azure SQL, so a cold start does not
 ---
 
 ## Promotion log
+
+**14 November 2026, 21:14 UTC.** Production was moved on purpose to ship **Family Gift & Wish Lists** (`/gifts`) and arcade games **Crowd Quest** (`search-find`) & **Spot the Diff** (`spot-diff`) at `f14efe7`. Adds `/gifts` multi-occasion wishlists (`anytime`, `birthday`, `christmas`, `holiday`) supporting text, links, `isChatOnly` photo uploads, 2-layer Draw-on-Photo doodle canvas (`Photo BG`), category/budget tags, up to 3 ⭐ Most Wanted stars per member, pinned **Sizes & Favorites** member profiles (`GiftMemberProfiles`), and adult-only secret coordination (claims, `claimed` → `ordered` → `wrapped` status stages, group gift splits, adult off-list secret surprises, soft-delete protection on claimed items, and `🛒 My Shopping List`) strictly isolated from list owners and `Kid` accounts via `ChristmasGiftService`, `ChristmasGiftRules`, and `GiftsController`.
+
+| | Revision | Image |
+|---|---|---|
+| Previous (rollback) | `ca-mcwut--0000053` | `ghcr.io/mcwut-src/mcwut_webapp:fcf0f4a7af616cfd5826a4e66a7adf63487a0784` |
+| Live | `ca-mcwut--0000054` | `ghcr.io/mcwut-src/mcwut_webapp:f14efe7644aae5b110fd97bcf5a645faba469c3a` |
+
+`0000054` has 100% of the traffic and is Healthy. `0000053` is the previous revision and can be brought back.
+
+Checked while signed out, on `0000054` across both `https://mcwut.com` and `https://www.mcwut.com`: `/health` returns 200 `ok`, `/Identity/Account/Login` returns 200, `/Identity/Account/Register` is 404, `/files`, `/games`, and `/gifts` redirect (302) to sign-in, and `/js/gifts.js`, `/js/games-search-find.js`, `/js/games-spot-diff.js`, and `/css/site.css` return HTTP 200 with v2 symbols (`gifts-shopping-view`, `buildGiftCard`, `gifts-profile-items`, `loadBackgroundPhotoOntoCanvas`). Adds the `AddChristmasGiftItems` and `UpgradeGiftListFeatures` SQL Server migrations, applied automatically via `SqlServerDatabaseGate` on the first authenticated request that needs the database.
+
+Rollback, if the new site is wrong and you want the previous one:
+
+```powershell
+az containerapp revision activate --name ca-mcwut --resource-group McWutStorage --revision ca-mcwut--0000053
+az containerapp ingress traffic set --name ca-mcwut --resource-group McWutStorage --revision-weight ca-mcwut--0000053=100
+```
 
 **13 November 2026, 19:40 UTC.** Production was moved on purpose to ship **Subway Surfer**, the **Wacky Wheels** physics/editor upgrades, and **Stack 3D** bug fixes at `fcf0f4a`. Releases **Subway Surfer** (`subway-surfer`) as a playable 3-lane Three.js 3D endless runner with 2.5D Canvas fallback, expands **Wacky Wheels** (`wacky-wheels` & `GameLevelRules`) with tactical stunt banking, wheelies, finish bullseye, checkpoints, TNT/fans/see-saws/spikes, and upgraded Level Editor tools, and fixes **Stack 3D** (`stack-3d`) by restoring `var stageView` to stop the frame-1 crash, resetting orthographic zoom/HUD on Play Again, settling Game Over leaderboard submission status (`gameId` guard), handling `webglcontextlost`/2D fallback canvas replacement, guarding Hub `Space`/`Enter` keydown leaks, and hiding/pausing `#subway-stage` on switch.
 
