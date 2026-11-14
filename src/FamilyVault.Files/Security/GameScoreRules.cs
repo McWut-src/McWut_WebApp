@@ -22,6 +22,8 @@ public static class GameScoreRules
     public const string MemeMergeKey = "meme-merge";
     public const string GodzillaRampageKey = "godzilla-rampage";
     public const string SubwaySurferKey = "subway-surfer";
+    public const string SearchFindKey = "search-find";
+    public const string SpotDiffKey = "spot-diff";
 
     public const int MaxScore = 1_000_000;
     public const int MaxCombo = 100_000;
@@ -38,7 +40,9 @@ public static class GameScoreRules
         new(HextrisKey, "Hextris Neon", "Hexagonal match-3 puzzle. Rotate the hexagon, catch incoming bars, and chain combos.", "Canvas 2D", true),
         new(MemeMergeKey, "Meme Merge", "Drop and merge classic memes with juicy physics to summon The Rock.", "Canvas 2D / Physics", true),
         new(GodzillaRampageKey, "Godzilla Rampage", "Rampage a voxel pixel-art city, dodge army choppers & tanks, and rescue Baby Bronny!", "Three.js Voxel", true),
-        new(SubwaySurferKey, "Subway Surfer", "Dash across 3 subway tracks, vault moving trains, ride hoverboards, and stack coin streaks!", "Three.js 3D", true)
+        new(SubwaySurferKey, "Subway Surfer", "Dash across 3 subway tracks, vault moving trains, ride hoverboards, and stack coin streaks!", "Three.js 3D", true),
+        new(SearchFindKey, "Crowd Quest", "Hunt for hidden characters and quirky props across 5 bustling multi-level dioramas!", "Canvas 2D / Loupe", true),
+        new(SpotDiffKey, "Spot the Diff", "Compare twin scenes across 5 levels and spot every sneaky visual difference before time runs out!", "Canvas 2D / Dual", true)
     ];
 
     public static string NormalizeGameKey(string? gameKey)

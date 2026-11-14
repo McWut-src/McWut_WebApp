@@ -29,6 +29,8 @@
             if (typeof wwState !== "undefined") wwState.leaderboard = board;
             if (typeof gzState !== "undefined") gzState.leaderboard = board;
             if (typeof ssState !== "undefined") ssState.leaderboard = board;
+            if (typeof sfState !== "undefined") sfState.leaderboard = board;
+            if (typeof sdState !== "undefined") sdState.leaderboard = board;
 
             renderLeaderboard(board, curKey);
             if (window.McWutGames.stack3d && window.McWutGames.stack3d.updateTargetHud) {
@@ -110,7 +112,9 @@
         "hextris": { name: "Hextris Neon", comboLabel: "cascade", available: true },
         "meme-merge": { name: "Meme Merge", comboLabel: "combo", available: true },
         "godzilla-rampage": { name: "Godzilla Rampage", comboLabel: "rampage", available: true },
-        "subway-surfer": { name: "Subway Surfer", comboLabel: "streak", available: true }
+        "subway-surfer": { name: "Subway Surfer", comboLabel: "streak", available: true },
+        "search-find": { name: "Crowd Quest", comboLabel: "streak", available: true },
+        "spot-diff": { name: "Spot the Diff", comboLabel: "streak", available: true }
     };
 
     function getGameDisplayName(key) {

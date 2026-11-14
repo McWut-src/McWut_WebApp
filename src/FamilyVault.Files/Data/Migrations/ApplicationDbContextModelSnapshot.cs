@@ -17,6 +17,102 @@ namespace FamilyVault.Files.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.ChristmasGiftItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CategoryTag")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("claimed");
+
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ClaimedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ImageFileId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageType")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsAdultSurprise")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDeletedByOwner")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsMostWanted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Occasion")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("anytime");
+
+                    b.Property<bool>("OpenToSplit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SplitContributorIdsJson")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClaimedByUserId");
+
+                    b.HasIndex("ImageFileId");
+
+                    b.HasIndex("OwnerUserId", "SortOrder");
+
+                    b.ToTable("ChristmasGiftItems", (string)null);
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectConversationEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -445,6 +541,39 @@ namespace FamilyVault.Files.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("GameScores", (string)null);
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GiftMemberProfileEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FavoriteColors")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InterestsAndAvoid")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PantsSize")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShirtSize")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShoeSize")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("GiftMemberProfiles", (string)null);
                 });
 
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.InviteEntity", b =>
@@ -991,6 +1120,15 @@ namespace FamilyVault.Files.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.ChristmasGiftItemEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("FamilyVault.Files.Data.Entities.DirectConversationEntity", b =>
                 {
                     b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
@@ -1082,6 +1220,15 @@ namespace FamilyVault.Files.Data.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyVault.Files.Data.Entities.GiftMemberProfileEntity", b =>
+                {
+                    b.HasOne("FamilyVault.Files.Data.Entities.FamilyMemberEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

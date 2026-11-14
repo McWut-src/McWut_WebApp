@@ -106,7 +106,14 @@ public sealed class FileLifecycle(
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            var attachedSet = new HashSet<Guid>(attachedIds);
+            var giftAttachedIds = await db.ChristmasGiftItems.AsNoTracking()
+                .Where(g => g.ImageFileId != null && eligibleIds.Contains(g.ImageFileId.Value))
+                .Select(g => g.ImageFileId!.Value)
+                .Distinct()
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            var attachedSet = new HashSet<Guid>(attachedIds.Concat(giftAttachedIds));
             foreach (var unlinked in eligible)
             {
                 if (!attachedSet.Contains(unlinked.Id))

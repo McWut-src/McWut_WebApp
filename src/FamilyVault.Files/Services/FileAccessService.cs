@@ -49,6 +49,12 @@ public sealed class FileAccessService(
             {
                 return AccessDecision.Allow;
             }
+
+            if (intent is AccessIntent.Preview or AccessIntent.Download or AccessIntent.List
+                && await HasChristmasGiftAttachmentAccessAsync(fileId, cancellationToken).ConfigureAwait(false))
+            {
+                return AccessDecision.Allow;
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(context.ShareToken))
@@ -194,6 +200,13 @@ public sealed class FileAccessService(
             .AnyAsync(
                 m => conversationIds.Contains(m.ConversationId) && m.UserId == userId,
                 cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<bool> HasChristmasGiftAttachmentAccessAsync(Guid fileId, CancellationToken cancellationToken)
+    {
+        return await db.ChristmasGiftItems.AsNoTracking()
+            .AnyAsync(g => g.ImageFileId == fileId, cancellationToken)
             .ConfigureAwait(false);
     }
 

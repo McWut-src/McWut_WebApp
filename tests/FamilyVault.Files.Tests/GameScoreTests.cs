@@ -22,6 +22,8 @@ public class GameScoreTests
         Assert.Equal("meme-merge", GameScoreRules.NormalizeGameKey(" MEME-MERGE "));
         Assert.Equal("godzilla-rampage", GameScoreRules.NormalizeGameKey(" GODZILLA-RAMPAGE "));
         Assert.Equal("subway-surfer", GameScoreRules.NormalizeGameKey(" SUBWAY-SURFER "));
+        Assert.Equal("search-find", GameScoreRules.NormalizeGameKey(" SEARCH-FIND "));
+        Assert.Equal("spot-diff", GameScoreRules.NormalizeGameKey(" SPOT-DIFF "));
         Assert.Throws<GameScoreValidationException>(() => GameScoreRules.NormalizeGameKey("unknown-game"));
     }
 
@@ -137,6 +139,16 @@ public class GameScoreTests
         Assert.True(subwaySub.IsNewBest);
         Assert.Equal(8_420, subwaySub.BestScore);
         Assert.Equal(64, subwaySub.BestCombo);
+
+        var searchFindSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "search-find", score: 11_250, maxCombo: 7);
+        Assert.True(searchFindSub.IsNewBest);
+        Assert.Equal(11_250, searchFindSub.BestScore);
+        Assert.Equal(7, searchFindSub.BestCombo);
+
+        var spotDiffSub = await service.SubmitScoreAsync(SqliteFixture.OwnerId, "spot-diff", score: 9_640, maxCombo: 6);
+        Assert.True(spotDiffSub.IsNewBest);
+        Assert.Equal(9_640, spotDiffSub.BestScore);
+        Assert.Equal(6, spotDiffSub.BestCombo);
     }
 
     [Fact]

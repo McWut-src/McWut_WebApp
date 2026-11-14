@@ -1434,6 +1434,232 @@
                 </button>
             </div>
         </div>
+
+        <div class="sf-stage" id="searchfind-stage" hidden>
+            <div class="sf-toolbar">
+                <div class="sf-toolbar-left">
+                    <div class="sf-level-pills" id="sf-level-pills" role="group" aria-label="Crowd Quest levels">
+                        <button type="button" class="sf-level-pill is-active" data-sf-level="1">Lv 1</button>
+                        <button type="button" class="sf-level-pill" data-sf-level="2">Lv 2</button>
+                        <button type="button" class="sf-level-pill" data-sf-level="3">Lv 3</button>
+                        <button type="button" class="sf-level-pill" data-sf-level="4">Lv 4</button>
+                        <button type="button" class="sf-level-pill" data-sf-level="5">Lv 5</button>
+                    </div>
+                    <span class="sf-level-name" id="sf-level-name">Sunny Boardwalk</span>
+                </div>
+                <div class="sf-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill sf-stat-pill is-found" id="sf-found-pill" title="Targets found in current level">
+                        Found <strong id="sf-found-count">0</strong>/<span id="sf-found-total">4</span>
+                    </span>
+                    <span class="game-stat-pill sf-stat-pill is-timer" id="sf-timer-pill" title="Remaining level time">
+                        &#x23F1; <strong id="sf-timer-val">1:15</strong>
+                    </span>
+                    <span class="game-stat-pill sf-stat-pill is-streak" id="sf-streak-pill" title="Consecutive find multiplier">
+                        Streak <strong id="sf-streak-val">&times;1</strong>
+                    </span>
+                    <span class="game-stat-pill sf-stat-pill is-score" id="sf-score-pill" title="Run score">
+                        Score <strong id="sf-score-val">0</strong>
+                    </span>
+                </div>
+                <div class="sf-toolbar-actions">
+                    <div class="sf-zoom-group" role="group" aria-label="Zoom controls">
+                        <button type="button" class="btn btn-sm sf-tool-btn" id="sf-zoom-out-btn" title="Zoom out" aria-label="Zoom out">&minus;</button>
+                        <button type="button" class="btn btn-sm sf-tool-btn" id="sf-zoom-reset-btn" title="Reset zoom to 100%" aria-label="Reset zoom">100%</button>
+                        <button type="button" class="btn btn-sm sf-tool-btn" id="sf-zoom-in-btn" title="Zoom in" aria-label="Zoom in">+</button>
+                    </div>
+                    <button type="button" class="btn btn-sm sf-tool-btn is-loupe" id="sf-loupe-btn" aria-pressed="false" title="Toggle Magnifying Loupe (M)">
+                        &#x1F50D; Loupe
+                    </button>
+                    <button type="button" class="btn btn-sm sf-tool-btn is-hint" id="sf-hint-btn" title="Radar Hint -150 pts (H)">
+                        &#x1F4A1; Hint (<span id="sf-hint-count">2</span>)
+                    </button>
+                </div>
+            </div>
+
+            <div class="sf-wanted-bar" id="sf-wanted-bar" aria-label="Targets to find"></div>
+
+            <div class="sf-viewport" id="sf-viewport">
+                <canvas id="sf-canvas" aria-label="Crowd Quest interactive search canvas"></canvas>
+
+                <div class="sf-pop-banner" id="sf-hud-pop" hidden>FOUND!</div>
+
+                <div class="game-overlay" id="sf-start-overlay">
+                    <div class="game-overlay-card sf-overlay-card">
+                        <div class="game-overlay-badge sf-badge">5-LEVEL SEARCH &amp; FIND</div>
+                        <h3 class="game-overlay-title">Crowd Quest</h3>
+                        <p class="game-overlay-desc">
+                            Spot hidden characters and quirky props across <strong>5 bustling scenes</strong>!
+                            Scan dense crowds with the <strong>Magnifying Loupe</strong> (<kbd>M</kbd>) or zoom in, and chain fast finds without missing for up to <strong>&times;8 combo</strong> points.
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn sf-play-btn" id="sf-start-btn">
+                            Play Crowd Quest
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span>Click / Tap Find Target</span>
+                            <span>Drag / Wheel Pan &amp; Zoom</span>
+                            <span><kbd>M</kbd> Loupe &middot; <kbd>H</kbd> Radar Hint</span>
+                            <span><kbd>R</kbd> Quick Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="sf-level-overlay" hidden>
+                    <div class="game-overlay-card sf-overlay-card">
+                        <div class="game-overlay-badge sf-badge" id="sf-level-badge">LEVEL COMPLETE!</div>
+                        <h3 class="game-overlay-title" id="sf-level-title">Scene Cleared!</h3>
+                        <p class="game-overlay-desc mb-3" id="sf-level-breakdown"></p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn sf-play-btn" id="sf-next-level-btn">
+                                Next Level &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="sf-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover sf-overlay-card" role="dialog" aria-labelledby="sf-over-title">
+                        <div class="game-record-banner" id="sf-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge sf-badge" id="sf-over-badge">QUEST COMPLETE</div>
+                        <h3 class="game-overlay-title" id="sf-over-title">Master Seeker!</h3>
+                        <p class="game-overlay-desc mb-2" id="sf-over-breakdown"></p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="sf-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Best Streak</span>
+                                <strong class="game-over-val" id="sf-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="sf-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="sf-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="sf-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn sf-play-btn" id="sf-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sd-stage" id="spotdiff-stage" hidden>
+            <div class="sd-toolbar">
+                <div class="sd-toolbar-left">
+                    <div class="sd-level-pills" id="sd-level-pills" role="group" aria-label="Spot the Diff levels">
+                        <button type="button" class="sd-level-pill is-active" data-sd-level="1">Lv 1</button>
+                        <button type="button" class="sd-level-pill" data-sd-level="2">Lv 2</button>
+                        <button type="button" class="sd-level-pill" data-sd-level="3">Lv 3</button>
+                        <button type="button" class="sd-level-pill" data-sd-level="4">Lv 4</button>
+                        <button type="button" class="sd-level-pill" data-sd-level="5">Lv 5</button>
+                    </div>
+                    <span class="sd-level-name" id="sd-level-name">Cozy Retro Diner</span>
+                </div>
+                <div class="sd-toolbar-stats" aria-live="off">
+                    <span class="game-stat-pill sd-stat-pill is-diff" id="sd-diff-pill" title="Differences spotted in current level">
+                        Diffs <strong id="sd-diff-found">0</strong>/<span id="sd-diff-total">5</span>
+                    </span>
+                    <div class="sd-pips" id="sd-pips" aria-hidden="true"></div>
+                    <span class="game-stat-pill sd-stat-pill is-timer" id="sd-timer-pill" title="Remaining level time">
+                        &#x23F1; <strong id="sd-timer-val">1:05</strong>
+                    </span>
+                    <span class="game-stat-pill sd-stat-pill is-streak" id="sd-streak-pill" title="Quick-spot streak multiplier">
+                        Streak <strong id="sd-streak-val">&times;1</strong>
+                    </span>
+                    <span class="game-stat-pill sd-stat-pill is-score" id="sd-score-pill" title="Run score">
+                        Score <strong id="sd-score-val">0</strong>
+                    </span>
+                </div>
+                <div class="sd-toolbar-actions">
+                    <button type="button" class="btn btn-sm sd-tool-btn is-hint" id="sd-hint-btn" title="Detector Hint -150 pts (H)">
+                        &#x1F4A1; Hint (<span id="sd-hint-count">3</span>)
+                    </button>
+                </div>
+            </div>
+
+            <div class="sd-viewport" id="sd-viewport">
+                <canvas id="sd-canvas" aria-label="Spot the Diff dual scene canvas"></canvas>
+
+                <div class="sd-pop-banner" id="sd-hud-pop" hidden>SPOTTED!</div>
+
+                <div class="game-overlay" id="sd-start-overlay">
+                    <div class="game-overlay-card sd-overlay-card">
+                        <div class="game-overlay-badge sd-badge">5-LEVEL VISUAL DETECTIVE</div>
+                        <h3 class="game-overlay-title">Spot the Diff</h3>
+                        <p class="game-overlay-desc">
+                            Compare the <strong>Original</strong> and <strong>Modified</strong> scenes across <strong>5 themed levels</strong>!
+                            Every run randomizes sneaky differences. Tap or click a difference on <strong>either panel</strong> to lock it in before time runs out.
+                        </p>
+                        <button type="button" class="btn btn-primary game-play-btn sd-play-btn" id="sd-start-btn">
+                            Play Spot the Diff
+                        </button>
+                        <div class="game-overlay-keys">
+                            <span>Click / Tap Either Panel to Mark</span>
+                            <span><kbd>H</kbd> Detector Hint</span>
+                            <span><kbd>R</kbd> Quick Restart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="sd-level-overlay" hidden>
+                    <div class="game-overlay-card sd-overlay-card">
+                        <div class="game-overlay-badge sd-badge" id="sd-level-badge">LEVEL COMPLETE!</div>
+                        <h3 class="game-overlay-title" id="sd-level-title">Scene Verified!</h3>
+                        <p class="game-overlay-desc mb-3" id="sd-level-breakdown"></p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn sd-play-btn" id="sd-next-level-btn">
+                                Next Level &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-overlay" id="sd-over-overlay" hidden>
+                    <div class="game-overlay-card is-gameover sd-overlay-card" role="dialog" aria-labelledby="sd-over-title">
+                        <div class="game-record-banner" id="sd-record-banner" hidden>
+                            NEW PERSONAL RECORD!
+                        </div>
+                        <div class="game-overlay-badge sd-badge" id="sd-over-badge">CASE CLOSED</div>
+                        <h3 class="game-overlay-title" id="sd-over-title">Master Detective!</h3>
+                        <p class="game-overlay-desc mb-2" id="sd-over-breakdown"></p>
+                        <div class="game-over-grid">
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Score</span>
+                                <strong class="game-over-val is-primary" id="sd-over-score">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Best Streak</span>
+                                <strong class="game-over-val" id="sd-over-combo">&times;0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Your Best</span>
+                                <strong class="game-over-val" id="sd-over-best">0</strong>
+                            </div>
+                            <div class="game-over-stat">
+                                <span class="game-over-label">Global Rank</span>
+                                <strong class="game-over-val" id="sd-over-rank">&mdash;</strong>
+                            </div>
+                        </div>
+                        <p class="game-save-status" id="sd-save-status">Saving score&hellip;</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-primary game-play-btn sd-play-btn" id="sd-again-btn">
+                                Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <aside class="card game-board-card" aria-label="Global High Scores">
@@ -1478,5 +1704,7 @@
     <script src="~/js/games-meme-merge.js" asp-append-version="true"></script>
     <script src="~/js/games-godzilla.js" asp-append-version="true"></script>
     <script src="~/js/games-subway-surfer.js" asp-append-version="true"></script>
+    <script src="~/js/games-search-find.js" asp-append-version="true"></script>
+    <script src="~/js/games-spot-diff.js" asp-append-version="true"></script>
     <script src="~/js/games.js" asp-append-version="true"></script>
 }

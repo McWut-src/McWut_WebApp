@@ -51,6 +51,12 @@
             if (window.McWutGames && window.McWutGames.subwaySurfer && typeof window.McWutGames.subwaySurfer.setMuted === "function") {
                 window.McWutGames.subwaySurfer.setMuted(muted);
             }
+            if (window.McWutGames && window.McWutGames.searchFind && typeof window.McWutGames.searchFind.setMuted === "function") {
+                window.McWutGames.searchFind.setMuted(muted);
+            }
+            if (window.McWutGames && window.McWutGames.spotDiff && typeof window.McWutGames.spotDiff.setMuted === "function") {
+                window.McWutGames.spotDiff.setMuted(muted);
+            }
         });
     }
 
@@ -207,6 +213,12 @@
         }
         if (window.McWutGames && window.McWutGames.subwaySurfer && typeof window.McWutGames.subwaySurfer.setMuted === "function") {
             window.McWutGames.subwaySurfer.setMuted(muted);
+        }
+        if (window.McWutGames && window.McWutGames.searchFind && typeof window.McWutGames.searchFind.setMuted === "function") {
+            window.McWutGames.searchFind.setMuted(muted);
+        }
+        if (window.McWutGames && window.McWutGames.spotDiff && typeof window.McWutGames.spotDiff.setMuted === "function") {
+            window.McWutGames.spotDiff.setMuted(muted);
         }
     }
 

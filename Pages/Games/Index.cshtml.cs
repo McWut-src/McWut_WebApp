@@ -30,7 +30,9 @@ public class IndexModel : PageModel
             new("hextris", "Hextris Neon", "#a855f7", "Hex Match", "Catch falling colored bars on the rotating hexagon.", true, IsNew: false),
             new("meme-merge", "Meme Merge", "#facc15", "Meme Drop", "Drop and merge classic memes with juicy physics to summon The Rock.", true, IsNew: false),
             new("godzilla-rampage", "Godzilla Rampage", "#65a30d", "Voxel Kaiju", "Rampage a voxel city as the orb-kaiju and save Baby Bronny from the tower!", true, IsNew: false),
-            new("subway-surfer", "Subway Surfer", "#f97316", "3D Runner", "Dash 3 subway tracks, vault moving trains, ride hoverboards, and stack coins!", true, IsNew: true)
+            new("subway-surfer", "Subway Surfer", "#f97316", "3D Runner", "Dash 3 subway tracks, vault moving trains, ride hoverboards, and stack coins!", true, IsNew: false),
+            new("search-find", "Crowd Quest", "#14b8a6", "5-Level Hunt", "Find hidden characters and quirky props across 5 bustling scenes!", true, IsNew: true),
+            new("spot-diff", "Spot the Diff", "#ec4899", "5-Level Diff", "Compare twin scenes across 5 levels and spot every sneaky difference!", true, IsNew: true)
         ];
     }
 }

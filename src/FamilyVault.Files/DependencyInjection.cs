@@ -85,6 +85,7 @@ public static class DependencyInjection
         services.AddScoped<DirectMessageService>();
         services.AddScoped<GameScoreService>();
         services.AddScoped<GameCustomLevelService>();
+        services.AddScoped<ChristmasGiftService>();
         services.TryAddSingleton<IStartupDatabaseContact, ImmediateStartupDatabaseContact>();
         services.AddHostedService<FileLifecycleWorker>();
 

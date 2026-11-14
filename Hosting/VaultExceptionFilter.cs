@@ -31,6 +31,7 @@ public sealed class VaultExceptionFilter : IExceptionFilter
                 StatusCode = StatusCodes.Status502BadGateway
             },
             ShortLinkValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
+            ChristmasGiftValidationException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidContentTypeException ex => new BadRequestObjectResult(new { error = ex.Message }),
             InvalidRangeException => new StatusCodeResult(StatusCodes.Status416RangeNotSatisfiable),
             UnauthorizedAccessException => new UnauthorizedResult(),

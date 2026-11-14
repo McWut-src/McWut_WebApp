@@ -25,6 +25,8 @@
     var mmStage = document.getElementById("meme-stage");
     var gzStage = document.getElementById("godzilla-stage");
     var ssStage = document.getElementById("subway-stage");
+    var sfStage = document.getElementById("searchfind-stage");
+    var sdStage = document.getElementById("spotdiff-stage");
 
     var hubStrip = document.getElementById("game-hub-strip");
     var activeTitleEl = document.getElementById("game-active-title");
@@ -67,6 +69,8 @@
         if (typeof mmPause === "function") mmPause();
         if (typeof gzPause === "function") gzPause();
         if (typeof ssPause === "function") ssPause();
+        if (typeof sfPause === "function") sfPause();
+        if (typeof sdPause === "function") sdPause();
 
         loadMyBestScores();
         loadHubLeaderboard(hubHallKey);
@@ -95,7 +99,7 @@
     }
 
     function switchGame(nextKey) {
-        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge" && nextKey !== "godzilla-rampage" && nextKey !== "subway-surfer") {
+        if (nextKey !== "stack-3d" && nextKey !== "mini-crossword" && nextKey !== "minesweeper" && nextKey !== "neon-slope" && nextKey !== "merge-2048" && nextKey !== "wacky-wheels" && nextKey !== "brick-breaker" && nextKey !== "hextris" && nextKey !== "meme-merge" && nextKey !== "godzilla-rampage" && nextKey !== "subway-surfer" && nextKey !== "search-find" && nextKey !== "spot-diff") {
             return;
         }
         GAME_KEY = nextKey;
@@ -109,10 +113,20 @@
         if (typeof mmState !== "undefined" && mmState) mmState.active = nextKey === "meme-merge";
         if (typeof gzState !== "undefined" && gzState) gzState.active = nextKey === "godzilla-rampage";
         if (typeof ssState !== "undefined" && ssState) ssState.active = nextKey === "subway-surfer";
+        if (typeof sfState !== "undefined" && sfState) sfState.active = nextKey === "search-find";
+        if (typeof sdState !== "undefined" && sdState) sdState.active = nextKey === "spot-diff";
 
         if (nextKey !== "subway-surfer") {
             if (typeof ssPause === "function") ssPause();
             if (ssStage) ssStage.hidden = true;
+        }
+        if (nextKey !== "search-find") {
+            if (typeof sfPause === "function") sfPause();
+            if (sfStage) sfStage.hidden = true;
+        }
+        if (nextKey !== "spot-diff") {
+            if (typeof sdPause === "function") sdPause();
+            if (sdStage) sdStage.hidden = true;
         }
 
         if (hubView) hubView.hidden = true;
@@ -370,6 +384,68 @@
                 if (typeof ssResize === "function") ssResize();
                 if (typeof ssResume === "function") ssResume();
             });
+        } else if (nextKey === "search-find") {
+            msPauseClock();
+            slopePause();
+            wwPause();
+            cbPause();
+            hxPause();
+            if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
+            if (typeof ssPause === "function") ssPause();
+            if (typeof sdPause === "function") sdPause();
+            viewport.hidden = true;
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
+            if (wwStage) wwStage.hidden = true;
+            if (cbStage) cbStage.hidden = true;
+            if (hxStage) hxStage.hidden = true;
+            if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
+            if (ssStage) ssStage.hidden = true;
+            if (sdStage) sdStage.hidden = true;
+            if (sfStage) sfStage.hidden = false;
+            if (activeTitleEl) activeTitleEl.textContent = "Crowd Quest";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "Click/Tap target &middot; Drag/Wheel Pan &amp; Zoom &middot; <kbd>M</kbd> Loupe &middot; <kbd>H</kbd> Hint";
+            }
+            requestAnimationFrame(function () {
+                if (typeof sfResize === "function") sfResize();
+                if (typeof sfResume === "function") sfResume();
+            });
+        } else if (nextKey === "spot-diff") {
+            msPauseClock();
+            slopePause();
+            wwPause();
+            cbPause();
+            hxPause();
+            if (typeof mmPause === "function") mmPause();
+            if (typeof gzPause === "function") gzPause();
+            if (typeof ssPause === "function") ssPause();
+            if (typeof sfPause === "function") sfPause();
+            viewport.hidden = true;
+            if (cwStage) cwStage.hidden = true;
+            if (msStage) msStage.hidden = true;
+            if (slopeStage) slopeStage.hidden = true;
+            if (n2048Stage) n2048Stage.hidden = true;
+            if (wwStage) wwStage.hidden = true;
+            if (cbStage) cbStage.hidden = true;
+            if (hxStage) hxStage.hidden = true;
+            if (mmStage) mmStage.hidden = true;
+            if (gzStage) gzStage.hidden = true;
+            if (ssStage) ssStage.hidden = true;
+            if (sfStage) sfStage.hidden = true;
+            if (sdStage) sdStage.hidden = false;
+            if (activeTitleEl) activeTitleEl.textContent = "Spot the Diff";
+            if (stageHintEl) {
+                stageHintEl.innerHTML = "Compare twin scenes &middot; Click/Tap either panel to spot differences &middot; <kbd>H</kbd> Hint";
+            }
+            requestAnimationFrame(function () {
+                if (typeof sdResize === "function") sdResize();
+                if (typeof sdResume === "function") sdResume();
+            });
         } else {
             msPauseClock();
             slopePause();
@@ -544,6 +620,10 @@
                 if (typeof gzStartGame === "function") gzStartGame();
             } else if (GAME_KEY === "subway-surfer") {
                 if (typeof ssStartGame === "function") ssStartGame();
+            } else if (GAME_KEY === "search-find") {
+                if (typeof sfStartGame === "function") sfStartGame();
+            } else if (GAME_KEY === "spot-diff") {
+                if (typeof sdStartGame === "function") sdStartGame();
             } else {
                 startGame();
             }
@@ -846,6 +926,20 @@
             return;
         }
 
+        if (GAME_KEY === "search-find") {
+            if (typeof sfHandleKey === "function") {
+                sfHandleKey(ev);
+            }
+            return;
+        }
+
+        if (GAME_KEY === "spot-diff") {
+            if (typeof sdHandleKey === "function") {
+                sdHandleKey(ev);
+            }
+            return;
+        }
+
         if (ev.code === "Space" || ev.code === "ArrowDown" || ev.code === "Enter") {
             if (state.mode === "playing") {
                 ev.preventDefault();
@@ -951,7 +1045,9 @@
         "games-hextris.js",
         "games-meme-merge.js",
         "games-godzilla.js",
-        "games-subway-surfer.js"
+        "games-subway-surfer.js",
+        "games-search-find.js",
+        "games-spot-diff.js"
     ];
 
     function ensureSubmodules(onReady) {

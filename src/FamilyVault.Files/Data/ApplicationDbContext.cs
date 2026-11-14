@@ -32,6 +32,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<DirectMessageReactionEntity> DirectMessageReactions => Set<DirectMessageReactionEntity>();
     public DbSet<GameScoreEntity> GameScores => Set<GameScoreEntity>();
     public DbSet<GameCustomLevelEntity> GameCustomLevels => Set<GameCustomLevelEntity>();
+    public DbSet<ChristmasGiftItemEntity> ChristmasGiftItems => Set<ChristmasGiftItemEntity>();
+    public DbSet<GiftMemberProfileEntity> GiftMemberProfiles => Set<GiftMemberProfileEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -292,6 +294,43 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                 .WithMany()
                 .HasForeignKey(x => x.AuthorUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChristmasGiftItemEntity>(b =>
+        {
+            b.ToTable("ChristmasGiftItems");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Title).HasMaxLength(200).IsRequired();
+            b.Property(x => x.Description).HasMaxLength(2000);
+            b.Property(x => x.Url).HasMaxLength(2048);
+            b.Property(x => x.ImageType).HasMaxLength(32);
+            b.Property(x => x.ClaimNotes).HasMaxLength(500);
+            b.Property(x => x.Occasion).HasMaxLength(32).HasDefaultValue("anytime").IsRequired();
+            b.Property(x => x.CategoryTag).HasMaxLength(32);
+            b.Property(x => x.ClaimStatus).HasMaxLength(32).HasDefaultValue("claimed").IsRequired();
+            b.Property(x => x.SplitContributorIdsJson).HasMaxLength(1000);
+            b.HasIndex(x => new { x.OwnerUserId, x.SortOrder });
+            b.HasIndex(x => x.ClaimedByUserId);
+            b.HasIndex(x => x.ImageFileId);
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<GiftMemberProfileEntity>(b =>
+        {
+            b.ToTable("GiftMemberProfiles");
+            b.HasKey(x => x.UserId);
+            b.Property(x => x.ShirtSize).HasMaxLength(64);
+            b.Property(x => x.ShoeSize).HasMaxLength(64);
+            b.Property(x => x.PantsSize).HasMaxLength(64);
+            b.Property(x => x.FavoriteColors).HasMaxLength(200);
+            b.Property(x => x.InterestsAndAvoid).HasMaxLength(500);
+            b.HasOne<FamilyMemberEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
