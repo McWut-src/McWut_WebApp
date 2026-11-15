@@ -5,37 +5,23 @@
     ViewData["ShownName"] = Model.CurrentUserName;
 }
 
-<div class="gifts-page" id="gifts-page" data-current-user-id="@Model.CurrentUserId" data-is-kid="@(Model.IsKid ? "true" : "false")" data-current-user-name="@Model.CurrentUserName" data-current-user-color="@(Model.CurrentUserColor ?? "#0b1f3a")">
+<div class="gifts-page" id="gifts-page" data-current-user-id="@Model.CurrentUserId" data-current-user-name="@Model.CurrentUserName" data-current-user-color="@(Model.CurrentUserColor ?? "#0b1f3a")">
     <div class="gifts-hero">
         <div class="gifts-hero-content">
             <div class="gifts-hero-badge">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                <span>Family Gift Lists</span>
+                <span>Gift Lists</span>
             </div>
-            <h1 class="gifts-title">Family Gift &amp; Wish Lists</h1>
+            <h1 class="gifts-title">Gift Lists</h1>
             <p class="gifts-subtitle">
-                @if (Model.IsKid)
-                {
-                    <span>Drop wishes for birthdays, Christmas, holidays, or anytime! Add links, text, photos, or draw a picture of what you want.</span>
-                }
-                else
-                {
-                    <span>Share wishlists for birthdays, Christmas, holidays, or anytime—and secretly coordinate claims and surprises for the family.</span>
-                }
+                Create your gift list! Share whatever you want &mdash; a link, an image, text, a voice note, or a drawing, each as an item on your list.
             </p>
-            @if (!Model.IsKid)
-            {
-                <div class="gifts-santa-tip" title="Secret coordination protection is active">
-                    <span class="santa-icon">🔒</span>
-                    <span><strong>Secret Coordination:</strong> List owners (and kids) never see who claimed their gifts or any off-list surprises.</span>
-                </div>
-            }
         </div>
     </div>
 
     <!-- Family Members Bar -->
-    <div class="gifts-section-label">Family Wishlists</div>
-    <div class="gifts-members-carousel" id="gifts-members-list" role="tablist" aria-label="Family Member Wishlists">
+    <div class="gifts-section-label">Family Gift Lists</div>
+    <div class="gifts-members-carousel" id="gifts-members-list" role="tablist" aria-label="Family Gift Lists">
         <div class="gifts-loading-pill">Loading family...</div>
     </div>
 
@@ -44,40 +30,12 @@
         <div class="gifts-list-head" id="gifts-list-head">
             <div class="gifts-list-owner">
                 <span class="gifts-owner-dot" id="gifts-active-dot" aria-hidden="true"></span>
-                <h2 class="gifts-active-name" id="gifts-active-name">My Wishlist</h2>
+                <h2 class="gifts-active-name" id="gifts-active-name">My Gift List</h2>
                 <span class="gifts-kid-badge d-none" id="gifts-active-kid-badge">Kid</span>
             </div>
             <div class="gifts-list-stats">
-                @if (!Model.IsKid)
-                {
-                    <button type="button" class="btn btn-sm btn-outline-primary gifts-surprise-trigger d-none" id="gifts-surprise-open-btn" title="Add an adult-only off-list surprise for this person">
-                        <span>🤫 Add Secret Surprise</span>
-                    </button>
-                }
-                <span class="gifts-count-chip" id="gifts-active-count">0 gifts</span>
-                <span class="gifts-claim-chip d-none" id="gifts-active-claim-chip"></span>
+                <span class="gifts-count-chip" id="gifts-active-count">0 items</span>
             </div>
-        </div>
-
-        <!-- Pinned Sizes & Favorites Member Header -->
-        <div class="gifts-profile-bar" id="gifts-profile-bar">
-            <div class="gifts-profile-items" id="gifts-profile-items">
-                <span class="gifts-profile-empty">No sizes or favorites pinned yet.</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary gifts-profile-edit-btn d-none" id="gifts-profile-edit-btn">
-                <svg class="icon me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></svg>
-                <span>Sizes &amp; Favorites</span>
-            </button>
-        </div>
-
-        <!-- Occasion Filter Bar -->
-        <div class="gifts-filter-bar" id="gifts-filter-bar" role="group" aria-label="Filter wishes by occasion">
-            <button type="button" class="gifts-filter-pill active" data-filter="all">All</button>
-            <button type="button" class="gifts-filter-pill" data-filter="most-wanted">⭐ Most Wanted</button>
-            <button type="button" class="gifts-filter-pill" data-filter="anytime">✨ Anytime</button>
-            <button type="button" class="gifts-filter-pill" data-filter="birthday">🎂 Birthday</button>
-            <button type="button" class="gifts-filter-pill" data-filter="christmas">🎄 Christmas</button>
-            <button type="button" class="gifts-filter-pill" data-filter="holiday">🎉 Holiday</button>
         </div>
 
         <!-- Add / Drop Composer (shown for own list) -->
@@ -85,75 +43,62 @@
             <div class="gifts-composer-top">
                 <div class="gifts-composer-title">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                    <span>Add to Wishlist</span>
+                    <span>Add an Item to Your List</span>
                 </div>
-                <span class="gifts-drop-hint">Tip: Drag &amp; drop text, links, or photos anywhere!</span>
+                <span class="gifts-drop-hint">Share text, a URL, an image, a voice recording, or a drawing</span>
             </div>
 
             <!-- Drop Zone Target -->
             <div class="gifts-dropzone" id="gifts-dropzone">
                 <div class="gifts-dropzone-inner">
                     <svg class="icon drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V6"/><path d="M8 9l4-4 4 4"/><path d="M5 19h14"/></svg>
-                    <span>Drop a photo, link, or text here</span>
+                    <span>Drop an image, audio file, link, or text here</span>
                 </div>
             </div>
 
             <form id="gift-add-form" class="gifts-form" autocomplete="off">
                 <div class="gifts-field">
-                    <label for="gift-title" class="form-label visually-hidden">Gift item</label>
-                    <input type="text" id="gift-title" class="form-control gift-title-input" placeholder="What would you like? (e.g. LEGO Millennium Falcon, Roller Skates)" maxlength="200" required />
-                </div>
-
-                <div class="gifts-row-meta">
-                    <div class="gifts-meta-select">
-                        <label for="gift-occasion" class="form-label visually-hidden">Occasion</label>
-                        <select id="gift-occasion" class="form-select form-select-sm" aria-label="Occasion">
-                            <option value="anytime">✨ Anytime</option>
-                            <option value="birthday">🎂 Birthday</option>
-                            <option value="christmas">🎄 Christmas</option>
-                            <option value="holiday">🎉 Holiday</option>
-                        </select>
-                    </div>
-                    <div class="gifts-meta-select">
-                        <label for="gift-category" class="form-label visually-hidden">Category or budget tag</label>
-                        <select id="gift-category" class="form-select form-select-sm" aria-label="Category tag">
-                            <option value="">No budget/size tag</option>
-                            <option value="under-25">💵 Under $25</option>
-                            <option value="small">🧦 Small / Stocking Stuffer</option>
-                            <option value="big-wish">🌟 Big Wish</option>
-                        </select>
-                    </div>
-                    <div class="form-check gifts-star-check">
-                        <input class="form-check-input" type="checkbox" id="gift-most-wanted" />
-                        <label class="form-check-label small fw-semibold" for="gift-most-wanted">
-                            ⭐ Most Wanted (up to 3)
-                        </label>
-                    </div>
+                    <label for="gift-title" class="form-label visually-hidden">Item text or title</label>
+                    <input type="text" id="gift-title" class="form-control gift-title-input" placeholder="Write text or what you want (optional if adding a link, image, voice, or drawing)" maxlength="200" />
                 </div>
 
                 <div class="gifts-row">
                     <div class="gifts-field flex-grow-1">
-                        <label for="gift-url" class="form-label visually-hidden">Web link</label>
+                        <label for="gift-url" class="form-label visually-hidden">Web link / URL</label>
                         <div class="input-group">
                             <span class="input-group-text gift-input-icon">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/></svg>
                             </span>
-                            <input type="url" id="gift-url" class="form-control" placeholder="Link to buy or view (optional, e.g. amazon.com/...)" maxlength="2048" />
+                            <input type="text" inputmode="url" id="gift-url" class="form-control" placeholder="Paste a link / URL (optional, e.g. amazon.com/...)" maxlength="2048" />
                         </div>
                     </div>
                 </div>
 
                 <div class="gifts-field">
-                    <label for="gift-desc" class="form-label visually-hidden">Notes or size</label>
-                    <textarea id="gift-desc" class="form-control gift-desc-input" rows="2" placeholder="Notes, size, color, or preferences (optional)" maxlength="2000"></textarea>
+                    <label for="gift-desc" class="form-label visually-hidden">Extra notes or details</label>
+                    <textarea id="gift-desc" class="form-control gift-desc-input" rows="2" placeholder="Extra notes or details (optional)" maxlength="2000"></textarea>
                 </div>
 
-                <!-- Attachment preview -->
+                <!-- Inline Voice Recording Bar -->
+                <div class="gift-voice-bar d-none" id="gift-voice-bar">
+                    <div class="gift-voice-status">
+                        <span class="gift-voice-dot" aria-hidden="true"></span>
+                        <span>Recording voice...</span>
+                        <span class="gift-voice-timer" id="gift-voice-timer">0:00</span>
+                    </div>
+                    <div class="gift-voice-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="gift-voice-cancel">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-danger" id="gift-voice-stop">Stop &amp; Attach</button>
+                    </div>
+                </div>
+
+                <!-- Attachment preview (Image, Drawing, or Voice) -->
                 <div class="gift-attachment-box d-none" id="gift-attachment-box">
                     <div class="gift-attachment-preview">
-                        <img id="gift-attachment-thumb" src="" alt="Attached preview" class="gift-thumb-img" />
+                        <img id="gift-attachment-thumb" src="" alt="Attached preview" class="gift-thumb-img d-none" />
+                        <audio id="gift-attachment-audio" controls preload="metadata" class="gift-attach-audio d-none"></audio>
                         <div class="gift-attachment-meta">
-                            <span class="gift-attachment-type" id="gift-attachment-type">Photo</span>
+                            <span class="gift-attachment-type" id="gift-attachment-type">Image</span>
                             <span class="gift-attachment-status" id="gift-attachment-status">Ready</span>
                         </div>
                         <button type="button" class="btn btn-sm btn-outline-danger gift-attach-clear" id="gift-attach-clear" title="Remove attachment" aria-label="Remove attachment">
@@ -165,46 +110,36 @@
                 <div class="gifts-composer-actions">
                     <div class="gifts-media-buttons">
                         <input type="file" id="gift-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="visually-hidden" />
-                        <button type="button" class="btn btn-sm btn-outline-secondary gift-media-btn" id="gift-photo-btn" title="Add photo" aria-label="Add photo">
+                        <button type="button" class="btn btn-sm btn-outline-secondary gift-media-btn" id="gift-photo-btn" title="Add image" aria-label="Add image">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 16l4.5-4.5a1.5 1.5 0 0 1 2.1 0L16 16"/><path d="M13 14l1.5-1.5a1.5 1.5 0 0 1 2.1 0L20 15"/></svg>
-                            <span>Photo</span>
+                            <span>Image</span>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary gift-media-btn" id="gift-doodle-btn" title="Draw doodle or circle a photo" aria-label="Draw doodle">
+                        <input type="file" id="gift-voice-input" accept="audio/*" class="visually-hidden" />
+                        <button type="button" class="btn btn-sm btn-outline-secondary gift-media-btn" id="gift-voice-btn" title="Record or upload voice note" aria-label="Record or upload voice note">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/><path d="M9 21h6"/></svg>
+                            <span>Voice</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary gift-media-btn" id="gift-doodle-btn" title="Draw something or draw on a photo" aria-label="Drawing">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.4 3.6a2 2 0 0 1 2.8 2.8L11.5 16c-.8.8-2 1-3 1-1.7 0-3 1.3-3 3 0-.2-1.8-.8-1.8-2.8 0-1.9 1.5-3.4 3.4-3.6.8-.1 1.4-.5 2-1.1z"/></svg>
-                            <span>Draw</span>
+                            <span>Drawing</span>
                         </button>
                     </div>
                     <button type="submit" class="btn btn-primary gift-submit-btn" id="gift-submit-btn">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                        <span>Add Wish</span>
+                        <span>Add Item</span>
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Wishlist Items Grid -->
+        <!-- Gift List Items Grid -->
         <div class="gifts-grid" id="gifts-grid">
             <div class="gifts-empty-state" id="gifts-empty-state">
                 <div class="gifts-empty-icon">🎁</div>
-                <h3>No gifts on this wishlist yet</h3>
-                <p id="gifts-empty-msg">Use the form above to add what you would like!</p>
+                <h3>No items on this gift list yet</h3>
+                <p id="gifts-empty-msg">Add text, a URL, an image, a voice note, or a drawing above!</p>
             </div>
         </div>
-    </div>
-
-    <!-- Adult My Shopping List View -->
-    <div class="gifts-shopping-view d-none" id="gifts-shopping-view">
-        <div class="gifts-list-head">
-            <div class="gifts-list-owner">
-                <span class="fs-4" aria-hidden="true">🛒</span>
-                <h2 class="gifts-active-name">My Shopping List</h2>
-            </div>
-            <div class="gifts-list-stats">
-                <span class="gifts-count-chip" id="gifts-shopping-count">0 claimed</span>
-            </div>
-        </div>
-        <p class="text-muted small mb-3">All gifts you have claimed or split across family wishlists. Track progress from Claimed → Ordered → Wrapped.</p>
-        <div class="gifts-grid" id="gifts-shopping-grid"></div>
     </div>
 </div>
 
@@ -215,7 +150,7 @@
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2" id="gifts-doodle-title">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.4 3.6a2 2 0 0 1 2.8 2.8L11.5 16c-.8.8-2 1-3 1-1.7 0-3 1.3-3 3 0-.2-1.8-.8-1.8-2.8 0-1.9 1.5-3.4 3.4-3.6.8-.1 1.4-.5 2-1.1z"/></svg>
-                    <span>Draw or Circle on a Photo</span>
+                    <span>Draw Anything</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -230,7 +165,7 @@
                     </div>
                     <div class="doodle-tools">
                         <input type="file" id="gifts-doodle-bg-input" accept="image/jpeg,image/png,image/gif,image/webp" class="visually-hidden" />
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="gifts-doodle-bg-btn" title="Load a photo or catalog page onto the background to circle what you want">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="gifts-doodle-bg-btn" title="Load a photo onto the background to draw or circle on it">
                             <svg class="icon me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 16l4.5-4.5a1.5 1.5 0 0 1 2.1 0L16 16"/><path d="M13 14l1.5-1.5a1.5 1.5 0 0 1 2.1 0L20 15"/></svg>
                             <span>Photo BG</span>
                         </button>
@@ -271,192 +206,39 @@
     </div>
 </div>
 
-<!-- Adult Claim Gift Modal -->
-<div class="modal fade gifts-modal" id="gifts-claim-modal" tabindex="-1" aria-labelledby="gifts-claim-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center gap-2" id="gifts-claim-title">
-                    <svg class="icon text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                    <span>Claim this Gift</span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you getting <strong id="gifts-claim-item-name"></strong>?</p>
-                <p class="small text-muted mb-2">Claiming lets other adults know you've got this so nobody buys duplicates. The recipient never knows.</p>
-                <div class="mb-3">
-                    <label for="gifts-claim-note-input" class="form-label small fw-semibold">Note for other adults (optional):</label>
-                    <input type="text" id="gifts-claim-note-input" class="form-control form-control-sm" placeholder="e.g. Ordered size M from Amazon, arriving Dec 20" maxlength="500" />
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="gifts-claim-split-check" />
-                    <label class="form-check-label small fw-semibold" for="gifts-claim-split-check">
-                        🤝 Open to split / group gift with other adults
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success btn-sm" id="gifts-claim-confirm-btn">
-                    <span>Claim Gift</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Edit Gift Modal -->
 <div class="modal fade gifts-modal" id="gifts-edit-modal" tabindex="-1" aria-labelledby="gifts-edit-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="gifts-edit-title">Edit Wishlist Item</h5>
+                <h5 class="modal-title" id="gifts-edit-title">Edit Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="gifts-edit-form">
                 <div class="modal-body">
                     <input type="hidden" id="edit-gift-id" />
                     <div class="mb-3">
-                        <label for="edit-gift-title" class="form-label small fw-semibold">Item Title</label>
-                        <input type="text" id="edit-gift-title" class="form-control" maxlength="200" required />
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label for="edit-gift-occasion" class="form-label small fw-semibold">Occasion</label>
-                            <select id="edit-gift-occasion" class="form-select form-select-sm">
-                                <option value="anytime">✨ Anytime</option>
-                                <option value="birthday">🎂 Birthday</option>
-                                <option value="christmas">🎄 Christmas</option>
-                                <option value="holiday">🎉 Holiday</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label for="edit-gift-category" class="form-label small fw-semibold">Tag</label>
-                            <select id="edit-gift-category" class="form-select form-select-sm">
-                                <option value="">None</option>
-                                <option value="under-25">💵 Under $25</option>
-                                <option value="small">🧦 Small / Stocking Stuffer</option>
-                                <option value="big-wish">🌟 Big Wish</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="edit-gift-most-wanted" />
-                        <label class="form-check-label small fw-semibold" for="edit-gift-most-wanted">
-                            ⭐ Mark as Most Wanted (max 3)
-                        </label>
+                        <label for="edit-gift-title" class="form-label small fw-semibold">Text / Title (optional)</label>
+                        <input type="text" id="edit-gift-title" class="form-control" maxlength="200" />
                     </div>
                     <div class="mb-3">
-                        <label for="edit-gift-url" class="form-label small fw-semibold">Web Link (optional)</label>
-                        <input type="url" id="edit-gift-url" class="form-control" maxlength="2048" />
+                        <label for="edit-gift-url" class="form-label small fw-semibold">Web Link / URL (optional)</label>
+                        <input type="text" inputmode="url" id="edit-gift-url" class="form-control" maxlength="2048" />
                     </div>
                     <div class="mb-3">
                         <label for="edit-gift-desc" class="form-label small fw-semibold">Notes / Details (optional)</label>
                         <textarea id="edit-gift-desc" class="form-control" rows="2" maxlength="2000"></textarea>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm" id="edit-gift-save-btn">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Sizes & Favorites Profile Modal -->
-<div class="modal fade gifts-modal" id="gifts-profile-modal" tabindex="-1" aria-labelledby="gifts-profile-modal-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="gifts-profile-modal-title">My Sizes &amp; Favorites</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="gifts-profile-form">
-                <div class="modal-body">
-                    <p class="small text-muted mb-3">Pinned at the top of your wishlist so family members always know your sizes and preferences.</p>
-                    <div class="row g-2 mb-3">
-                        <div class="col-4">
-                            <label for="profile-shirt-size" class="form-label small fw-semibold">Shirt Size</label>
-                            <input type="text" id="profile-shirt-size" class="form-control form-control-sm" placeholder="e.g. Youth M" maxlength="64" />
-                        </div>
-                        <div class="col-4">
-                            <label for="profile-pants-size" class="form-label small fw-semibold">Pants Size</label>
-                            <input type="text" id="profile-pants-size" class="form-control form-control-sm" placeholder="e.g. 10 Slim" maxlength="64" />
-                        </div>
-                        <div class="col-4">
-                            <label for="profile-shoe-size" class="form-label small fw-semibold">Shoe Size</label>
-                            <input type="text" id="profile-shoe-size" class="form-control form-control-sm" placeholder="e.g. 5Y" maxlength="64" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="profile-fav-colors" class="form-label small fw-semibold">Favorite Colors</label>
-                        <input type="text" id="profile-fav-colors" class="form-control form-control-sm" placeholder="e.g. Teal, Forest Green, Gold" maxlength="200" />
-                    </div>
-                    <div class="mb-2">
-                        <label for="profile-interests" class="form-label small fw-semibold">Interests &amp; Things to Avoid</label>
-                        <textarea id="profile-interests" class="form-control form-control-sm" rows="2" placeholder="e.g. Loves LEGO Technic &amp; dinosaurs; allergic to wool" maxlength="500"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm" id="gifts-profile-save-btn">Save Info</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Adult-Only Off-List Secret Surprise Modal -->
-<div class="modal fade gifts-modal" id="gifts-surprise-modal" tabindex="-1" aria-labelledby="gifts-surprise-title" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="gifts-surprise-title">🤫 Add Secret Surprise (Off-List)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="gifts-surprise-form">
-                <div class="modal-body">
-                    <p class="small text-muted mb-3">
-                        Bought something for <strong id="gifts-surprise-recipient-name">this member</strong> that wasn't on their list?
-                        Add it here so other adults don't buy duplicates. The recipient will never see it!
-                    </p>
-                    <div class="mb-2">
-                        <label for="surprise-gift-title" class="form-label small fw-semibold">Gift Name</label>
-                        <input type="text" id="surprise-gift-title" class="form-control form-control-sm" placeholder="e.g. Plush Giant Dragon" maxlength="200" required />
-                    </div>
-                    <div class="mb-2">
-                        <label for="surprise-gift-occasion" class="form-label small fw-semibold">Occasion</label>
-                        <select id="surprise-gift-occasion" class="form-select form-select-sm">
-                            <option value="anytime">✨ Anytime</option>
-                            <option value="birthday">🎂 Birthday</option>
-                            <option value="christmas">🎄 Christmas</option>
-                            <option value="holiday">🎉 Holiday</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label for="surprise-gift-url" class="form-label small fw-semibold">Web Link (optional)</label>
-                        <input type="url" id="surprise-gift-url" class="form-control form-control-sm" placeholder="https://..." maxlength="2048" />
-                    </div>
-                    <div class="mb-2">
-                        <label for="surprise-gift-desc" class="form-label small fw-semibold">Details (optional)</label>
-                        <textarea id="surprise-gift-desc" class="form-control form-control-sm" rows="2" maxlength="2000"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="surprise-gift-note" class="form-label small fw-semibold">Coordination Note (optional)</label>
-                        <input type="text" id="surprise-gift-note" class="form-control form-control-sm" placeholder="e.g. Already wrapped in closet" maxlength="500" />
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="surprise-gift-split" />
-                        <label class="form-check-label small fw-semibold" for="surprise-gift-split">
-                            🤝 Open to split / group gift with other adults
+                    <div class="form-check d-none" id="edit-gift-attachment-row">
+                        <input class="form-check-input" type="checkbox" id="edit-gift-remove-attachment" />
+                        <label class="form-check-label small text-danger fw-semibold" for="edit-gift-remove-attachment">
+                            Remove attached image / voice / drawing
                         </label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm" id="surprise-gift-submit-btn">Save Secret Surprise</button>
+                    <button type="submit" class="btn btn-primary btn-sm" id="edit-gift-save-btn">Save Changes</button>
                 </div>
             </form>
         </div>

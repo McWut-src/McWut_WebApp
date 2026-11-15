@@ -1,56 +1,38 @@
-// McWut Family Gift & Wish List Manager
+// McWut Simple Family Gift Lists
 (() => {
     const pageEl = document.getElementById("gifts-page");
     if (!pageEl) return;
 
     const currentUserId = pageEl.dataset.currentUserId;
-    const isKid = pageEl.dataset.isKid === "true";
 
     const membersListEl = document.getElementById("gifts-members-list");
-    const listContainerEl = document.getElementById("gifts-list-container");
-    const shoppingViewEl = document.getElementById("gifts-shopping-view");
-    const shoppingCountEl = document.getElementById("gifts-shopping-count");
-    const shoppingGridEl = document.getElementById("gifts-shopping-grid");
-
     const activeDotEl = document.getElementById("gifts-active-dot");
     const activeNameEl = document.getElementById("gifts-active-name");
     const activeKidBadge = document.getElementById("gifts-active-kid-badge");
-    const surpriseOpenBtn = document.getElementById("gifts-surprise-open-btn");
     const activeCountEl = document.getElementById("gifts-active-count");
-    const activeClaimChip = document.getElementById("gifts-active-claim-chip");
 
-    // Pinned Sizes & Favorites Profile Bar
-    const profileItemsEl = document.getElementById("gifts-profile-items");
-    const profileEditBtn = document.getElementById("gifts-profile-edit-btn");
-    const profileModalEl = document.getElementById("gifts-profile-modal");
-    const profileForm = document.getElementById("gifts-profile-form");
-    const profileShirtInput = document.getElementById("profile-shirt-size");
-    const profilePantsInput = document.getElementById("profile-pants-size");
-    const profileShoeInput = document.getElementById("profile-shoe-size");
-    const profileColorsInput = document.getElementById("profile-fav-colors");
-    const profileInterestsInput = document.getElementById("profile-interests");
-    const profileSaveBtn = document.getElementById("gifts-profile-save-btn");
-
-    // Occasion Filter Bar
-    const filterBarEl = document.getElementById("gifts-filter-bar");
-
-    // Composer Form
+    // Composer Elements
     const composerCard = document.getElementById("gifts-composer");
     const dropzoneEl = document.getElementById("gifts-dropzone");
     const addForm = document.getElementById("gift-add-form");
     const titleInput = document.getElementById("gift-title");
-    const occasionInput = document.getElementById("gift-occasion");
-    const categoryInput = document.getElementById("gift-category");
-    const mostWantedInput = document.getElementById("gift-most-wanted");
     const urlInput = document.getElementById("gift-url");
     const descInput = document.getElementById("gift-desc");
     const photoBtn = document.getElementById("gift-photo-btn");
     const photoInput = document.getElementById("gift-photo-input");
+    const voiceBtn = document.getElementById("gift-voice-btn");
+    const voiceInput = document.getElementById("gift-voice-input");
     const doodleBtn = document.getElementById("gift-doodle-btn");
     const submitBtn = document.getElementById("gift-submit-btn");
 
+    const voiceBar = document.getElementById("gift-voice-bar");
+    const voiceTimerEl = document.getElementById("gift-voice-timer");
+    const voiceCancelBtn = document.getElementById("gift-voice-cancel");
+    const voiceStopBtn = document.getElementById("gift-voice-stop");
+
     const attachBox = document.getElementById("gift-attachment-box");
     const attachThumb = document.getElementById("gift-attachment-thumb");
+    const attachAudio = document.getElementById("gift-attachment-audio");
     const attachTypeEl = document.getElementById("gift-attachment-type");
     const attachStatusEl = document.getElementById("gift-attachment-status");
     const attachClearBtn = document.getElementById("gift-attach-clear");
@@ -72,39 +54,21 @@
     const doodleBgCanvas = document.getElementById("gifts-doodle-bg");
     const doodleDrawCanvas = document.getElementById("gifts-doodle-draw");
 
-    // Lightbox, Claim, Edit & Secret Surprise Modals
+    // Lightbox & Edit Modals
     const lightboxModalEl = document.getElementById("gifts-lightbox-modal");
     const lightboxImg = document.getElementById("gifts-lightbox-img");
-
-    const claimModalEl = document.getElementById("gifts-claim-modal");
-    const claimItemName = document.getElementById("gifts-claim-item-name");
-    const claimNoteInput = document.getElementById("gifts-claim-note-input");
-    const claimSplitCheck = document.getElementById("gifts-claim-split-check");
-    const claimConfirmBtn = document.getElementById("gifts-claim-confirm-btn");
 
     const editModalEl = document.getElementById("gifts-edit-modal");
     const editForm = document.getElementById("gifts-edit-form");
     const editIdInput = document.getElementById("edit-gift-id");
     const editTitleInput = document.getElementById("edit-gift-title");
-    const editOccasionInput = document.getElementById("edit-gift-occasion");
-    const editCategoryInput = document.getElementById("edit-gift-category");
-    const editMostWantedInput = document.getElementById("edit-gift-most-wanted");
     const editUrlInput = document.getElementById("edit-gift-url");
     const editDescInput = document.getElementById("edit-gift-desc");
-
-    const surpriseModalEl = document.getElementById("gifts-surprise-modal");
-    const surpriseForm = document.getElementById("gifts-surprise-form");
-    const surpriseRecipientEl = document.getElementById("gifts-surprise-recipient-name");
-    const surpriseTitleInput = document.getElementById("surprise-gift-title");
-    const surpriseOccasionInput = document.getElementById("surprise-gift-occasion");
-    const surpriseUrlInput = document.getElementById("surprise-gift-url");
-    const surpriseDescInput = document.getElementById("surprise-gift-desc");
-    const surpriseNoteInput = document.getElementById("surprise-gift-note");
-    const surpriseSplitInput = document.getElementById("surprise-gift-split");
-    const surpriseSubmitBtn = document.getElementById("surprise-gift-submit-btn");
+    const editAttachRow = document.getElementById("edit-gift-attachment-row");
+    const editRemoveAttachInput = document.getElementById("edit-gift-remove-attachment");
 
     // Move modals to body to prevent stacking context issues over background wallpaper/headers
-    [doodleModalEl, lightboxModalEl, claimModalEl, editModalEl, profileModalEl, surpriseModalEl].forEach(m => {
+    [doodleModalEl, lightboxModalEl, editModalEl].forEach(m => {
         if (m && m.parentElement !== document.body) {
             document.body.appendChild(m);
         }
@@ -112,10 +76,39 @@
 
     const bsDoodleModal = doodleModalEl && window.bootstrap ? new window.bootstrap.Modal(doodleModalEl) : null;
     const bsLightboxModal = lightboxModalEl && window.bootstrap ? new window.bootstrap.Modal(lightboxModalEl) : null;
-    const bsClaimModal = claimModalEl && window.bootstrap ? new window.bootstrap.Modal(claimModalEl) : null;
     const bsEditModal = editModalEl && window.bootstrap ? new window.bootstrap.Modal(editModalEl) : null;
-    const bsProfileModal = profileModalEl && window.bootstrap ? new window.bootstrap.Modal(profileModalEl) : null;
-    const bsSurpriseModal = surpriseModalEl && window.bootstrap ? new window.bootstrap.Modal(surpriseModalEl) : null;
+
+    const modalState = new WeakMap();
+    [doodleModalEl, lightboxModalEl, editModalEl].forEach(el => {
+        if (!el) return;
+        const state = { opening: false, closeAfterShow: false };
+        modalState.set(el, state);
+        el.addEventListener("show.bs.modal", () => {
+            state.opening = true;
+            state.closeAfterShow = false;
+        });
+        el.addEventListener("shown.bs.modal", () => {
+            state.opening = false;
+            if (state.closeAfterShow) {
+                state.closeAfterShow = false;
+                window.bootstrap?.Modal.getInstance(el)?.hide();
+            }
+        });
+        el.addEventListener("hidden.bs.modal", () => {
+            state.opening = false;
+            state.closeAfterShow = false;
+        });
+    });
+
+    function hideModal(bsModal, el) {
+        if (!bsModal || !el) return;
+        const st = modalState.get(el);
+        if (st && st.opening) {
+            st.closeAfterShow = true;
+            return;
+        }
+        bsModal.hide();
+    }
 
     const antiforgery = document.querySelector('meta[name="request-verification-token"]')?.getAttribute("content") || "";
 
@@ -134,51 +127,37 @@
             try {
                 const json = await res.json();
                 if (json && json.error) msg = json.error;
-            } catch (e) {
+            } catch {
                 // Ignore parse errors
             }
             throw new Error(msg);
         }
         if (res.status === 204) return null;
-        return await res.json();
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
     }
 
     function toast(text, kind) {
         if (window.mcwut && window.mcwut.toast) {
             window.mcwut.toast(text, { kind: kind || "info", duration: 3200 });
-        } else {
-            console.log(`[Toast ${kind}]: ${text}`);
         }
     }
 
-    const OCCASION_LABELS = {
-        anytime: "✨ Anytime",
-        birthday: "🎂 Birthday",
-        christmas: "🎄 Christmas",
-        holiday: "🎉 Holiday"
-    };
-
-    const CATEGORY_LABELS = {
-        "under-25": "💵 Under $25",
-        small: "🧦 Small",
-        "big-wish": "🌟 Big Wish"
-    };
-
-    const STATUS_STAGES = [
-        { key: "claimed", label: "✓ Claimed" },
-        { key: "ordered", label: "📦 Ordered" },
-        { key: "wrapped", label: "🎀 Wrapped" }
-    ];
+    function formatDuration(sec) {
+        const s = Math.max(0, Math.floor(Number(sec) || 0));
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }
 
     let members = [];
     let selectedOwnerId = currentUserId;
-    let viewMode = "list"; // "list" | "shopping"
-    let activeFilter = "all";
     let currentItems = [];
-    let currentProfile = null;
-    let shoppingClaims = [];
-    let stagedAttachment = null; // { fileId, kind: 'photo'|'drawing', thumbUrl, fileName }
-    let pendingClaimItemId = null;
+    let stagedAttachment = null; // { fileId, kind: 'photo'|'drawing'|'voice', thumbUrl?, audioUrl?, fileName, objectUrl? }
+
+    let voiceRecorder = null;
+    let voiceChunks = [];
+    let voiceTimer = 0;
+    let voiceStartedAt = 0;
+    let voiceAction = "cancel";
 
     // --- UPLOAD LOGIC ---
     async function uploadBlob(blob, fileName, contentType) {
@@ -186,8 +165,8 @@
             method: "POST",
             headers: headers({ "Content-Type": "application/json" }),
             body: JSON.stringify({
-                fileName: fileName || "upload.png",
-                contentType: contentType || "image/png",
+                fileName: fileName || "upload.bin",
+                contentType: contentType || "application/octet-stream",
                 sizeBytes: blob.size,
                 isChatOnly: true,
                 retention: { days: 0 }
@@ -201,74 +180,231 @@
         });
 
         if (!putRes.ok) {
-            throw new Error(`Upload failed: ${putRes.status}`);
+            throw new Error(`Upload failed (${putRes.status})`);
         }
 
-        return await putRes.json();
+        return await api(`/api/uploads/${encodeURIComponent(begin.sessionId)}/complete`, {
+            method: "POST",
+            headers: headers()
+        });
     }
 
     function setStagedAttachment(att) {
+        if (stagedAttachment?.objectUrl && stagedAttachment.objectUrl !== att?.objectUrl) {
+            URL.revokeObjectURL(stagedAttachment.objectUrl);
+        }
         stagedAttachment = att;
+
         if (!att) {
-            attachBox.classList.add("d-none");
-            attachThumb.src = "";
+            attachBox?.classList.add("d-none");
+            if (attachThumb) {
+                attachThumb.classList.add("d-none");
+                attachThumb.removeAttribute("src");
+            }
+            if (attachAudio) {
+                attachAudio.pause();
+                attachAudio.classList.add("d-none");
+                attachAudio.removeAttribute("src");
+            }
             return;
         }
 
-        attachThumb.src = att.thumbUrl;
-        attachTypeEl.textContent = att.kind === "drawing" ? "🎨 Doodle Drawing" : "📷 Photo";
-        attachStatusEl.textContent = "Ready to add";
-        attachBox.classList.remove("d-none");
+        if (att.kind === "voice") {
+            if (attachThumb) {
+                attachThumb.classList.add("d-none");
+                attachThumb.removeAttribute("src");
+            }
+            if (attachAudio) {
+                attachAudio.src = att.audioUrl || "";
+                attachAudio.classList.remove("d-none");
+            }
+            if (attachTypeEl) attachTypeEl.textContent = "🎤 Voice Note";
+        } else {
+            if (attachAudio) {
+                attachAudio.pause();
+                attachAudio.classList.add("d-none");
+                attachAudio.removeAttribute("src");
+            }
+            if (attachThumb) {
+                attachThumb.src = att.thumbUrl || "";
+                attachThumb.classList.remove("d-none");
+            }
+            if (attachTypeEl) attachTypeEl.textContent = att.kind === "drawing" ? "🎨 Drawing" : "📷 Image";
+        }
+
+        if (attachStatusEl) attachStatusEl.textContent = att.status || "Ready to add";
+        attachBox?.classList.remove("d-none");
     }
 
     attachClearBtn?.addEventListener("click", () => setStagedAttachment(null));
 
-    // --- PHOTO PICKER, DROPZONE & PASTE ---
+    // --- IMAGE PICKER, DROPZONE & PASTE ---
     photoBtn?.addEventListener("click", () => photoInput?.click());
 
     photoInput?.addEventListener("change", async () => {
         if (!photoInput.files || photoInput.files.length === 0) return;
         const file = photoInput.files[0];
-        await handleImageUpload(file);
         photoInput.value = "";
+        await handleImageUpload(file);
     });
 
     async function handleImageUpload(file) {
+        if (!file || file.size <= 0) {
+            toast("That image is empty.", "danger");
+            return;
+        }
+
+        const localUrl = URL.createObjectURL(file);
         try {
-            submitBtn.disabled = true;
-            const localUrl = URL.createObjectURL(file);
+            if (submitBtn) submitBtn.disabled = true;
             setStagedAttachment({
                 fileId: null,
                 kind: "photo",
                 thumbUrl: localUrl,
-                fileName: file.name
+                objectUrl: localUrl,
+                fileName: file.name,
+                status: "Uploading image…"
             });
-            attachStatusEl.textContent = "Uploading photo…";
 
-            const stored = await uploadBlob(file, file.name || "gift-photo.jpg", file.type || "image/jpeg");
-            URL.revokeObjectURL(localUrl);
-
+            const stored = await uploadBlob(file, file.name || "gift-image.jpg", file.type || "image/jpeg");
             setStagedAttachment({
                 fileId: stored.id,
                 kind: "photo",
                 thumbUrl: `/api/files/${encodeURIComponent(stored.id)}/content?preview=true`,
-                fileName: stored.originalFileName || file.name
+                fileName: stored.originalFileName || file.name,
+                status: "Ready to add"
             });
-            toast("Photo attached!", "success");
+            toast("Image attached!", "success");
         } catch (err) {
             setStagedAttachment(null);
             toast(err.message, "danger");
         } finally {
-            submitBtn.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 
+    // --- VOICE RECORDING & AUDIO UPLOAD ---
+    function stopActiveRecording(action) {
+        if (voiceRecorder && voiceRecorder.state !== "inactive") {
+            voiceAction = action || "cancel";
+            voiceRecorder.stop();
+        }
+    }
+
+    async function handleAudioUpload(fileOrBlob, overrideName, overrideType) {
+        if (!fileOrBlob || fileOrBlob.size <= 0) {
+            toast("That voice note is empty.", "danger");
+            return;
+        }
+
+        const fileName = overrideName || fileOrBlob.name || "gift-voice.webm";
+        const contentType = overrideType || fileOrBlob.type || "audio/webm";
+        const localUrl = URL.createObjectURL(fileOrBlob);
+
+        try {
+            if (submitBtn) submitBtn.disabled = true;
+            setStagedAttachment({
+                fileId: null,
+                kind: "voice",
+                audioUrl: localUrl,
+                objectUrl: localUrl,
+                fileName,
+                status: "Uploading voice…"
+            });
+
+            const stored = await uploadBlob(fileOrBlob, fileName, contentType);
+            setStagedAttachment({
+                fileId: stored.id,
+                kind: "voice",
+                audioUrl: `/api/files/${encodeURIComponent(stored.id)}/content?preview=true`,
+                fileName: stored.originalFileName || fileName,
+                status: "Ready to add"
+            });
+            toast("Voice note attached!", "success");
+        } catch (err) {
+            setStagedAttachment(null);
+            toast(err.message, "danger");
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    voiceInput?.addEventListener("change", async () => {
+        if (!voiceInput.files || voiceInput.files.length === 0) return;
+        const file = voiceInput.files[0];
+        voiceInput.value = "";
+        await handleAudioUpload(file);
+    });
+
+    voiceBtn?.addEventListener("click", async () => {
+        if (voiceRecorder) return;
+
+        if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+            voiceInput?.click();
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+            const mime = candidates.find(m => typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(m)) || "";
+            voiceChunks = [];
+            voiceAction = "cancel";
+            voiceRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+
+            voiceRecorder.addEventListener("dataavailable", (ev) => {
+                if (ev.data && ev.data.size > 0) {
+                    voiceChunks.push(ev.data);
+                }
+            });
+
+            voiceRecorder.addEventListener("stop", async () => {
+                window.clearInterval(voiceTimer);
+                stream.getTracks().forEach(t => t.stop());
+                voiceBar?.classList.add("d-none");
+                if (voiceBtn) voiceBtn.disabled = false;
+
+                const action = voiceAction;
+                const actualType = (voiceRecorder && voiceRecorder.mimeType) || mime || "audio/webm";
+                const cleanMime = actualType.split(";")[0] || "audio/webm";
+                const ext = cleanMime.includes("mp4") ? ".m4a" : (cleanMime.includes("ogg") ? ".ogg" : ".webm");
+                const blob = new Blob(voiceChunks, { type: cleanMime });
+                voiceRecorder = null;
+                voiceChunks = [];
+
+                if (action !== "send" || blob.size === 0) {
+                    return;
+                }
+
+                const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+                await handleAudioUpload(blob, `gift-voice-${stamp}${ext}`, cleanMime);
+            });
+
+            voiceStartedAt = Date.now();
+            if (voiceTimerEl) voiceTimerEl.textContent = "0:00";
+            voiceBar?.classList.remove("d-none");
+            if (voiceBtn) voiceBtn.disabled = true;
+
+            voiceTimer = window.setInterval(() => {
+                const sec = Math.floor((Date.now() - voiceStartedAt) / 1000);
+                if (voiceTimerEl) voiceTimerEl.textContent = formatDuration(sec);
+                if (sec >= 120) {
+                    stopActiveRecording("send");
+                }
+            }, 400);
+
+            voiceRecorder.start();
+        } catch {
+            toast("Microphone unavailable — pick an audio file instead!", "info");
+            voiceInput?.click();
+        }
+    });
+
+    voiceCancelBtn?.addEventListener("click", () => stopActiveRecording("cancel"));
+    voiceStopBtn?.addEventListener("click", () => stopActiveRecording("send"));
+
+    // --- DRAG & DROP / PASTE ---
     ["dragenter", "dragover"].forEach(evtName => {
-        dropzoneEl?.addEventListener(evtName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropzoneEl.classList.add("is-dragover");
-        });
         composerCard?.addEventListener(evtName, (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -277,10 +413,11 @@
     });
 
     ["dragleave", "dragend"].forEach(evtName => {
-        dropzoneEl?.addEventListener(evtName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropzoneEl.classList.remove("is-dragover");
+        composerCard?.addEventListener(evtName, (e) => {
+            if (e.currentTarget === composerCard && e.relatedTarget && composerCard.contains(e.relatedTarget)) {
+                return;
+            }
+            dropzoneEl?.classList.remove("is-dragover");
         });
     });
 
@@ -294,51 +431,43 @@
                 await handleImageUpload(file);
                 return;
             }
+            if (file.type.startsWith("audio/")) {
+                await handleAudioUpload(file);
+                return;
+            }
         }
 
         const uriList = dt.getData("text/uri-list");
-        if (uriList && uriList.startsWith("http")) {
-            urlInput.value = uriList.trim();
-            if (!titleInput.value) {
-                try {
-                    const u = new URL(uriList);
-                    titleInput.value = u.hostname.replace(/^www\./, "") + " item";
-                } catch (e) {}
-            }
-            toast("Link attached!", "info");
+        if (uriList && /^https?:\/\//i.test(uriList.trim())) {
+            if (urlInput) urlInput.value = uriList.trim();
+            toast("Link added!", "info");
             return;
         }
 
         const text = dt.getData("text/plain");
         if (text) {
             const trimmed = text.trim();
-            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-                urlInput.value = trimmed;
-                if (!titleInput.value) {
-                    try {
-                        const u = new URL(trimmed);
-                        titleInput.value = u.hostname.replace(/^www\./, "") + " item";
-                    } catch (e) {}
-                }
+            if (/^https?:\/\//i.test(trimmed) && !/\s/.test(trimmed)) {
+                if (urlInput) urlInput.value = trimmed;
                 toast("Link dropped into form!", "info");
-            } else if (!titleInput.value) {
+            } else if (titleInput && !titleInput.value) {
                 titleInput.value = trimmed.slice(0, 200);
-                toast("Text dropped into title!", "info");
-            } else if (!descInput.value) {
+                toast("Text added!", "info");
+            } else if (descInput && !descInput.value) {
                 descInput.value = trimmed.slice(0, 2000);
                 toast("Notes added!", "info");
             }
         }
     }
 
-    dropzoneEl?.addEventListener("drop", async (e) => {
+    composerCard?.addEventListener("drop", async (e) => {
         e.preventDefault();
         e.stopPropagation();
         await handleDroppedData(e.dataTransfer);
     });
 
     document.addEventListener("paste", async (e) => {
-        if (viewMode !== "list" || selectedOwnerId !== currentUserId) return;
+        if (selectedOwnerId !== currentUserId) return;
         const target = e.target;
         if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
             if (!e.clipboardData?.files || e.clipboardData.files.length === 0) return;
@@ -390,7 +519,9 @@
         try {
             doodleHistory.push(drawCtx.getImageData(0, 0, doodleDrawCanvas.width, doodleDrawCanvas.height));
             if (doodleHistory.length > 25) doodleHistory.shift();
-        } catch (e) {}
+        } catch {
+            // Ignore canvas security errors
+        }
     }
 
     function loadBackgroundPhotoOntoCanvas(file) {
@@ -408,7 +539,7 @@
             const dy = (ch - dh) / 2;
             bgCtx.drawImage(img, dx, dy, dw, dh);
             URL.revokeObjectURL(objectUrl);
-            toast("Photo loaded! Circle or draw what you want.", "info");
+            toast("Photo loaded! Draw or circle what you want.", "info");
         };
         img.onerror = () => {
             URL.revokeObjectURL(objectUrl);
@@ -418,7 +549,7 @@
     }
 
     function initDoodlePad() {
-        if (!doodleBgCanvas || !doodleDrawCanvas) return;
+        if (!doodleBgCanvas || !doodleDrawCanvas || !drawCtx) return;
         resetDoodleCanvas();
 
         if (doodleSwatchesEl && doodleSwatchesEl.children.length === 0) {
@@ -559,18 +690,19 @@
 
             const blob = await new Promise(res => merged.toBlob(res, "image/png"));
             const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-            const fileName = `wish-doodle-${stamp}.png`;
+            const fileName = `gift-drawing-${stamp}.png`;
 
             const stored = await uploadBlob(blob, fileName, "image/png");
             setStagedAttachment({
                 fileId: stored.id,
                 kind: "drawing",
                 thumbUrl: `/api/files/${encodeURIComponent(stored.id)}/content?preview=true`,
-                fileName: fileName
+                fileName,
+                status: "Ready to add"
             });
 
-            bsDoodleModal?.hide();
-            toast("Drawing attached to wish!", "success");
+            hideModal(bsDoodleModal, doodleModalEl);
+            toast("Drawing attached!", "success");
         } catch (err) {
             toast(err.message, "danger");
         } finally {
@@ -579,35 +711,32 @@
         }
     });
 
-    // --- FILTER PILLS ---
-    filterBarEl?.querySelectorAll(".gifts-filter-pill").forEach(pill => {
-        pill.addEventListener("click", () => {
-            activeFilter = pill.dataset.filter || "all";
-            filterBarEl.querySelectorAll(".gifts-filter-pill").forEach(b => {
-                b.classList.toggle("active", b === pill);
-            });
-            const owner = members.find(m => m.userId === selectedOwnerId);
-            renderItems(selectedOwnerId === currentUserId, owner);
-        });
-    });
-
     // --- COMPOSER SUBMISSION ---
     addForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const title = titleInput.value.trim();
-        if (!title) return;
+        if (stagedAttachment && !stagedAttachment.fileId) {
+            toast("Please wait for your attachment to finish uploading.", "info");
+            return;
+        }
 
-        submitBtn.disabled = true;
+        const title = titleInput?.value.trim() || "";
+        const url = urlInput?.value.trim() || "";
+        const description = descInput?.value.trim() || "";
+        const fileId = stagedAttachment ? stagedAttachment.fileId : null;
+
+        if (!title && !url && !description && !fileId) {
+            toast("Add some text, a URL, an image, a voice note, or a drawing.", "info");
+            return;
+        }
+
+        if (submitBtn) submitBtn.disabled = true;
         try {
             const body = {
-                title: title,
-                url: urlInput.value.trim() || null,
-                description: descInput.value.trim() || null,
-                imageFileId: stagedAttachment ? stagedAttachment.fileId : null,
-                imageType: stagedAttachment ? stagedAttachment.kind : null,
-                occasion: occasionInput?.value || "anytime",
-                categoryTag: categoryInput?.value || null,
-                isMostWanted: Boolean(mostWantedInput?.checked)
+                title: title || null,
+                url: url || null,
+                description: description || null,
+                imageFileId: fileId,
+                imageType: stagedAttachment ? stagedAttachment.kind : null
             };
 
             await api("/api/gifts", {
@@ -616,44 +745,39 @@
                 body: JSON.stringify(body)
             });
 
-            titleInput.value = "";
-            urlInput.value = "";
-            descInput.value = "";
-            if (categoryInput) categoryInput.value = "";
-            if (mostWantedInput) mostWantedInput.checked = false;
+            if (titleInput) titleInput.value = "";
+            if (urlInput) urlInput.value = "";
+            if (descInput) descInput.value = "";
             setStagedAttachment(null);
 
-            toast("Wish added to your list!", "success");
+            toast("Added to your gift list!", "success");
             await loadList(currentUserId);
             await loadMembers();
         } catch (err) {
             toast(err.message, "danger");
         } finally {
-            submitBtn.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
         }
     });
 
     // --- EDIT ITEM FORM ---
     editForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const id = editIdInput.value;
-        const title = editTitleInput.value.trim();
-        if (!id || !title) return;
+        const id = editIdInput?.value;
+        if (!id) return;
 
         const saveBtn = document.getElementById("edit-gift-save-btn");
         if (saveBtn) saveBtn.disabled = true;
 
         try {
             const existing = currentItems.find(i => i.id === id);
+            const removeAttachment = Boolean(editRemoveAttachInput?.checked);
             const body = {
-                title: title,
-                url: editUrlInput.value.trim() || null,
-                description: editDescInput.value.trim() || null,
-                imageFileId: existing ? existing.imageFileId : null,
-                imageType: existing ? existing.imageType : null,
-                occasion: editOccasionInput?.value || "anytime",
-                categoryTag: editCategoryInput?.value || null,
-                isMostWanted: Boolean(editMostWantedInput?.checked)
+                title: editTitleInput?.value.trim() || null,
+                url: editUrlInput?.value.trim() || null,
+                description: editDescInput?.value.trim() || null,
+                imageFileId: (!removeAttachment && existing) ? existing.imageFileId : null,
+                imageType: (!removeAttachment && existing) ? existing.imageType : null
             };
 
             await api(`/api/gifts/${encodeURIComponent(id)}`, {
@@ -662,8 +786,8 @@
                 body: JSON.stringify(body)
             });
 
-            bsEditModal?.hide();
-            toast("Wish updated!", "success");
+            hideModal(bsEditModal, editModalEl);
+            toast("Item updated!", "success");
             await loadList(selectedOwnerId);
         } catch (err) {
             toast(err.message, "danger");
@@ -672,128 +796,27 @@
         }
     });
 
-    // --- SIZES & FAVORITES PROFILE MODAL ---
-    profileEditBtn?.addEventListener("click", () => {
-        profileShirtInput.value = currentProfile?.shirtSize || "";
-        profilePantsInput.value = currentProfile?.pantsSize || "";
-        profileShoeInput.value = currentProfile?.shoeSize || "";
-        profileColorsInput.value = currentProfile?.favoriteColors || "";
-        profileInterestsInput.value = currentProfile?.interestsAndAvoid || "";
-        bsProfileModal?.show();
-    });
-
-    profileForm?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (profileSaveBtn) profileSaveBtn.disabled = true;
-        try {
-            const payload = {
-                shirtSize: profileShirtInput.value.trim() || null,
-                pantsSize: profilePantsInput.value.trim() || null,
-                shoeSize: profileShoeInput.value.trim() || null,
-                favoriteColors: profileColorsInput.value.trim() || null,
-                interestsAndAvoid: profileInterestsInput.value.trim() || null
-            };
-
-            currentProfile = await api("/api/gifts/profile", {
-                method: "PUT",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify(payload)
-            });
-            renderProfileBar(true, null);
-            bsProfileModal?.hide();
-            toast("Sizes & favorites saved!", "success");
-        } catch (err) {
-            toast(err.message, "danger");
-        } finally {
-            if (profileSaveBtn) profileSaveBtn.disabled = false;
-        }
-    });
-
-    // --- ADULT SECRET SURPRISE MODAL ---
-    surpriseOpenBtn?.addEventListener("click", () => {
-        const owner = members.find(m => m.userId === selectedOwnerId);
-        if (surpriseRecipientEl) surpriseRecipientEl.textContent = owner?.displayName || "this member";
-        surpriseTitleInput.value = "";
-        if (surpriseOccasionInput) surpriseOccasionInput.value = "anytime";
-        surpriseUrlInput.value = "";
-        surpriseDescInput.value = "";
-        surpriseNoteInput.value = "";
-        if (surpriseSplitInput) surpriseSplitInput.checked = false;
-        bsSurpriseModal?.show();
-    });
-
-    surpriseForm?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const title = surpriseTitleInput.value.trim();
-        if (!title) return;
-        if (surpriseSubmitBtn) surpriseSubmitBtn.disabled = true;
-
-        try {
-            const payload = {
-                title: title,
-                occasion: surpriseOccasionInput?.value || "anytime",
-                url: surpriseUrlInput.value.trim() || null,
-                description: surpriseDescInput.value.trim() || null,
-                claimNotes: surpriseNoteInput.value.trim() || null,
-                openToSplit: Boolean(surpriseSplitInput?.checked)
-            };
-
-            await api(`/api/gifts/list/${encodeURIComponent(selectedOwnerId)}/surprise`, {
-                method: "POST",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify(payload)
-            });
-
-            bsSurpriseModal?.hide();
-            toast("Secret off-list surprise saved! Only adults can see it.", "success");
-            await loadList(selectedOwnerId);
-            await loadMembers();
-        } catch (err) {
-            toast(err.message, "danger");
-        } finally {
-            if (surpriseSubmitBtn) surpriseSubmitBtn.disabled = false;
-        }
-    });
-
-    // --- CLAIM CONFIRMATION ---
-    claimConfirmBtn?.addEventListener("click", async () => {
-        if (!pendingClaimItemId) return;
-        claimConfirmBtn.disabled = true;
-        try {
-            const note = claimNoteInput.value.trim() || null;
-            const openToSplit = Boolean(claimSplitCheck?.checked);
-            await api(`/api/gifts/${encodeURIComponent(pendingClaimItemId)}/claim`, {
-                method: "POST",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify({ claimNotes: note, openToSplit: openToSplit })
-            });
-
-            bsClaimModal?.hide();
-            toast("Gift claimed! Other adults now know you've got this.", "success");
-            await refreshActiveView();
-        } catch (err) {
-            toast(err.message, "danger");
-        } finally {
-            claimConfirmBtn.disabled = false;
-            pendingClaimItemId = null;
-        }
-    });
-
-    // --- RENDER MEMBERS & SHOPPING TAB ---
+    // --- RENDER MEMBERS ---
     async function loadMembers() {
         try {
             members = await api("/api/gifts/members", { headers: headers() });
+            if (members.length > 0 && !members.some(m => m.userId === selectedOwnerId)) {
+                selectedOwnerId = currentUserId;
+            }
             renderMembers();
         } catch (err) {
-            membersListEl.innerHTML = `<div class="text-danger small p-2">Failed to load family members: ${err.message}</div>`;
+            if (membersListEl) {
+                membersListEl.textContent = `Failed to load family members: ${err.message}`;
+            }
         }
     }
 
     function renderMembers() {
+        if (!membersListEl) return;
         membersListEl.innerHTML = "";
         members.forEach(m => {
             const isMe = m.userId === currentUserId;
-            const isSelected = viewMode === "list" && m.userId === selectedOwnerId;
+            const isSelected = m.userId === selectedOwnerId;
 
             const pill = document.createElement("button");
             pill.type = "button";
@@ -815,7 +838,7 @@
             if (m.isKid) {
                 const kidTag = document.createElement("span");
                 kidTag.className = "member-pill-kid-tag";
-                kidTag.textContent = "👶 Kid";
+                kidTag.textContent = "Kid";
                 pill.appendChild(kidTag);
             }
 
@@ -824,400 +847,187 @@
             countBadge.textContent = `${m.itemCount}`;
             pill.appendChild(countBadge);
 
-            if (!isKid && m.claimedCount !== null && m.claimedCount > 0) {
-                const claimIndicator = document.createElement("span");
-                claimIndicator.className = "member-pill-claimed-tag";
-                claimIndicator.title = `${m.claimedCount} of ${m.itemCount} items claimed`;
-                claimIndicator.textContent = `🎁 ${m.claimedCount}`;
-                pill.appendChild(claimIndicator);
-            }
-
             pill.addEventListener("click", () => selectMember(m.userId));
             membersListEl.appendChild(pill);
         });
-
-        // Add Adult-only "My Shopping List" tab at end of strip
-        if (!isKid) {
-            const shopPill = document.createElement("button");
-            shopPill.type = "button";
-            shopPill.id = "gifts-shopping-tab";
-            shopPill.className = `gifts-member-pill gifts-shopping-pill ${viewMode === "shopping" ? "active" : ""}`;
-            shopPill.setAttribute("role", "tab");
-            shopPill.setAttribute("aria-selected", viewMode === "shopping" ? "true" : "false");
-            shopPill.innerHTML = `<span class="member-pill-name">🛒 My Shopping List</span>`;
-            shopPill.addEventListener("click", selectShoppingView);
-            membersListEl.appendChild(shopPill);
-        }
     }
 
     function selectMember(userId) {
-        viewMode = "list";
+        stopActiveRecording("cancel");
         selectedOwnerId = userId;
-        activeFilter = "all";
-        filterBarEl?.querySelectorAll(".gifts-filter-pill").forEach(p => {
-            p.classList.toggle("active", p.dataset.filter === "all");
-        });
         window.location.hash = `member=${userId}`;
-        shoppingViewEl?.classList.add("d-none");
-        listContainerEl?.classList.remove("d-none");
         renderMembers();
         loadList(userId);
     }
 
-    function selectShoppingView() {
-        if (isKid) return;
-        viewMode = "shopping";
-        window.location.hash = "shopping";
-        listContainerEl?.classList.add("d-none");
-        shoppingViewEl?.classList.remove("d-none");
-        renderMembers();
-        loadMyClaims();
-    }
-
-    async function refreshActiveView() {
-        await loadMembers();
-        if (viewMode === "shopping") {
-            await loadMyClaims();
-        } else {
-            await loadList(selectedOwnerId);
-        }
-    }
-
-    // --- PROFILE BAR RENDERING ---
-    async function loadProfile(ownerId, owner) {
-        const isMe = ownerId === currentUserId;
-        if (profileEditBtn) {
-            profileEditBtn.classList.toggle("d-none", !isMe);
-        }
-
-        try {
-            currentProfile = await api(`/api/gifts/profile/${encodeURIComponent(ownerId)}`, { headers: headers() });
-            renderProfileBar(isMe, owner);
-        } catch (err) {
-            currentProfile = null;
-            renderProfileBar(isMe, owner);
-        }
-    }
-
-    function renderProfileBar(isMe, owner) {
-        if (!profileItemsEl) return;
-        profileItemsEl.innerHTML = "";
-
-        const chips = [];
-        if (currentProfile?.shirtSize) chips.push({ icon: "👕", label: "Shirt", val: currentProfile.shirtSize });
-        if (currentProfile?.pantsSize) chips.push({ icon: "👖", label: "Pants", val: currentProfile.pantsSize });
-        if (currentProfile?.shoeSize) chips.push({ icon: "👟", label: "Shoes", val: currentProfile.shoeSize });
-        if (currentProfile?.favoriteColors) chips.push({ icon: "🎨", label: "Colors", val: currentProfile.favoriteColors });
-        if (currentProfile?.interestsAndAvoid) chips.push({ icon: "💡", label: "Interests / Notes", val: currentProfile.interestsAndAvoid });
-
-        if (chips.length === 0) {
-            const empty = document.createElement("span");
-            empty.className = "gifts-profile-empty";
-            empty.textContent = isMe
-                ? "Add your clothing sizes, favorite colors, and interests so family members can pick the right fit."
-                : `${owner?.displayName || "This member"} hasn't pinned sizes or favorites yet.`;
-            profileItemsEl.appendChild(empty);
-            return;
-        }
-
-        chips.forEach(c => {
-            const chip = document.createElement("span");
-            chip.className = "gifts-profile-chip";
-            chip.innerHTML = `<strong>${c.icon} ${c.label}:</strong> `;
-            const valSpan = document.createElement("span");
-            valSpan.textContent = c.val;
-            chip.appendChild(valSpan);
-            profileItemsEl.appendChild(chip);
-        });
-    }
-
-    // --- LIST LOADING & FILTERING ---
+    // --- LIST LOADING & RENDERING ---
     async function loadList(ownerId) {
         const owner = members.find(m => m.userId === ownerId);
         const isMe = ownerId === currentUserId;
 
-        activeDotEl.style.background = owner?.accentColor || "#0b1f3a";
-        activeNameEl.textContent = isMe ? "My Wishlist" : `${owner?.displayName || "Member"}'s Wishlist`;
-        activeKidBadge.classList.toggle("d-none", !owner?.isKid);
-        composerCard.classList.toggle("d-none", !isMe);
+        if (activeDotEl) activeDotEl.style.background = owner?.accentColor || "#0b1f3a";
+        if (activeNameEl) activeNameEl.textContent = isMe ? "My Gift List" : `${owner?.displayName || "Member"}'s Gift List`;
+        activeKidBadge?.classList.toggle("d-none", !owner?.isKid);
+        composerCard?.classList.toggle("d-none", !isMe);
 
-        if (surpriseOpenBtn) {
-            surpriseOpenBtn.classList.toggle("d-none", isKid || isMe);
-        }
+        if (gridEl) gridEl.innerHTML = '<div class="gifts-loading-state">Loading list...</div>';
 
-        gridEl.innerHTML = '<div class="gifts-loading-state">Loading wishlist...</div>';
-
-        const profilePromise = loadProfile(ownerId, owner);
         try {
             currentItems = await api(`/api/gifts/list/${encodeURIComponent(ownerId)}`, { headers: headers() });
-            await profilePromise;
             renderItems(isMe, owner);
         } catch (err) {
-            await profilePromise;
-            gridEl.innerHTML = `<div class="text-danger p-3">Failed to load wishlist: ${err.message}</div>`;
+            if (gridEl) {
+                const errDiv = document.createElement("div");
+                errDiv.className = "text-danger p-3";
+                errDiv.textContent = `Failed to load gift list: ${err.message}`;
+                gridEl.innerHTML = "";
+                gridEl.appendChild(errDiv);
+            }
         }
-    }
-
-    function matchesFilter(item) {
-        if (activeFilter === "all") return true;
-        if (activeFilter === "most-wanted") return Boolean(item.isMostWanted);
-        return (item.occasion || "anytime") === activeFilter;
     }
 
     function renderItems(isMe, owner) {
-        const regularItems = currentItems.filter(i => !i.isAdultSurprise && !i.isDeletedByOwner);
-        const filtered = currentItems.filter(matchesFilter);
+        if (!gridEl) return;
 
-        if (activeFilter === "all") {
-            activeCountEl.textContent = `${regularItems.length} ${regularItems.length === 1 ? "gift" : "gifts"}`;
-        } else {
-            activeCountEl.textContent = `${filtered.length} shown`;
+        if (activeCountEl) {
+            activeCountEl.textContent = `${currentItems.length} ${currentItems.length === 1 ? "item" : "items"}`;
         }
 
-        if (!isKid && !isMe && regularItems.length > 0) {
-            const claimedRegular = regularItems.filter(i => i.isClaimed).length;
-            activeClaimChip.classList.remove("d-none");
-            activeClaimChip.textContent = `${claimedRegular} of ${regularItems.length} claimed`;
-            activeClaimChip.classList.toggle("all-claimed", claimedRegular === regularItems.length);
-        } else {
-            activeClaimChip.classList.add("d-none");
-        }
-
-        if (filtered.length === 0) {
+        if (currentItems.length === 0) {
             gridEl.innerHTML = "";
-            if (currentItems.length > 0 && activeFilter !== "all") {
-                emptyMsgEl.textContent = "No wishes match this filter. Click \"All\" above to see everything.";
-            } else {
+            if (emptyMsgEl) {
                 emptyMsgEl.textContent = isMe
-                    ? "Use the form above to add wishes for birthdays, Christmas, holidays, or anytime!"
-                    : `${owner?.displayName || "This member"} hasn't added any wishes yet.`;
+                    ? "Add text, a URL, an image, a voice note, or a drawing above!"
+                    : `${owner?.displayName || "This member"} hasn't added anything to their gift list yet.`;
             }
-            gridEl.appendChild(emptyStateEl);
-            emptyStateEl.classList.remove("d-none");
+            if (emptyStateEl) {
+                gridEl.appendChild(emptyStateEl);
+                emptyStateEl.classList.remove("d-none");
+            }
             return;
         }
 
-        emptyStateEl.classList.add("d-none");
+        emptyStateEl?.classList.add("d-none");
         gridEl.innerHTML = "";
 
-        filtered.forEach((item) => {
-            const realIndex = currentItems.indexOf(item);
+        currentItems.forEach((item, index) => {
             const card = buildGiftCard(item, {
-                isMe: isMe,
-                isShoppingView: false,
-                index: realIndex,
+                isMe,
+                index,
                 totalCount: currentItems.length,
-                canReorder: isMe && activeFilter === "all" && currentItems.length > 1
+                canReorder: isMe && currentItems.length > 1
             });
             gridEl.appendChild(card);
         });
     }
 
-    // --- ADULT SHOPPING LIST ---
-    async function loadMyClaims() {
-        if (!shoppingGridEl || isKid) return;
-        shoppingGridEl.innerHTML = '<div class="gifts-loading-state">Loading your shopping list...</div>';
-
-        try {
-            shoppingClaims = await api("/api/gifts/my-claims", { headers: headers() });
-            renderShoppingList();
-        } catch (err) {
-            shoppingGridEl.innerHTML = `<div class="text-danger p-3">Failed to load shopping list: ${err.message}</div>`;
-        }
-    }
-
-    function renderShoppingList() {
-        if (!shoppingGridEl) return;
-        if (shoppingCountEl) {
-            shoppingCountEl.textContent = `${shoppingClaims.length} ${shoppingClaims.length === 1 ? "item" : "items"}`;
-        }
-
-        if (shoppingClaims.length === 0) {
-            shoppingGridEl.innerHTML = `
-                <div class="gifts-empty-state">
-                    <div class="gifts-empty-icon">🛒</div>
-                    <h3>Your shopping list is empty</h3>
-                    <p>Browse family members' wishlists above and click <strong>Claim Gift</strong> or <strong>Chip In</strong> to track items here.</p>
-                </div>`;
-            return;
-        }
-
-        shoppingGridEl.innerHTML = "";
-        shoppingClaims.forEach(entry => {
-            const card = buildGiftCard(entry.item, {
-                isMe: false,
-                isShoppingView: true,
-                recipient: {
-                    userId: entry.recipientUserId,
-                    displayName: entry.recipientName,
-                    accentColor: entry.recipientAccentColor,
-                    isKid: entry.recipientIsKid
-                }
-            });
-            shoppingGridEl.appendChild(card);
-        });
-    }
-
-    // --- SHARED CARD BUILDER ---
+    // --- CARD BUILDER ---
     function buildGiftCard(item, opts) {
         const isMe = opts.isMe;
         const card = document.createElement("div");
         card.className = "gift-card";
         card.dataset.id = item.id;
 
-        if (item.isMostWanted) card.classList.add("is-most-wanted");
-        if (item.isAdultSurprise) card.classList.add("is-surprise");
-        if (item.isDeletedByOwner) card.classList.add("is-deleted-owner");
-        if (item.isClaimed) {
-            card.classList.add("is-claimed");
-            if (item.isClaimedByMe || item.isSplitByMe) {
-                card.classList.add("claimed-by-me");
-            }
-        }
-
-        // Special Adult Banners (never visible to list owner)
-        if (!isMe && !isKid && item.isDeletedByOwner) {
-            const warn = document.createElement("div");
-            warn.className = "gift-deleted-banner";
-            warn.textContent = "⚠️ Removed by owner after claim — still here so you aren't blindsided. Unclaim to clear.";
-            card.appendChild(warn);
-        } else if (!isMe && !isKid && item.isAdultSurprise) {
-            const banner = document.createElement("div");
-            banner.className = "gift-surprise-banner";
-            banner.textContent = item.createdByName
-                ? `🤫 Secret Off-List Surprise · Added by ${item.createdByName}`
-                : "🤫 Secret Off-List Surprise (hidden from recipient)";
-            card.appendChild(banner);
-        }
-
-        // Recipient header inside Shopping List
-        if (opts.isShoppingView && opts.recipient) {
-            const recBar = document.createElement("button");
-            recBar.type = "button";
-            recBar.className = "gifts-shopping-recipient-badge";
-            recBar.title = `Open ${opts.recipient.displayName}'s wishlist`;
-
-            const rDot = document.createElement("span");
-            rDot.className = "member-pill-dot";
-            rDot.style.background = opts.recipient.accentColor || "#0b1f3a";
-
-            const rText = document.createElement("span");
-            rText.textContent = opts.recipient.isKid
-                ? `For ${opts.recipient.displayName} (Kid)`
-                : `For ${opts.recipient.displayName}`;
-
-            recBar.appendChild(rDot);
-            recBar.appendChild(rText);
-            recBar.addEventListener("click", () => selectMember(opts.recipient.userId));
-            card.appendChild(recBar);
-        }
-
-        // 1. Media
+        // 1. Media (Image, Drawing, or Voice)
         if (item.imageFileId) {
-            const imgWrap = document.createElement("div");
-            imgWrap.className = "gift-card-media";
+            const mediaUrl = `/api/files/${encodeURIComponent(item.imageFileId)}/content?preview=true`;
+            if (item.imageType === "voice" || item.imageType === "audio") {
+                const voiceWrap = document.createElement("div");
+                voiceWrap.className = "gift-card-voice";
 
-            const img = document.createElement("img");
-            img.src = `/api/files/${encodeURIComponent(item.imageFileId)}/content?preview=true`;
-            img.alt = item.title;
-            img.className = "gift-card-img";
-            img.loading = "lazy";
-            img.addEventListener("click", () => {
-                lightboxImg.src = img.src;
-                bsLightboxModal?.show();
-            });
-            imgWrap.appendChild(img);
+                const voiceHeader = document.createElement("div");
+                voiceHeader.className = "gift-voice-header";
+                voiceHeader.textContent = "🎤 Voice Note";
 
-            if (item.imageType === "drawing") {
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.preload = "metadata";
+                audio.className = "gift-audio-player";
+                audio.src = mediaUrl;
+
+                voiceWrap.appendChild(voiceHeader);
+                voiceWrap.appendChild(audio);
+                card.appendChild(voiceWrap);
+            } else {
+                const isDrawing = item.imageType === "drawing";
+                const imgWrap = document.createElement("div");
+                imgWrap.className = `gift-card-media ${isDrawing ? "is-drawing" : ""}`;
+
+                const img = document.createElement("img");
+                img.src = mediaUrl;
+                img.alt = item.title || (isDrawing ? "Drawing" : "Gift image");
+                img.className = "gift-card-img";
+                img.loading = "lazy";
+                img.addEventListener("click", () => {
+                    if (lightboxImg) {
+                        lightboxImg.src = img.src;
+                        lightboxImg.alt = img.alt;
+                    }
+                    bsLightboxModal?.show();
+                });
+                imgWrap.appendChild(img);
+
                 const tag = document.createElement("span");
                 tag.className = "gift-media-badge";
-                tag.textContent = "🎨 Doodle";
+                tag.textContent = isDrawing ? "🎨 Drawing" : "📷 Image";
                 imgWrap.appendChild(tag);
+
+                card.appendChild(imgWrap);
+            }
+        }
+
+        // 2. Body (Text / Notes / URL)
+        if (item.title || item.description || item.url) {
+            const body = document.createElement("div");
+            body.className = "gift-card-body";
+
+            if (item.title) {
+                const title = document.createElement("h3");
+                title.className = "gift-card-title";
+                title.textContent = item.title;
+                body.appendChild(title);
             }
 
-            card.appendChild(imgWrap);
+            if (item.description) {
+                const desc = document.createElement("p");
+                desc.className = "gift-card-desc";
+                desc.textContent = item.description;
+                body.appendChild(desc);
+            }
+
+            if (item.url) {
+                const linkWrap = document.createElement("div");
+                linkWrap.className = "gift-card-link-wrap";
+
+                let domain = item.url;
+                try {
+                    domain = new URL(item.url).hostname.replace(/^www\./, "");
+                } catch {
+                    // Fallback to full URL string
+                }
+
+                const link = document.createElement("a");
+                link.href = item.url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.className = "btn btn-sm btn-outline-primary gift-card-link-btn";
+                link.innerHTML = '<svg class="icon me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M17 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5"/></svg>';
+                const labelSpan = document.createElement("span");
+                labelSpan.textContent = domain;
+                link.appendChild(labelSpan);
+
+                linkWrap.appendChild(link);
+                body.appendChild(linkWrap);
+            }
+
+            card.appendChild(body);
         }
 
-        // 2. Body
-        const body = document.createElement("div");
-        body.className = "gift-card-body";
-
-        // Occasion / Category / Most Wanted Badges Row
-        const badgesRow = document.createElement("div");
-        badgesRow.className = "gift-card-badges";
-
-        const occKey = item.occasion || "anytime";
-        const occBadge = document.createElement("span");
-        occBadge.className = `gift-occasion-badge occasion-${occKey}`;
-        occBadge.textContent = OCCASION_LABELS[occKey] || occKey;
-        badgesRow.appendChild(occBadge);
-
-        if (item.categoryTag && CATEGORY_LABELS[item.categoryTag]) {
-            const catBadge = document.createElement("span");
-            catBadge.className = "gift-category-badge";
-            catBadge.textContent = CATEGORY_LABELS[item.categoryTag];
-            badgesRow.appendChild(catBadge);
-        }
-
-        if (isMe && !item.isAdultSurprise) {
-            const starBtn = document.createElement("button");
-            starBtn.type = "button";
-            starBtn.className = `gift-star-btn ${item.isMostWanted ? "active" : ""}`;
-            starBtn.title = item.isMostWanted ? "Remove Most Wanted star" : "Mark as Most Wanted (max 3)";
-            starBtn.textContent = item.isMostWanted ? "⭐ Most Wanted" : "☆ Star";
-            starBtn.addEventListener("click", () => toggleMostWanted(item));
-            badgesRow.appendChild(starBtn);
-        } else if (item.isMostWanted) {
-            const starBadge = document.createElement("span");
-            starBadge.className = "gift-star-badge";
-            starBadge.textContent = "⭐ Most Wanted";
-            badgesRow.appendChild(starBadge);
-        }
-
-        body.appendChild(badgesRow);
-
-        const title = document.createElement("h3");
-        title.className = "gift-card-title";
-        title.textContent = item.title;
-        body.appendChild(title);
-
-        if (item.description) {
-            const desc = document.createElement("p");
-            desc.className = "gift-card-desc";
-            desc.textContent = item.description;
-            body.appendChild(desc);
-        }
-
-        if (item.url) {
-            const linkWrap = document.createElement("div");
-            linkWrap.className = "gift-card-link-wrap";
-
-            let domain = "Store Link";
-            try {
-                domain = new URL(item.url).hostname.replace(/^www\./, "");
-            } catch (e) {}
-
-            const link = document.createElement("a");
-            link.href = item.url;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.className = "btn btn-sm btn-outline-primary gift-card-link-btn";
-            link.innerHTML = `
-                <svg class="icon me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5"/><path d="M19 5l-8 8"/><path d="M17 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5"/></svg>
-                <span>${domain}</span>
-            `;
-            linkWrap.appendChild(link);
-            body.appendChild(linkWrap);
-        }
-
-        card.appendChild(body);
-
-        // 3. Footer
-        const footer = document.createElement("div");
-        footer.className = "gift-card-footer";
-
+        // 3. Footer (Owner reorder / edit / delete only)
         if (isMe) {
-            // Owner actions only — NEVER show claim info
+            const footer = document.createElement("div");
+            footer.className = "gift-card-footer";
+
             const ownerTools = document.createElement("div");
             ownerTools.className = "gift-owner-tools";
 
@@ -1227,6 +1037,7 @@
                     upBtn.type = "button";
                     upBtn.className = "btn btn-sm btn-outline-secondary gift-tool-btn";
                     upBtn.title = "Move up";
+                    upBtn.setAttribute("aria-label", "Move up");
                     upBtn.textContent = "▲";
                     upBtn.addEventListener("click", () => moveItem(opts.index, opts.index - 1));
                     ownerTools.appendChild(upBtn);
@@ -1236,6 +1047,7 @@
                     dnBtn.type = "button";
                     dnBtn.className = "btn btn-sm btn-outline-secondary gift-tool-btn";
                     dnBtn.title = "Move down";
+                    dnBtn.setAttribute("aria-label", "Move down");
                     dnBtn.textContent = "▼";
                     dnBtn.addEventListener("click", () => moveItem(opts.index, opts.index + 1));
                     ownerTools.appendChild(dnBtn);
@@ -1246,6 +1058,7 @@
             editBtn.type = "button";
             editBtn.className = "btn btn-sm btn-outline-secondary gift-tool-btn";
             editBtn.title = "Edit item";
+            editBtn.setAttribute("aria-label", "Edit item");
             editBtn.innerHTML = window.mcwutIcon("pencil");
             editBtn.addEventListener("click", () => openEditModal(item));
             ownerTools.appendChild(editBtn);
@@ -1254,184 +1067,40 @@
             delBtn.type = "button";
             delBtn.className = "btn btn-sm btn-outline-danger gift-tool-btn";
             delBtn.title = "Delete item";
+            delBtn.setAttribute("aria-label", "Delete item");
             delBtn.innerHTML = window.mcwutIcon("trash");
             delBtn.addEventListener("click", () => deleteItem(item));
             ownerTools.appendChild(delBtn);
 
             footer.appendChild(ownerTools);
-        } else if (!isKid) {
-            const claimSection = document.createElement("div");
-            claimSection.className = "gift-claim-section";
-
-            if (!item.isClaimed) {
-                const claimBtn = document.createElement("button");
-                claimBtn.type = "button";
-                claimBtn.className = "btn btn-sm btn-outline-success gift-claim-btn";
-                claimBtn.innerHTML = `
-                    <svg class="icon me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                    <span>Claim Gift</span>
-                `;
-                claimBtn.addEventListener("click", () => openClaimModal(item));
-                claimSection.appendChild(claimBtn);
-            } else {
-                // Header claim badge
-                if (item.isClaimedByMe) {
-                    const badge = document.createElement("div");
-                    badge.className = "gift-claimed-badge is-me";
-                    badge.innerHTML = `<span class="badge-text">✓ Claimed by You</span>`;
-                    claimSection.appendChild(badge);
-                } else {
-                    const badge = document.createElement("div");
-                    badge.className = "gift-claimed-badge is-other";
-
-                    const dot = document.createElement("span");
-                    dot.className = "claimer-dot";
-                    dot.style.background = item.claimedByAccentColor || "#0b1f3a";
-
-                    const text = document.createElement("span");
-                    text.className = "badge-text";
-                    text.textContent = `✓ Claimed by ${item.claimedByName || "another adult"}`;
-
-                    badge.appendChild(dot);
-                    badge.appendChild(text);
-                    claimSection.appendChild(badge);
-                }
-
-                // Stage pills for claimer or split contributor; read-only stage pill for others
-                const activeStage = item.claimStatus || "claimed";
-                if (item.isClaimedByMe || item.isSplitByMe) {
-                    const stageBar = document.createElement("div");
-                    stageBar.className = "gift-status-pills";
-                    STATUS_STAGES.forEach(st => {
-                        const pill = document.createElement("button");
-                        pill.type = "button";
-                        pill.className = `gift-status-pill ${activeStage === st.key ? "active" : ""}`;
-                        pill.textContent = st.label;
-                        pill.addEventListener("click", () => updateClaimStatus(item, st.key));
-                        stageBar.appendChild(pill);
-                    });
-                    claimSection.appendChild(stageBar);
-                } else {
-                    const stageInfo = STATUS_STAGES.find(s => s.key === activeStage);
-                    if (stageInfo && activeStage !== "claimed") {
-                        const stageChip = document.createElement("span");
-                        stageChip.className = "gift-stage-readonly";
-                        stageChip.textContent = stageInfo.label;
-                        claimSection.appendChild(stageChip);
-                    }
-                }
-
-                if (item.claimNotes) {
-                    const note = document.createElement("div");
-                    note.className = "gift-claim-note";
-                    note.textContent = item.isClaimedByMe ? `Your note: ${item.claimNotes}` : `Note: ${item.claimNotes}`;
-                    claimSection.appendChild(note);
-                }
-
-                // Group Split info + Chip In toggle
-                if (item.openToSplit) {
-                    const splitWrap = document.createElement("div");
-                    splitWrap.className = "gift-split-row";
-
-                    const splitBadge = document.createElement("span");
-                    splitBadge.className = "gift-split-badge";
-                    const helpers = item.splitHelperNames || [];
-                    splitBadge.textContent = helpers.length > 0
-                        ? `🤝 Group Gift · With ${helpers.join(", ")}`
-                        : "🤝 Open to Group Split";
-                    splitWrap.appendChild(splitBadge);
-
-                    if (item.canChipIn) {
-                        const chipBtn = document.createElement("button");
-                        chipBtn.type = "button";
-                        chipBtn.className = `btn btn-sm ${item.isSplitByMe ? "btn-outline-secondary" : "btn-outline-primary"} gift-split-btn`;
-                        chipBtn.textContent = item.isSplitByMe ? "Leave Split" : "🤝 Chip In";
-                        chipBtn.addEventListener("click", () => toggleSplit(item));
-                        splitWrap.appendChild(chipBtn);
-                    }
-
-                    claimSection.appendChild(splitWrap);
-                }
-
-                // Unclaim action (for claimer or Admin)
-                if (item.canUnclaim) {
-                    const unclaimBtn = document.createElement("button");
-                    unclaimBtn.type = "button";
-                    unclaimBtn.className = "btn btn-sm btn-link text-danger gift-unclaim-btn";
-                    unclaimBtn.textContent = item.isDeletedByOwner ? "Unclaim & Clear" : "Unclaim";
-                    unclaimBtn.addEventListener("click", () => unclaimItem(item));
-                    claimSection.appendChild(unclaimBtn);
-                }
-            }
-
-            // Creator/Admin delete button on adult secret surprises
-            if (item.isAdultSurprise && item.canDelete) {
-                const delSurpriseBtn = document.createElement("button");
-                delSurpriseBtn.type = "button";
-                delSurpriseBtn.className = "btn btn-sm btn-link text-danger gift-unclaim-btn";
-                delSurpriseBtn.textContent = "Delete Surprise";
-                delSurpriseBtn.addEventListener("click", () => deleteSurprise(item));
-                claimSection.appendChild(delSurpriseBtn);
-            }
-
-            footer.appendChild(claimSection);
+            card.appendChild(footer);
         }
 
-        card.appendChild(footer);
         return card;
     }
 
-    // --- OWNER & ADULT ACTIONS ---
+    // --- OWNER ACTIONS ---
     function openEditModal(item) {
-        editIdInput.value = item.id;
-        editTitleInput.value = item.title;
-        if (editOccasionInput) editOccasionInput.value = item.occasion || "anytime";
-        if (editCategoryInput) editCategoryInput.value = item.categoryTag || "";
-        if (editMostWantedInput) editMostWantedInput.checked = Boolean(item.isMostWanted);
-        editUrlInput.value = item.url || "";
-        editDescInput.value = item.description || "";
+        if (editIdInput) editIdInput.value = item.id;
+        if (editTitleInput) editTitleInput.value = item.title || "";
+        if (editUrlInput) editUrlInput.value = item.url || "";
+        if (editDescInput) editDescInput.value = item.description || "";
+        if (editAttachRow) editAttachRow.classList.toggle("d-none", !item.imageFileId);
+        if (editRemoveAttachInput) editRemoveAttachInput.checked = false;
         bsEditModal?.show();
     }
 
-    async function toggleMostWanted(item) {
-        try {
-            const updated = await api(`/api/gifts/${encodeURIComponent(item.id)}/most-wanted`, {
-                method: "POST",
-                headers: headers()
-            });
-            const idx = currentItems.findIndex(i => i.id === item.id);
-            if (idx >= 0) currentItems[idx] = updated;
-            renderItems(true, members.find(m => m.userId === currentUserId));
-            toast(updated.isMostWanted ? "Marked as ⭐ Most Wanted!" : "Removed Most Wanted star.", "info");
-        } catch (err) {
-            toast(err.message, "danger");
-        }
-    }
-
     async function deleteItem(item) {
-        if (!confirm(`Remove "${item.title}" from your wishlist?`)) return;
+        const label = item.title || item.url || "this item";
+        if (!confirm(`Remove "${label}" from your gift list?`)) return;
         try {
             await api(`/api/gifts/${encodeURIComponent(item.id)}`, {
                 method: "DELETE",
                 headers: headers()
             });
-            toast("Item removed from your wishlist.", "info");
+            toast("Item removed from your list.", "info");
             await loadList(currentUserId);
             await loadMembers();
-        } catch (err) {
-            toast(err.message, "danger");
-        }
-    }
-
-    async function deleteSurprise(item) {
-        if (!confirm(`Delete secret off-list surprise "${item.title}"?`)) return;
-        try {
-            await api(`/api/gifts/${encodeURIComponent(item.id)}`, {
-                method: "DELETE",
-                headers: headers()
-            });
-            toast("Secret surprise removed.", "info");
-            await refreshActiveView();
         } catch (err) {
             toast(err.message, "danger");
         }
@@ -1458,67 +1127,9 @@
         }
     }
 
-    function openClaimModal(item) {
-        pendingClaimItemId = item.id;
-        claimItemName.textContent = `"${item.title}"`;
-        claimNoteInput.value = "";
-        if (claimSplitCheck) claimSplitCheck.checked = false;
-        bsClaimModal?.show();
-    }
-
-    async function unclaimItem(item) {
-        if (!confirm(`Unclaim "${item.title}"?`)) return;
-        try {
-            await api(`/api/gifts/${encodeURIComponent(item.id)}/unclaim`, {
-                method: "POST",
-                headers: headers()
-            });
-            toast("Gift unclaimed.", "info");
-            await refreshActiveView();
-        } catch (err) {
-            toast(err.message, "danger");
-        }
-    }
-
-    async function updateClaimStatus(item, nextStatus) {
-        try {
-            await api(`/api/gifts/${encodeURIComponent(item.id)}/claim-status`, {
-                method: "POST",
-                headers: headers({ "Content-Type": "application/json" }),
-                body: JSON.stringify({ status: nextStatus })
-            });
-            toast(`Updated status to ${nextStatus}.`, "success");
-            await refreshActiveView();
-        } catch (err) {
-            toast(err.message, "danger");
-        }
-    }
-
-    async function toggleSplit(item) {
-        try {
-            const updated = await api(`/api/gifts/${encodeURIComponent(item.id)}/split-toggle`, {
-                method: "POST",
-                headers: headers()
-            });
-            toast(updated.isSplitByMe ? "Joined group gift split!" : "Left group gift split.", "info");
-            await refreshActiveView();
-        } catch (err) {
-            toast(err.message, "danger");
-        }
-    }
-
     // --- INITIALIZE ROUTE ---
     async function init() {
         const hash = window.location.hash;
-        if (hash === "#shopping" && !isKid) {
-            viewMode = "shopping";
-            listContainerEl?.classList.add("d-none");
-            shoppingViewEl?.classList.remove("d-none");
-            await loadMembers();
-            await loadMyClaims();
-            return;
-        }
-
         if (hash.startsWith("#member=")) {
             const targetId = hash.replace("#member=", "").trim();
             if (targetId) selectedOwnerId = targetId;
